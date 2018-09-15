@@ -1,4 +1,5 @@
 .idea
+telegram-server/.env
 
 src
 pkg

@@ -1,0 +1,19 @@
+---
+version: '3'
+services:
+  redis:
+    image: redis:5.0-rc
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+  vahter:
+    build: .
+    ports:
+      - "5001:5001"
+    links:
+      - redis
+    depends_on:
+      - redis
+    volumes:
+      - "./:/opt/vahter"
