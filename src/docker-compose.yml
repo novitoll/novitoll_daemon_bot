@@ -1,0 +1,26 @@
+---
+version: '3.3'
+services:
+  redis:
+    container_name: redis
+    image: redis:5.0-rc
+    ports:
+      - "6379:6379"
+  vahter:
+    build: .
+    image: vahter-bot:0.0.1
+    container_name: vahter-bot
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    env_file:
+      - .env
+    ports:
+      - "5002:5000"
+    links:
+      - redis
+    depends_on:
+      - redis
+    volumes:
+      - "./:/opt/vahter"
