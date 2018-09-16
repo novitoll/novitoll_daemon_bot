@@ -12,11 +12,10 @@ RUN pip install --upgrade --user setuptools pip
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
-COPY vahter /opt/vahter
-COPY setup.py /opt/
+COPY entrypoint.sh /opt/
 
-RUN cd /opt && python setup.py develop
+VOLUME /opt
 
 WORKDIR /opt
-EXPOSE 5002
-ENTRYPOINT ["flask", "run"]
+EXPOSE 5000
+ENTRYPOINT ["/bin/bash", "-c", "./entrypoint.sh"]

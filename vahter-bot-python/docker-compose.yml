@@ -19,8 +19,10 @@ services:
     environment:
       - FLASK_APP=vahter.router:app
     ports:
-      - "5002:5002"
+      - "5002:5000"
     links:
       - redis
     depends_on:
       - redis
+    volumes:
+      - "./:/opt"
