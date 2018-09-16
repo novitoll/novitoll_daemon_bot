@@ -1,7 +1,6 @@
 FROM centos
 
 ENV PYTHONUNBUFFERED=0
-ENV FLASK_APP=/opt/vahter/bot/route.py
 
 RUN yum -y update && \
   yum --enablerepo=extras install -y epel-release
@@ -12,13 +11,14 @@ RUN yum install -y \
 
 RUN pip install --upgrade --user setuptools pip
 
+COPY requirements.txt /tmp/
+RUN pip install -r /tmp/requirements.txt
+
 COPY vahter /opt/vahter
 COPY setup.py /opt/
 
-RUN pip install -r /opt/vahter/requirements.txt
+RUN cd /opt && python setup.py develop
 
 WORKDIR /opt
-RUN python setup.py develop
-
 EXPOSE 5000
 ENTRYPOINT ["flask", "run"]

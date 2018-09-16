@@ -4,7 +4,8 @@ import pendulum
 
 from flask import request
 
-from vahter.bot.wsgi import app, LOGGER, TELEGRAM_BOT_API_URL, TELEGRAM_BOT_TOKEN, TIMEZONE
+from vahter.bot.base import Bot
+from vahter.wsgi import app, LOGGER, TELEGRAM_BOT_API_URL, TELEGRAM_BOT_TOKEN, TIMEZONE
 from vahter.redis_client.base import RedisClient
 
 url_rgxp = re.compile('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+')
