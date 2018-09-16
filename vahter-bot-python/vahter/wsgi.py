@@ -12,7 +12,7 @@ LOGGER = logging.getLogger('tcpserver')
 TIMEZONE = 'Asia/Almaty'
 
 app._logger = LOGGER
-app.config['LOGGER_NAME'] = LOGGER.name
+app.logger_name = LOGGER.name
 
 TELEGRAM_BOT_API_URL = "https://api.telegram.org/bot{}/{}"
 TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']

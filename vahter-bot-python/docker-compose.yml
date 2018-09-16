@@ -17,9 +17,9 @@ services:
     env_file:
       - .env
     environment:
-      - FLASK_APP: vahter.router:app
+      - FLASK_APP=vahter.router:app
     ports:
-      - "5002:5000"
+      - "5002:5002"
     links:
       - redis
     depends_on:

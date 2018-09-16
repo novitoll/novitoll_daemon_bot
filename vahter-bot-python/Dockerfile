@@ -1,7 +1,5 @@
 FROM centos
 
-ENV PYTHONUNBUFFERED=0
-
 RUN yum -y update && \
   yum --enablerepo=extras install -y epel-release
 
@@ -20,5 +18,5 @@ COPY setup.py /opt/
 RUN cd /opt && python setup.py develop
 
 WORKDIR /opt
-EXPOSE 5000
+EXPOSE 5002
 ENTRYPOINT ["flask", "run"]

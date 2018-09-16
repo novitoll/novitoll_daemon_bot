@@ -2,6 +2,8 @@ import re
 import requests
 import pendulum
 
+from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
+
 from flask import request
 
 from vahter.bot.base import Bot
@@ -26,7 +28,6 @@ def vahter():
         data = request.json
         msg = data['message']
         username = msg['chat']['username'] if 'username' in msg['chat'] else 'whothefookizit?'
-        msg_dt = pendulum.from_timestamp(msg['date'], tz=TIMEZONE)
 
         LOGGER.debug("Message from %s" % username)
 
@@ -40,9 +41,15 @@ def vahter():
 
         # 2. connect to Redis
         _redis = RedisClient()
-    except KeyError as exc:
+    except (ValueError, KeyError) as exc:
         notify_admin(exc, msg)
         return "key error exception"
+
+    try:
+        msg_dt = pendulum.from_timestamp(msg['date'], tz=TIMEZONE)
+    except (ValueError, InvalidTimezone) as exc:
+        notify_admin(exc, msg)  # TODO: python3.6 - async
+        msg_dt = msg['date']
 
     # 3. check in Redis iteratively for URL duplication
     duplicates = filter(lambda x: not _redis.get(x), urls)
