@@ -52,17 +52,14 @@ def vahter():
         msg_dt = msg['date']
 
     # 3. check in Redis iteratively for URL duplication
-    duplicates = filter(lambda x: not _redis.get(x), urls)
+    duplicates = filter(lambda x: _redis.get(x), urls)
 
     if duplicates:
         # 4. Send the duplicate message
         reply = {
             'chat_id': msg['chat']['id'],
-            'text': "@%s posted this URL %s as well. Please dont flood" % (username, msg_dt.subtract(days=1).diff_for_humans()),
-            'reply_to_message_id': msg['message_id'],
-            'reply_markup': {
-                'force_reply': True
-            }
+            'text': "@%s posted this URL ~%s as well. Please dont flood" % (username, msg_dt.subtract(days=1).diff_for_humans()),
+            'reply_to_message_id': msg['message_id']
         }
 
         # NB!: there is no need to use aiohttp for async HTTP I/O, because we can scale horizontaly with docker

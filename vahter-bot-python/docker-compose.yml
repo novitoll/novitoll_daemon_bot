@@ -10,10 +10,6 @@ services:
     build: .
     image: vahter-bot:0.0.1
     container_name: vahter-bot
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
     env_file:
       - .env
     environment:
