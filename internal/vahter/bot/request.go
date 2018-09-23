@@ -41,23 +41,23 @@ type BotRequest struct {
 
 type BotRequestMessage struct {
 	From BotRequestFrom
-	Text 		string
-	Entities 	map[string]string
-	Date 		uint32
-	Message_Id  uint16
+	Text		string
+	// Entities	map[string]string
+	Date		uint32
+	Message_Id	uint16
 	Chat BotRequestChat
 }
 
 type BotRequestFrom struct {
-	Username 		string	`json:"username"`
-	First_Name 		string	`json:"first_name"`
-	Is_Bot 			bool	`json:"is_bot"`
-	Language_Code 	string	`json:"language_code"`
+	Username	string	`json:"username"`
+	First_Name	string	`json:"first_name"`
+	Is_Bot		bool	`json:"is_bot"`
+	Language_Code	string	`json:"language_code"`
 }
 
 type BotRequestChat struct {
-	Username 	string
-	First_Name  string `json:"first_name"`
-	Type 		string
-	Id 			uint32
+	Username	string
+	First_Name	string `json:"first_name"`
+	Type		string
+	Id		uint32
 }
