@@ -1,4 +1,0 @@
-Flask==1.0.2
-pendulum==2.0.3
-redis
-requests==2.19.1
