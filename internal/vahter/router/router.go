@@ -1,31 +1,41 @@
 package router
 
-import (
-	// "log"
+import 	(
+	"log"
 	"net/http"
 	"encoding/json"
 
 	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
+	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 )
 
-type RouteHandler struct {}
+type RouteHandler struct {
+	features *cfg.FeaturesConfig
+}
 
-func (h *RouteHandler) FaqHandler(w http.ResponseWriter, r *http.Request) {
+func (rh *RouteHandler) RegisterHandlers() {
+	http.HandleFunc("/check", handlerWrapper(CheckHandler))
+	// http.HandleFunc("/status", handlerWrapper(StatusHandler))
+}
+
+func (rh *RouteHandler) CheckHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
-		http.Error(w, "Please send a request body", 400)
+		&RouteError{w, 400, nil, "Please send a request body"}
 		return
 	}
 
 	var br bot.BotRequest
 	err := json.NewDecoder(r.Body).Decode(&br)
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		&RouteError{w, 400, nil, "Please send a valid JSON"}
 		return
 	}
 
-	go br.Process()
+	go br.Process(&rh)
 
-    // w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    // w.Write("cool")
 }
+
+// func (h *RouteHandler) StatusHandler(w http.ResponseWriter, r *http.Request) {
+
+// }

@@ -1,0 +1,14 @@
+{
+  "urlDuplication": {
+    "enabled": true,
+    "actionKick": false,
+    "actionBan": false,
+    "actionAdminNotify": true
+  },
+  "newcomerQuestionnare": {
+    "enabled": true,
+    "actionKick": false,
+    "actionBan": false,
+    "actionAdminNotify": true
+  }
+}
