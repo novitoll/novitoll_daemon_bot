@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"fmt"
 	"os"
 	"io/ioutil"
 	"encoding/json"
@@ -14,7 +13,7 @@ import (
 func applyConfig() *cfg.FeaturesConfig {
 	var features cfg.FeaturesConfig	
 	
-	if file, err :+ os.Open("config/features.json"); err != nil {
+	if file, err := os.Open("config/features.json"); err != nil {
 		panic(err)
 	}
 	defer file.close()
@@ -32,4 +31,5 @@ func main() {
 	handler.RegisterHandlers()
 
 	http.ListenAndServe(":8080", nil)
+	log.Printf("[+] Serving TCP 8080 port..")
 }
