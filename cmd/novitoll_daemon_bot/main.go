@@ -1,35 +1,36 @@
 package main
 
 import (
-	"net/http"
 	"os"
+	"log"
+	"net/http"
 	"io/ioutil"
 	"encoding/json"
 	
-	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/router"
+	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 )
 
-func applyConfig() *cfg.FeaturesConfig {
-	var features cfg.FeaturesConfig	
-	
-	if file, err := os.Open("config/features.json"); err != nil {
+func getFeaturesConfig() *cfg.FeaturesConfig {
+	var features cfg.FeaturesConfig		
+	fileJson, err := os.Open("config/features.json")
+	if err != nil {
 		panic(err)
 	}
-	defer file.close()
+	defer fileJson.Close()
 
-	featuresJsonBytes, _ := iotuil.ReadAll(file)
-
+	featuresJsonBytes, _ := ioutil.ReadAll(fileJson)
 	json.Unmarshal(featuresJsonBytes, &features)
-
 	return &features
 }
 
 func main() {
-	features := applyConfig()
-	handler := router.RouteHandler{&features}
+	features := getFeaturesConfig()
+	log.Printf("[+] Features config is loaded. Enabled features: - %t", features.UrlDuplication.Enabled)
+
+	handler := bot.RouteHandler{features}
 	handler.RegisterHandlers()
 
-	http.ListenAndServe(":8080", nil)
 	log.Printf("[+] Serving TCP 8080 port..")
+	http.ListenAndServe(":8080", nil)	
 }

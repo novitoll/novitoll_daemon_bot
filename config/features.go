@@ -1,13 +1,13 @@
 package config
 
 type FeaturesConfig struct {
-	urlDuplication 			configOptions
-	newcomerQuestionnare	configOptions
+	UrlDuplication 			ConfigOptions `json:"urlDuplication"`
+	NewcomerQuestionnare	ConfigOptions `json:"newcomerQuestionnare"`
 }
 
-type configOptions struct {
-    enabled 			bool
-    actionKick 			bool
-    actionBan 			bool
-    actionAdminNotify 	bool
+type ConfigOptions struct {
+    Enabled 			bool `json:"enabled"`
+    ActionKick 			bool `json:"actionKick"`
+    ActionBan 			bool `json:"actionBan"`
+    ActionAdminNotify 	bool `json:"actionAdminNotify"`
 }

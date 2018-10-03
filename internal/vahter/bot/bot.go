@@ -6,28 +6,31 @@ import (
 	"mvdan.cc/xurls"
 
 	redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
-	router "github.com/novitoll/novitoll_daemon_bot/internal/vahter/router"
 )
 
 const (
 	duplicateUrlExpiration = time.Duration(14 * 24 * 3600)  // 2 weeks
 )
 
-func (br *BotRequest) Process(rh *router.RouteHandler) {
-	log.Printf("Username: %s, Chat: %s, Message_Id: %d", br.Message.From.Username, br.Message.Chat.Username, br.Message.Message_Id)
+var redisMock map[string]string
 
-	var urls[] string
-	urls = xurls.Relaxed().FindAllString(br.Message.Text, -1)
+func (br *BotRequest) Process(rh *RouteHandler) {
+	log.Printf("Processing message from -- Username: %s, Chat: %s, Message_Id: %d", br.Message.From.Username, br.Message.Chat.Username, br.Message.Message_Id)
 
-	if !len(urls) {
-		chDuplicationURL := make(chan bool, 1) // buffered?
-		go br.CheckDuplicateURL(urls, chDuplicateURL)
-		<-chDuplicationURL  // do the action on true result of URL duplication
+	if rh.Features.UrlDuplication.Enabled {
+		urls := xurls.Relaxed.FindAllString(br.Message.Text, -1)
+
+		if len(urls) != 0 {
+			chDuplicationURL := make(chan bool) // buffered?
+			go br.CheckDuplicateURL(urls, chDuplicationURL)
+			<-chDuplicationURL  // do the action on true result of URL duplication
+		}
+
+	} else if rh.Features.NewcomerQuestionnare.Enabled {
+		chAdDetection := make(chan bool) // buffered?
+		go br.CheckForAd(chAdDetection)
+		<-chAdDetection // do the action on true result of Ad detection
 	}
-	
-	chAdDetection := make(chan bool, 1) // buffered?	
-	go br.CheckForAd(chAdDetection)
-	<-chAdDetection // do the action on true result of Ad detection
 
 	// select {
 
@@ -37,12 +40,8 @@ func (br *BotRequest) Process(rh *router.RouteHandler) {
 func (br *BotRequest) CheckDuplicateURL(urls []string, ch chan bool) {	
 	redisClient := redis.RedisClient()
 
-	pong, err := redisClient.Ping().Result()
-	log.Printf(pong, err)
-
 	for _, url := range urls {
 		val, err := redisClient.Get(url).Result()
-		log.Printf("Found! %s", val)
 		if err != nil {
 			panic(err)
 		}		
@@ -51,11 +50,11 @@ func (br *BotRequest) CheckDuplicateURL(urls []string, ch chan bool) {
 			log.Printf("Duplicate! %s", url)
 			ch <- true
 		} else {
-			err2 := redisClient.Set(url, br.Message.From, duplicateUrlExpiration).Err()
-			ch <- false
-			if err2 != nil {
+			if err2 := redisClient.Set(url, br.Message.From, duplicateUrlExpiration).Err();err2 != nil {
 				panic(err)
 			}
+			redisMock[url] = br.Message.From.Username
+			ch <- false
 		}
 	}
 }

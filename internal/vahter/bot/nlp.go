@@ -6,6 +6,9 @@ import (
 
 func (br *BotRequest) CheckForAd(ch chan bool) {
 	tokens := tokenizer(br.Message.Text)  // X features
+	if tokens != nil {
+		fmt.Printf("good")
+	}
 
 	ch <- true
 }
@@ -15,7 +18,8 @@ func (br *BotRequest) CheckForAd(ch chan bool) {
 // 3. remove stopwords
 // 4. return the list of tokens
 func tokenizer(text string) []string {
-
+	var tokens []string
+	return tokens
 }
 
 type TextClassifierModel struct {
@@ -28,17 +32,20 @@ type NaiveBayesClassifier struct {
 }
 
 type TextClassifier interface {
-	fit() TextClassifierModel
+	fit() *TextClassifierModel
 	predict() map[string]float32
 }
 
 // train the NB clf model
-func (clf *NaiveBayesClassifier) train() TextClassifierModel {
-
+func (clf *NaiveBayesClassifier) train() *TextClassifierModel {
+	var model TextClassifierModel
+	return &model
 }
 
 // naive bayes classification
 // returns the probability
 func (clf *NaiveBayesClassifier) predict() map[string]float32 {
+	var result map[string]float32
 
+	return result
 }
