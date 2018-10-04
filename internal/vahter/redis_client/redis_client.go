@@ -11,7 +11,11 @@ var (
 	port = "6379"
 )
 
-func RedisClient() *redis.Client {
+type RedisClient struct {
+	Conn *redis.Client
+}
+
+func (rc *RedisClient) Connect() {
 
 	if h, ok := os.LookupEnv("REDIS_HOST"); ok {
 		host = h
@@ -20,11 +24,9 @@ func RedisClient() *redis.Client {
 		port = p
 	}
 
-	client := redis.NewClient(&redis.Options{
+	rc.Conn = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", host, port),
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-
-	return client
 }

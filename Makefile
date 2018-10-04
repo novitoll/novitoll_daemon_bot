@@ -7,4 +7,11 @@ install:
 	go get -u mvdan.cc/xurls github.com/go-redis/redis
 
 build:
-	go build cmd/novitoll_daemon_bot/main.go
+	go build -o bot cmd/novitoll_daemon_bot/main.go
+
+run:
+	make build
+	./bot
+
+debug:
+	dlv debug --output bot cmd/novitoll_daemon_bot/main.go

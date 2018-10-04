@@ -1,5 +1,6 @@
 .idea
 **/.env
+bot
 
 vendor
-Gopkg.locl
+Gopkg.lock
