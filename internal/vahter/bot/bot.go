@@ -5,8 +5,8 @@ import (
 	"time"
 	"mvdan.cc/xurls"
 	"encoding/json"
-	"github.com/go-redis/redis"
 
+	"github.com/go-redis/redis"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 )
 
@@ -15,59 +15,81 @@ const (
 )
 
 func (br *BotRequest) Process(rh *RouteHandler) {
-	log.Printf("[.] Processing message from -- Username: %s, Chat: %s, Message_Id: %d", br.Message.From.Username, br.Message.Chat.Username, br.Message.Message_Id)
+	log.Printf("[.] Processing message from -- Username: %s, Chat: %s, Message_Id: %d", br.Message.From.Username, br.Message.Chat.Username, br.Message.MessageId)
 
-	if rh.Features.UrlDuplication.Enabled {
-		urls := xurls.Relaxed.FindAllString(br.Message.Text, -1)
+	chNewcomerDetection := make(chan bool) // buffered?
+	chDuplicationURL := make(chan bool) // buffered?
+	chAdDetection := make(chan bool) // buffered?
 
-		if len(urls) != 0 {
-			chDuplicationURL := make(chan bool) // buffered?
-			go br.CheckDuplicateURL(urls, chDuplicationURL)
-			<-chDuplicationURL  // do the action on true result of URL duplication
-		}
-
-	} else if rh.Features.NewcomerQuestionnare.Enabled {
-		chAdDetection := make(chan bool) // buffered?
-		go br.CheckForAd(chAdDetection)
-		<-chAdDetection // do the action on true result of Ad detection
+	if rh.Features.NewcomerQuestionnare.Enabled {
+		go br.CheckNewcomer(chNewcomerDetection)
 	}
 
-	// select {
+	if rh.Features.UrlDuplication.Enabled {
+		redisConn := redisClient.GetRedisConnection()
+		go br.CheckDuplicateURL(chDuplicationURL, redisConn)
+	}
 
-	// }
+	if rh.Features.AdDetection.Enabled {
+		go br.CheckForAd(chAdDetection)
+	}
+
+	// TODO: need to investigate/benchmark this carefully, buffered chan might be better, sync.Mutex?
+	for {
+		select {
+			case <-chNewcomerDetection:  // do the action on true result of Newcomer detection
+				go br.ActionOnNewcomer(rh)
+			case <-chDuplicationURL:  // do the action on true result of URL duplication
+				go br.ActionOnURLDuplicate(rh)
+			case <-chAdDetection: // do the action on true result of Ad detection
+				go br.ActionOnAdDetection(rh)
+			default:
+				br.CountStatistics(rh)
+		}
+	}
 }
 
-func getRedisConnection() *redis.Client {
-	rc := redisClient.RedisClient{nil}
-	rc.Connect()
-	return rc.Conn
-}
+func (br *BotRequest) CheckDuplicateURL(ch chan bool, redisConn *redis.Client) {
+	defer redisConn.Close()
 
-func (br *BotRequest) CheckDuplicateURL(urls []string, ch chan bool) {
-	for _, url := range urls {
-		log.Printf("[.] Checking URL - %s", url)
-		val, _ := getRedisConnection().Get(url).Result()
+	urls := xurls.Relaxed.FindAllString(br.Message.Text, -1)
+	if len(urls) == 0 {
+		ch <- false
+		return
+	}
 
-		log.Printf("[.] Got the result from Redis %v", val)
+	for i, url := range urls {
+		log.Printf("[.] Checking %d/%d URL - %s", i + 1, len(urls), url)
+		val, _ := redisConn.Get(url).Result()
 
 		if val != "" {
-			log.Printf("Duplicate! %s", url)
+			// var duplicateBrMsg BotRequest
+			// json.Unmarshal(val, &duplicateBrMsg)
+			// log.Printf("[!] This message contains the duplicate URL %s. \nFrom: %s, Date: %d, Chat: %s", url, duplicateBrMsg.From.Username, duplicateBrMsg.Date, duplicateBrMsg.Chat.Username)
+			log.Printf("[!] This message contains the duplicate URL %s", url)
 			ch <- true
+			return
 		} else {
-			fromDataBytes, err := json.Marshal(br.Message.From)
+			fromDataBytes, err := json.Marshal(br.Message)
 			if err != nil {
-				log.Fatalf("[-] Can not marshal Message.From BotRequest")
+				log.Fatalf("[-] Can not marshal BotRequest.Message from Redis") // should not be the case here
 				ch <- false
 				return
 			}
 
-			log.Printf("%t", url)
-
-			err2 := getRedisConnection().Set(url, fromDataBytes, duplicateUrlExpiration).Err()
+			err2 := redisConn.Set(url, fromDataBytes, duplicateUrlExpiration).Err()
 			if err2 != nil {
 				panic(err2)
 			}
 			ch <- false
 		}
+	}
+}
+
+func (br *BotRequest) CheckNewcomer(ch chan bool) {
+	// put the newcomer ID to the Redis for 48h expiration
+	// before expiration notify admins that newcomers have not said a word
+	if br.Message.NewComer.Username != "" {
+			
 	}
 }

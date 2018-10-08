@@ -1,8 +1,15 @@
 package config
 
 type FeaturesConfig struct {
+	NotificationTarget		TargetOptions `json:"notificationTarget"`
 	UrlDuplication 			ConfigOptions `json:"urlDuplication"`
 	NewcomerQuestionnare	ConfigOptions `json:"newcomerQuestionnare"`
+	AdDetection				ConfigOptions `json:"adDetection"`
+}
+
+type TargetOptions struct {
+	Admins 		[]string `json:"admins"`
+	Token		string `json:"token"`
 }
 
 type ConfigOptions struct {

@@ -4,3 +4,5 @@ bot
 
 vendor
 Gopkg.lock
+coverage.out
+coverage.html

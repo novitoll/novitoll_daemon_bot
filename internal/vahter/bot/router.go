@@ -13,15 +13,12 @@ type RouteHandler struct {
 }
 
 func (rh *RouteHandler) RegisterHandlers() {
-	http.HandleFunc("/check", rh.CheckHandlerFunc)
+	http.HandleFunc("/check", rh.CheckMessageHandlerFunc)
 
 	log.Printf("[+] Handlers for HTTP end-points are registered")
 }
 
-/*
-	Handlers
-*/
-func (rh *RouteHandler) CheckHandlerFunc(w http.ResponseWriter, r *http.Request) {
+func (rh *RouteHandler) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		msg := &RouteError{w, 400, nil, "Please send a request body"}
 		log.Fatalf(msg.Error())

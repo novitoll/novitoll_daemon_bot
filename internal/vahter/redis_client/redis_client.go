@@ -3,7 +3,12 @@ package redis_client
 import (
 	"os"
 	"fmt"
+	"runtime"
 	"github.com/go-redis/redis"
+)
+
+const (
+	REDIS_MAX_ACTIVE_CONNECTIONS = 1000
 )
 
 var (
@@ -11,22 +16,22 @@ var (
 	port = "6379"
 )
 
-type RedisClient struct {
-	Conn *redis.Client
-}
-
-func (rc *RedisClient) Connect() {
-
+func init() {
 	if h, ok := os.LookupEnv("REDIS_HOST"); ok {
 		host = h
 	}
 	if p, ok := os.LookupEnv("REDIS_PORT"); ok {
 		port = p
 	}
+}
 
-	rc.Conn = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", host, port),
-		Password: "", // no password set
-		DB:       0,  // use default DB
+func GetRedisConnection() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:		fmt.Sprintf("%s:%s", host, port),
+		Password:	"", // no password set
+		DB:			0,  // use default DB
+		MaxRetries:	3,
+		PoolSize:	runtime.NumCPU() * 10, // TODO: need to calculate more carefully with ulimit and need to have a Pool of connections
 	})
+	return client
 }

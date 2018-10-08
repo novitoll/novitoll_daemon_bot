@@ -1,4 +1,8 @@
 {
+  "notificationTarget": {
+    "token": "123",
+    "admins": ["novitoll"]
+  },
   "urlDuplication": {
     "enabled": true,
     "actionKick": false,
@@ -6,6 +10,12 @@
     "actionAdminNotify": true
   },
   "newcomerQuestionnare": {
+    "enabled": true,
+    "actionKick": false,
+    "actionBan": false,
+    "actionAdminNotify": true
+  },
+  "adDetection": {
     "enabled": true,
     "actionKick": false,
     "actionBan": false,
