@@ -3,6 +3,14 @@
 
 .. contents::
 
+Requirements
+-------
+
+```
+$ go version
+go version go1.11.1 linux/amd64
+```
+
 Features
 -------
 
@@ -16,13 +24,17 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 
 Make commands
 -------
-* `make configure` -- configure `dep` GoLang package
-* `make install` -- dep installs
+* `make configure` -- configure `dep` GoLang package and install deps
 * `make build` -- compile Go src to the "$PWD/bot" binary
-* `make run` -- compile and run
+* `make run` -- compile and run a standalone Go binary
+* `make docker-compose` -- run docker-compose that brings up 1 redis & 1 vahter-bot containers
 * `make test` -- run unit tests
 * `make debug` -- compile and run `delve` debugger
 
+TODO
+-------
+* Replace hostnames (currently localhost / mock containers are used)
+
 License
-------
+-------
 GNU GPL 2.0

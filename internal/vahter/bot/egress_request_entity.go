@@ -17,7 +17,7 @@ package bot
 var (
 	GET = "GET"
 	POST = "POST"
-	TELEGRAM_URL = "http://localhost:8081/%s"
+	TELEGRAM_URL = "http://telegrammock:8081/%s"
 	ParseModeMarkdown = "Markdown"
 	ParseModeHTML = "HTML"
 )

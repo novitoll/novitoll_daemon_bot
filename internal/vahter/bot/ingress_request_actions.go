@@ -37,12 +37,18 @@ func (br *BotRequest) Process(rh *RouteHandler) {
 	// TODO: need to investigate/benchmark this carefully, buffered chan might be better, sync.Mutex?
 	for {
 		select {
-			case <-chNewcomerDetection:  // do the action on true result of Newcomer detection
-				go br.ActionOnNewcomer(rh)
-			case <-chDuplicationURL:  // do the action on true result of URL duplication
-				go br.ActionOnURLDuplicate(rh)
-			case <-chAdDetection: // do the action on true result of Ad detection
-				go br.ActionOnAdDetection(rh)
+			case isNewcomer := <-chNewcomerDetection:  // do the action on true result of Newcomer detection
+				if isNewcomer {
+					go br.ActionOnNewcomer(rh)
+				}
+			case isDuplicateURL := <-chDuplicationURL:  // do the action on true result of URL duplication
+				if isDuplicateURL {
+					go br.ActionOnURLDuplicate(rh)
+				}
+			case isAd := <-chAdDetection: // do the action on true result of Ad detection
+				if isAd {
+					go br.ActionOnAdDetection(rh)
+				}
 			default:
 				br.CountStatistics(rh)
 		}

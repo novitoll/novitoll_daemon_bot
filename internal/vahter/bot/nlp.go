@@ -1,3 +1,5 @@
+// TODO: Move this to the another package
+
 package bot
 
 import (

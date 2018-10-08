@@ -5,8 +5,11 @@ services:
     container_name: redis
     image: redis:5.0-rc
   vahter:
-    build: .
-    image: vahter-bot:0.0.2
+    build:
+      context: ../
+      args:
+        PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
+    image: vahter-bot:0.0.3
     container_name: vahter-bot
     environment:
       - REDIS_HOST=redis
@@ -15,5 +18,11 @@ services:
       - "8080:8080"
     links:
       - redis
+      # - telegrammock
     depends_on:
       - redis
+  # telegrammock:
+  #   build:
+  #     context: ../../telegram-mock
+  #   image: telegrammock
+  #   container_name: telegrammock
