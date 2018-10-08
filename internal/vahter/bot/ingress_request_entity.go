@@ -35,8 +35,8 @@ package bot
 */
 
 type BotRequest struct {
-	Update_Id uint32 `json:"update_id"`
-	Message BotRequestMessage
+	Update_Id	uint32 `json:"update_id"`
+	Message		BotRequestMessage
 }
 
 type BotRequestMessage struct {
@@ -45,16 +45,16 @@ type BotRequestMessage struct {
 	Entities	[]MessageEntity
 	Date		uint32
 	MessageId	uint32
-	Chat BotRequestChat
-	NewComer 	User `json:"new_chat_members"`
+	Chat		BotRequestChat
+	NewComer	User `json:"new_chat_members"`
 }
 
 // https://core.telegram.org/bots/api#messageentity
 type MessageEntity struct {
-	Type 			string
-	Length 			int
-	Url 			string
-	MentionedUser 	User `json:"user"`
+	Type		string
+	Length		int
+	Url		string
+	MentionedUser	User `json:"user"`
 }
 
 // https://core.telegram.org/bots/api#user

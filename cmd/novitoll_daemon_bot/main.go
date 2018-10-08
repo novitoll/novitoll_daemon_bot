@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
-	
+
 	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 )
@@ -34,7 +34,7 @@ func printReflectValues(v reflect.Value) {
 	for i := 0; i < s.NumField(); i++ {
 	    f := s.Field(i)
 	    fmt.Printf("-- %s %s = %v\n", typeOfT.Field(i).Name, f.Type(), f.Interface())
-		
+
 		if f.Kind().String() == "struct" {
 			x1 := reflect.ValueOf(f.Interface())
 			printReflectValues(x1)

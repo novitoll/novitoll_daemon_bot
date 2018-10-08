@@ -36,7 +36,7 @@ func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotRequest) {
 	var features cfg.FeaturesConfig
 	err := json.Unmarshal([]byte(featuresConfig), &features)
 	assert.Nil(t, err, "[-] Should be valid features config JSON to decode")
-	
+
 	admins := []string{"novitoll"}
 	assert.Equal(t, features.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
 
@@ -72,7 +72,7 @@ func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotRequest) {
 	var br BotRequest
 	err2 := json.Unmarshal([]byte(botRequest), &br)
 	assert.Nil(t, err2, "[-] Should be valid BotRequest JSON to decode")
-	
+
 	assert.Equal(t, br.Message.From.Username, "novitoll", "[-] Should be equal decoded BotRequest struct Message.From.Username field")
 
 	return &features, &br
@@ -80,7 +80,7 @@ func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotRequest) {
 
 func TestURLDuplication(t *testing.T) {
 	pFeatures, pBotRequest := configureStructs(t)
-	
+
 	rh := RouteHandler{pFeatures}
 	pBotRequest.Process(&rh)
 

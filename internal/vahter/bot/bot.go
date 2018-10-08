@@ -90,6 +90,6 @@ func (br *BotRequest) CheckNewcomer(ch chan bool) {
 	// put the newcomer ID to the Redis for 48h expiration
 	// before expiration notify admins that newcomers have not said a word
 	if br.Message.NewComer.Username != "" {
-			
+
 	}
 }
