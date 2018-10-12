@@ -1,6 +1,6 @@
 .idea
 **/.env
-./bot
+bot.bin
 
 vendor
 Gopkg.lock

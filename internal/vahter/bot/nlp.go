@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func (br *BotRequest) CheckForAd(ch chan bool) {
+func (br *BotIngressRequest) CheckForAd(ch chan bool) {
 	tokens := tokenizer(br.Message.Text)  // X features
 	if tokens != nil {
 		fmt.Printf("good")

@@ -18,11 +18,11 @@ services:
       - "8080:8080"
     links:
       - redis
-      # - telegrammock
+      - telegrammock
     depends_on:
       - redis
-  # telegrammock:
-  #   build:
-  #     context: ../../telegram-mock
-  #   image: telegrammock
-  #   container_name: telegrammock
+  telegrammock:
+    build:
+      context: ../../telegram-mock
+    image: telegrammock
+    container_name: telegrammock

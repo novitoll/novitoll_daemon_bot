@@ -69,11 +69,11 @@ func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotRequest) {
 		"update_id": 776799951
 		}`
 
-	var br BotRequest
+	var br BotIngressRequest
 	err2 := json.Unmarshal([]byte(botRequest), &br)
-	assert.Nil(t, err2, "[-] Should be valid BotRequest JSON to decode")
+	assert.Nil(t, err2, "[-] Should be valid BotIngressRequest JSON to decode")
 
-	assert.Equal(t, br.Message.From.Username, "novitoll", "[-] Should be equal decoded BotRequest struct Message.From.Username field")
+	assert.Equal(t, br.Message.From.Username, "novitoll", "[-] Should be equal decoded BotIngressRequest struct Message.From.Username field")
 
 	return &features, &br
 }

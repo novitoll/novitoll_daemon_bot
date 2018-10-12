@@ -23,7 +23,7 @@ var (
 )
 
 // https://core.telegram.org/bots/api#sendmessage
-type TelegramRequestBody struct {
+type BotEgressRequest struct {
 	ChatId			uint32 `json:"chat_id"`
 	Text			string `json:"text"`
 	ParseMode		string `json:"parse_mode"`
