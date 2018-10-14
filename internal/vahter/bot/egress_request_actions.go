@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"log"
 	"bytes"
 	"time"
 	"net"
@@ -11,7 +12,7 @@ import (
 
 func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
 	jsonValue, _ := json.Marshal(reqBody)
-	url := fmt.Sprintf(TELEGRAM_URL, rh.Features.NotificationTarget.Token)
+	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN)
 	req, err := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
 
 	req.Header.Set("Content-Type", "application/json")
@@ -29,7 +30,7 @@ func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		log.Fatalf("[-] Can not send message to Telegram\n", err)
 	}
 	defer resp.Body.Close()
 }

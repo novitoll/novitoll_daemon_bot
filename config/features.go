@@ -9,7 +9,6 @@ type FeaturesConfig struct {
 
 type TargetOptions struct {
 	Admins	[]string `json:"admins"`
-	Token	string `json:"token"`
 }
 
 type ConfigOptions struct {

@@ -1,6 +1,5 @@
 {
   "notificationTarget": {
-    "token": "123",
     "admins": ["novitoll"]
   },
   "urlDuplication": {

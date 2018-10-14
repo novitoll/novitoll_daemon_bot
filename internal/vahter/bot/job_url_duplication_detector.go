@@ -62,7 +62,8 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 			err2 := redisConn.Set(url, fromDataBytes, duplicateUrlExpiration).Err()
 			if err2 != nil {
-				panic(err2)
+				log.Fatalf("[-] Can not put the message to Redis\n", err2)
+				// TODO: notify admin
 			}
 		}
 	}

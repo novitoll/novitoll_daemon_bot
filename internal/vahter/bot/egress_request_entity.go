@@ -22,6 +22,7 @@ var (
 	GET = "GET"
 	POST = "POST"
 	TELEGRAM_URL = "https://api.telegram.org/bot%s/sendMessage"
+	TELEGRAM_TOKEN = "123"
 	ParseModeMarkdown = "Markdown"
 	ParseModeHTML = "HTML"
 )
@@ -29,6 +30,9 @@ var (
 func init() {
 	if u, ok := os.LookupEnv("TELEGRAM_URL"); ok {
 		TELEGRAM_URL = u
+	}
+	if t, ok := os.LookupEnv("TELEGRAM_TOKEN"); ok {
+		TELEGRAM_TOKEN = t
 	}
 }
 

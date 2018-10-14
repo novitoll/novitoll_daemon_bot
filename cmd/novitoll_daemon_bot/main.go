@@ -20,7 +20,7 @@ var (
 func init() {
 	fileJson, err := os.Open("config/features.json")
 	if err != nil {
-		panic(err)
+		log.Fatalf("[-] Can not open features JSON\n", err)
 	}
 	defer fileJson.Close()
 
