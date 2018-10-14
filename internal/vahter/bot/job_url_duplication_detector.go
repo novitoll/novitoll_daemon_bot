@@ -21,7 +21,7 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
 	d, _ := time.ParseDuration(t.String())
 
-	botReplyMessage := "[!] Your message contains duplicate URL. Please dont flood.\n"
+	botReplyMessage := "0!0 Your message contains duplicate URL. Please dont flood.\n"
 	botReplyMessage += fmt.Sprintf("Last time it was posted from @%s %s ago.", duplicatedMsg.From.Username, timeago.FromDuration(d))
 
 	botEgressReq := &BotEgressRequest{
@@ -30,7 +30,8 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
 		ParseMode:				ParseModeMarkdown,
 		DisableWebPagePreview:	true,
 		DisableNotification:	true,
-		ReplyToMessageId:		j.br.Message.MessageId}
+		ReplyToMessageId:		j.br.Message.MessageId,
+		ReplyMarkup:			&BotForceReply{ForceReply: true, Selective: true}}
 
 	botEgressReq.EgressSendToTelegram(j.rh)
 }

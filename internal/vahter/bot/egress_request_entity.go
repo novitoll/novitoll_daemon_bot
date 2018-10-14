@@ -40,4 +40,11 @@ type BotEgressRequest struct {
 	DisableWebPagePreview	bool `json:"disable_web_page_preview"`
 	DisableNotification	bool `json:"disable_notification"`
 	ReplyToMessageId	uint32 `json:"reply_to_message_id"`
+	ReplyMarkup 		*BotForceReply
+}
+
+// https://core.telegram.org/bots/api#forcereply
+type BotForceReply struct {
+	ForceReply 	bool `json:"force_reply"`
+	Selective 	bool `json:"selective"`
 }
