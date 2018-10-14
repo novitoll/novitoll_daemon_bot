@@ -38,12 +38,12 @@ func init() {
 
 // https://core.telegram.org/bots/api#sendmessage
 type BotEgressRequest struct {
-	ChatId			uint32 `json:"chat_id"`
+	ChatId			int `json:"chat_id"`
 	Text			string `json:"text"`
 	ParseMode		string `json:"parse_mode"`
 	DisableWebPagePreview	bool `json:"disable_web_page_preview"`
 	DisableNotification	bool `json:"disable_notification"`
-	ReplyToMessageId	uint32 `json:"reply_to_message_id"`
+	ReplyToMessageId	int `json:"reply_to_message_id"`
 	ReplyMarkup 		*BotForceReply
 }
 

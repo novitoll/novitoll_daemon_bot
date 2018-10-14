@@ -2,6 +2,7 @@ package bot
 
 import (
 	"log"
+	"bytes"
 	"net/http"
 	"encoding/json"
 
@@ -24,6 +25,10 @@ func (rh *RouteHandler) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.R
 		log.Fatalf(msg.Error())
 		return
 	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r.Body)
+	fmt.Println(buf.String())
 
 	var br BotIngressRequest
 	err := json.NewDecoder(r.Body).Decode(&br)

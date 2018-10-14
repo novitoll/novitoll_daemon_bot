@@ -32,10 +32,53 @@ package bot
 	  },
 	  "update_id": 776799951
 	}
+
+	Example: 2
+	{
+		"update_id": 53205695,
+		"message": {
+			"message_id": 105,
+			"from": {
+			  "id": 345019684,
+			  "is_bot": false,
+			  "first_name": "novitoll",
+			  "username": "novitoll",
+			  "language_code": "en-US"
+			},
+			"chat": {
+			  "id": -253761934,
+			  "title": "test_novitoll_daemon_bot",
+			  "type": "group",
+			  "all_members_are_administrators": true
+			},
+			"date": 1539514928,
+			"new_chat_participant": {
+			  "id": 553713145,
+			  "is_bot": true,
+			  "first_name": "novitoll_daemon_bot",
+			  "username": "novitoll_daemon_bot"
+			},
+			"new_chat_member": {
+			  "id": 553713145,
+			  "is_bot": true,
+			  "first_name": "novitoll_daemon_bot",
+			  "username": "novitoll_daemon_bot"
+			},
+			"new_chat_members": [
+			  {
+			    "id": 553713145,
+			    "is_bot": true,
+			    "first_name": "novitoll_daemon_bot",
+			    "username": "novitoll_daemon_bot"
+			  }
+			]
+		}
+	}
+
 */
 
 type BotIngressRequest struct {
-	Update_Id	uint32 `json:"update_id"`
+	Update_Id	int `json:"update_id"`
 	Message		BotIngressRequestMessage
 }
 
@@ -44,9 +87,19 @@ type BotIngressRequestMessage struct {
 	Text		string `json:"text"`
 	Entities	[]Message
 	Date		int64 `json:"date"` // time.Unix()
-	MessageId	uint32 `json:"message_id"`
+	MessageId	int `json:"message_id"`
 	Chat		Chat `json:"chat"`
-	NewComer	User `json:"new_chat_members"`
+	NewChatMembers	[]User `json:"new_chat_members"`
+	NewChatMember User `json:"new_chat_member"`
+	NewChatParticipant User `json:"new_chat_participant"`
+}
+
+// https://core.telegram.org/bots/api#user
+type User struct {
+	Username	string	`json:"username"`
+	First_Name	string	`json:"first_name"`
+	IsBot		bool	`json:"is_bot"`
+	LanguageCode	string	`json:"language_code"`
 }
 
 // https://core.telegram.org/bots/api#messageentity
@@ -57,19 +110,12 @@ type Message struct {
 	MentionedUser	User `json:"user"`
 }
 
-// https://core.telegram.org/bots/api#user
-type User struct {
-	Username	string	`json:"username"`
-	First_Name	string	`json:"first_name"`
-	Is_Bot		bool	`json:"is_bot"`
-	Language_Code	string	`json:"language_code"`
-}
-
 type Chat struct {
 	Username	string `json:"username"`
 	First_Name	string `json:"first_name"`
 	Type		string `json:"type"`
-	Id		uint32 `json:"id"`
+	Id		int `json:"id"`
+	Title 	string `json:"title"`
 }
 
 var WHITELIST_URLS = []string{
