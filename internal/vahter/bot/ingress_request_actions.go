@@ -10,21 +10,22 @@ var (
 	completedProcessJobCount = 0
 )
 
-type ProcessJobFn func(br *BotIngressRequest, rh *RouteHandler) (interface{}, error)
+type ProcessJobFn func(job *Job) (interface{}, error)
 
 // br - BotIngressRequest (HTTP POST request body from Telegram)
 // rh - RouteHander, struct which includes the bot's configuration (Telegram token) etc.
-func FanOutProcessJobs(br *BotIngressRequest, rh *RouteHandler, jobs []ProcessJobFn) ([]interface{}, []error) {
+
+func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error) {
 	var wg sync.WaitGroup
-	errJob := make(chan error, len(jobs))
-	resultJob := make(chan interface{}, len(jobs))
+	errJob := make(chan error, len(jobsFn))
+	resultJob := make(chan interface{}, len(jobsFn))
 
-	wg.Add(len(jobs))
+	wg.Add(len(jobsFn))
 
-	for _, v := range jobs {
-		go func(job ProcessJobFn) {
+	for _, v := range jobsFn {
+		go func(jobFn ProcessJobFn) {
 			defer wg.Done()
-			result, err := job(br, rh)
+			result, err := jobFn(job) // here could not find the way to call job.jobFn(), so have to pass job struct as the parameter
 			if err != nil {
 				errJob <- err
 			} else {
@@ -35,10 +36,10 @@ func FanOutProcessJobs(br *BotIngressRequest, rh *RouteHandler, jobs []ProcessJo
 
 	wg.Wait()
 
-	errJobs := make([]error, 0, len(jobs))
-	resultJobs := make([]interface{}, 0, len(jobs))
+	errJobs := make([]error, 0, len(jobsFn))
+	resultJobs := make([]interface{}, 0, len(jobsFn))
 
-	for range jobs {
+	for range jobsFn {
 		select {
 		case r := <-resultJob:
 			resultJobs = append(resultJobs, r)
@@ -52,12 +53,14 @@ func FanOutProcessJobs(br *BotIngressRequest, rh *RouteHandler, jobs []ProcessJo
 func (br *BotIngressRequest) Process(rh *RouteHandler) {
 	log.Printf("[.] Processing message from -- Username: %s, Chat: %s, Message_Id: %d", br.Message.From.Username, br.Message.Chat.Username, br.Message.MessageId)
 
-	results, errors := FanOutProcessJobs(br, rh, []ProcessJobFn{
+	job := &Job{br, rh}
+
+	results, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		JobNewcomerDetector,
 		JobUrlDuplicationDetector,
 	})
 
 	completedProcessJobCount += 1
 
-	log.Printf("[+] Process-%d: Completed. Success/Failed=%d/%d", completedProcessJobCount, len(results), len(errors))
+	log.Printf("[+] %d. Process: Completed. Success/Failed=%d/%d", completedProcessJobCount, len(results), len(errors))
 }

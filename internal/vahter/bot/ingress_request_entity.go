@@ -43,7 +43,7 @@ type BotIngressRequestMessage struct {
 	From 		User
 	Text		string
 	Entities	[]Message
-	Date		uint32
+	Date		int64  // time.Unix()
 	MessageId	uint32
 	Chat		Chat
 	NewComer	User `json:"new_chat_members"`
@@ -70,4 +70,10 @@ type Chat struct {
 	First_Name	string `json:"first_name"`
 	Type		string
 	Id		uint32
+}
+
+var WHITELIST_URLS = []string{
+	"google.com",
+	"habr.com",
+	"",
 }

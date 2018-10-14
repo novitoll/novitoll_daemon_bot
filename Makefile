@@ -4,6 +4,7 @@ configure:
 	dep ensure
 	go get -u mvdan.cc/xurls github.com/go-redis/redis
 	go get -u github.com/stretchr/testify/assert
+	go get -u github.com/justincampbell/timeago
 
 build:
 	go build -o bot.bin cmd/novitoll_daemon_bot/main.go

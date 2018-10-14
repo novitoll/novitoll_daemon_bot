@@ -21,6 +21,8 @@ services:
       - telegrammock
     depends_on:
       - redis
+    volumes:
+      - "../:/opt/src/github.com/novitoll/novitoll_daemon_bot"
   telegrammock:
     build:
       context: ../../telegram-mock
