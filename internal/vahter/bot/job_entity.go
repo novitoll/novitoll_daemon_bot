@@ -5,4 +5,4 @@ type Job struct {
 	rh *RouteHandler
 }
 
-var NewComers map[int]interface{}
+var NewComers = make(map[int]interface{})

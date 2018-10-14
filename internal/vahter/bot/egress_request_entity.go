@@ -21,7 +21,7 @@ import (
 var (
 	GET = "GET"
 	POST = "POST"
-	TELEGRAM_URL = "https://api.telegram.org/bot%s/sendMessage"
+	TELEGRAM_URL = "https://api.telegram.org/bot%s/%s"
 	TELEGRAM_TOKEN = "123"
 	ParseModeMarkdown = "Markdown"
 	ParseModeHTML = "HTML"
@@ -51,4 +51,11 @@ type BotEgressRequest struct {
 type BotForceReply struct {
 	ForceReply 	bool `json:"force_reply"`
 	Selective 	bool `json:"selective"`
+}
+
+// https://core.telegram.org/bots/api#kickchatmember
+type BotEgressKickChatMember struct {
+	ChatId int `json:"chat_id"`
+	UserId int `json:"user_id"`
+	UntilDate int64 `json:"until_date"`
 }

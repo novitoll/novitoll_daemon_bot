@@ -47,6 +47,10 @@ var (
 		},
 		"update_id": 776799951
 		}`
+
+	botRequestMemberLeftChat = `
+	{"update_id":53205716, "message":{"message_id":25,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-1001276148791,"title":"test_novitoll_daemon_bot","type":"supergroup"},"date":1539530333,"left_chat_participant":{"id":574825208,"is_bot":false,"first_name":"N2","username":"Novitoll_2"},"left_chat_member":{"id":574825208,"is_bot":false,"first_name":"N2","username":"Novitoll_2"}}}
+	`
 )
 
 func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotIngressRequest) {

@@ -10,13 +10,7 @@ import (
 	"encoding/json"
 )
 
-func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
-	jsonValue, _ := json.Marshal(reqBody)
-	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN)
-	req, err := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
-
-	req.Header.Set("Content-Type", "application/json")
-
+func sendHTTP(req *http.Request) bool {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
 		Timeout: 5 * time.Second,
@@ -29,8 +23,26 @@ func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
 		Transport: netTransport,	
 	}
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
 	if err != nil {
 		log.Fatalln("[-] Can not send message to Telegram\n", err)
-	}
-	defer resp.Body.Close()
+		return false
+	}	
+	return true
+}
+
+func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
+	jsonValue, _ := json.Marshal(reqBody)
+	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "sendMessage")
+	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+	sendHTTP(req)
+}
+
+func (reqBody *BotEgressKickChatMember) EgressKickChatMember(rh *RouteHandler) bool {
+	jsonValue, _ := json.Marshal(reqBody)
+	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "kickChatMember")
+	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+	return sendHTTP(req)
 }

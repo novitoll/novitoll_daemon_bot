@@ -9,6 +9,7 @@ import (
 const (
 	NEWCOMER_TIME_TO_RESPOND_BOT = 60
 	NEWCOMER_RESPONSE = "pong"
+	NEWCOMER_KICK_TIME = 60
 )
 
 var (
@@ -16,12 +17,43 @@ var (
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
-func (j *Job) actionOnNewMember() {
+func JobNewChatMemberDetector(j *Job) (interface{}, error) {
+	if j.br.Message.NewChatMember.Username == "" {
+		return nil, nil
+	}
+
+	go j.actionOnNewMemberJoin()
+
+	select {
+	case dootId := <-chNewcomer:
+		log.Printf("[+] Newcomer %d has been authenticated", dootId)
+		delete(NewComers, dootId)
+	case <-time.After(NEWCOMER_TIME_TO_RESPOND_BOT * time.Second):
+		if kicked := j.actionOnNewMemberKick(); kicked {
+			log.Printf("[!] Newcomer %s has been kicked", j.br.Message.NewChatMember.Username)
+			delete(NewComers, j.br.Message.NewChatMember.Id)
+		}
+	default:
+
+	}
+
+	return nil, nil
+}
+
+func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
+	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
+	if _, ok := NewComers[j.br.Message.From.Id]; ok && strings.ToLower(j.br.Message.Text) == NEWCOMER_RESPONSE {
+		chNewcomer <-j.br.Message.From.Id
+	}
+	return nil, nil
+}
+
+func (j *Job) actionOnNewMemberJoin() {
 	log.Printf("[+] New member has been detected")
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that bastard and delete the record from this map
-	NewComers[j.br.Message.From.Id] = time.Now()	
+	NewComers[j.br.Message.NewChatMember.Id] = time.Now()
 
 	botEgressReq := &BotEgressRequest{
 		ChatId:					j.br.Message.Chat.Id,
@@ -35,34 +67,16 @@ func (j *Job) actionOnNewMember() {
 	botEgressReq.EgressSendToTelegram(j.rh)
 }
 
-func JobNewChatMemberDetector(j *Job) (interface{}, error) {
-	if j.br.Message.NewChatMember.Username == "" {
-		return nil, nil
+func (j *Job) actionOnNewMemberKick() bool {
+	log.Printf("[+] Kicking a newcomer")
+
+	t := time.Unix(j.br.Message.Date, 0)
+
+	botEgressReq := &BotEgressKickChatMember{
+		ChatId: j.br.Message.Chat.Id,
+		UserId: j.br.Message.NewChatMember.Id,
+		UntilDate: t.Add(NEWCOMER_KICK_TIME * time.Second).Unix(),
 	}
 
-	log.Println("[+] 11111111111111111")
-
-	go j.actionOnNewMember()
-
-	log.Println("[+] 22222222222222222")
-
-	select {
-	case dootId := <-chNewcomer:
-		log.Printf("[+] Newcomer %d has been authenticated", dootId)
-		delete(NewComers, j.br.Message.From.Id)
-	case <-time.After(10 * time.Second):
-		log.Printf("[!] Newcomer %s has been kicked", j.br.Message.NewChatMember.Username)
-	}
-
-	log.Println("[+] 33333333333")
-
-	return nil, nil
-}
-
-// will check every message if its from a newcomer to whitelist the doot
-func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
-	if _, ok := NewComers[j.br.Message.From.Id]; ok && strings.ToLower(j.br.Message.Text) == NEWCOMER_RESPONSE {
-		chNewcomer <-j.br.Message.From.Id
-	}
-	return nil, nil
+	return botEgressReq.EgressKickChatMember(j.rh)
 }
