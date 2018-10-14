@@ -1,5 +1,9 @@
 package bot
 
+import (
+	"os"
+)
+
 /*
 	Telegram Outbound (sendMessage command) request body
 
@@ -17,10 +21,16 @@ package bot
 var (
 	GET = "GET"
 	POST = "POST"
-	TELEGRAM_URL = "http://telegrammock:8081/%s"
+	TELEGRAM_URL = "https://api.telegram.org/bot%s"
 	ParseModeMarkdown = "Markdown"
 	ParseModeHTML = "HTML"
 )
+
+func init() {
+	if u, ok := os.LookupEnv("TELEGRAM_URL"); ok {
+		TELEGRAM_URL = u
+	}
+}
 
 // https://core.telegram.org/bots/api#sendmessage
 type BotEgressRequest struct {

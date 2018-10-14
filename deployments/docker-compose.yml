@@ -14,6 +14,7 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - TELEGRAM_URL=http://telegrammock:8081/%s
     ports:
       - "8080:8080"
     links:
