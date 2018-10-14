@@ -30,7 +30,7 @@ func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("[-] Can not send message to Telegram\n", err)
+		log.Fatalln("[-] Can not send message to Telegram\n", err)
 	}
 	defer resp.Body.Close()
 }

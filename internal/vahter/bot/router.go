@@ -22,19 +22,19 @@ func (rh *RouteHandler) RegisterHandlers() {
 func (rh *RouteHandler) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		msg := &RouteError{w, 400, nil, "Please send a request body"}
-		log.Fatalf(msg.Error())
+		log.Fatalln(msg.Error())
 		return
 	}
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
-	fmt.Println(buf.String())
+	log.Println(buf.String())
 
 	var br BotIngressRequest
-	err := json.NewDecoder(r.Body).Decode(&br)
+	err := json.Unmarshal([]byte(buf.String()), &br)
 	if err != nil {
 		msg := &RouteError{w, 400, nil, "Please send a valid JSON"}
-		log.Fatalf(msg.Error())
+		log.Fatalln(msg.Error())
 		return
 	}
 
