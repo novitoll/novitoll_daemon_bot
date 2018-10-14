@@ -11,8 +11,8 @@ import (
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 )
 
-var (
-	duplicateUrlExpiration = 14*24*3600*time.Second  // 2 weeks
+const (
+	DUPLICATE_URL_EXPIRATION = 1209600  // 2 weeks in seconds
 )
 
 func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
@@ -60,7 +60,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 				log.Fatalf("[-] Can not marshal BotIngressRequest.Message from Redis") // should not be the case here
 			}
 
-			err2 := redisConn.Set(url, fromDataBytes, duplicateUrlExpiration).Err()
+			err2 := redisConn.Set(url, fromDataBytes, DUPLICATE_URL_EXPIRATION * time.Second).Err()
 			if err2 != nil {
 				log.Fatalln("[-] Can not put the message to Redis\n", err2)
 				// TODO: notify admin

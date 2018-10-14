@@ -2,6 +2,7 @@ package bot
 
 import (
 	"testing"
+	"time"
 	"encoding/json"
 
 	"github.com/stretchr/testify/assert"
@@ -9,42 +10,16 @@ import (
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 )
 
-func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotIngressRequest) {
-	var featuresConfig, botRequest string
+var (
+	botRequestMessageMigration = `
+	{"update_id":53205698, "message":{"message_id":108,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515199,"migrate_to_chat_id":-1001276148791}}
+	`
+	
+	botRequestNewComer = `
+	{"update_id":53205697, "message":{"message_id":107,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515176,"new_chat_participant":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_member":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_members":[{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"}]}}
+	`
 
-	featuresConfig = `
-{
-  "notificationTarget": {
-    "admins": ["novitoll"]
-  },
-  "urlDuplication": {
-    "enabled": true,
-    "actionKick": false,
-    "actionBan": false,
-    "actionAdminNotify": true
-  },
-  "newcomerQuestionnare": {
-    "enabled": true,
-    "actionKick": false,
-    "actionBan": false,
-    "actionAdminNotify": true
-  },
-  "adDetection": {
-    "enabled": true,
-    "actionKick": false,
-    "actionBan": false,
-    "actionAdminNotify": true
-  }
-}`
-
-	var features cfg.FeaturesConfig
-	err := json.Unmarshal([]byte(featuresConfig), &features)
-	assert.Nil(t, err, "[-] Should be valid features config JSON to decode")
-
-	admins := []string{"novitoll"}
-	assert.Equal(t, features.NotificationTarget.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
-
-	botRequest = `
+	botRequestPlainText = `
 		{"message": {
 		"from": {
 		  "username": "novitoll",
@@ -72,9 +47,45 @@ func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotIngressRequest) {
 		},
 		"update_id": 776799951
 		}`
+)
+
+func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotIngressRequest) {
+	var featuresConfig string
+
+	featuresConfig = `
+	{
+	  "notificationTarget": {
+	    "admins": ["novitoll"]
+	  },
+	  "urlDuplication": {
+	    "enabled": true,
+	    "actionKick": false,
+	    "actionBan": false,
+	    "actionAdminNotify": true
+	  },
+	  "newcomerQuestionnare": {
+	    "enabled": true,
+	    "actionKick": false,
+	    "actionBan": false,
+	    "actionAdminNotify": true
+	  },
+	  "adDetection": {
+	    "enabled": true,
+	    "actionKick": false,
+	    "actionBan": false,
+	    "actionAdminNotify": true
+	  }
+	}`
+
+	var features cfg.FeaturesConfig
+	err := json.Unmarshal([]byte(featuresConfig), &features)
+	assert.Nil(t, err, "[-] Should be valid features config JSON to decode")
+
+	admins := []string{"novitoll"}
+	assert.Equal(t, features.NotificationTarget.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
 
 	var br BotIngressRequest
-	err2 := json.Unmarshal([]byte(botRequest), &br)
+	err2 := json.Unmarshal([]byte(botRequestPlainText), &br)
 	assert.Nil(t, err2, "[-] Should be valid BotIngressRequest JSON to decode")
 
 	assert.Equal(t, br.Message.From.Username, "novitoll", "[-] Should be equal decoded BotIngressRequest struct Message.From.Username field")
@@ -97,17 +108,23 @@ func TestURLDuplication(t *testing.T) {
 }
 
 func TestDifferentIngressMessageStructs(t *testing.T) {
-	botRequest1 := `
-	{"update_id":53205698, "message":{"message_id":108,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515199,"migrate_to_chat_id":-1001276148791}}
-	`
 	var br BotIngressRequest
-	err := json.Unmarshal([]byte(botRequest1), &br)
+	err := json.Unmarshal([]byte(botRequestMessageMigration), &br)
 	assert.Nil(t, err, "[-] Should be valid BotIngressRequest JSON to decode")
 
-	botRequest2 := `
-	{"update_id":53205697, "message":{"message_id":107,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515176,"new_chat_participant":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_member":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_members":[{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"}]}}
-	`
 	var br2 BotIngressRequest
-	err2 := json.Unmarshal([]byte(botRequest2), &br2)
+	err2 := json.Unmarshal([]byte(botRequestNewComer), &br2)
 	assert.Nil(t, err2, "[-] Should be valid BotIngressRequest JSON to decode")
+}
+
+func TestNewComer(t *testing.T) {
+	var br BotIngressRequest
+	err := json.Unmarshal([]byte(botRequestNewComer), &br)
+	assert.Nil(t, err, "[-] Should be valid BotIngressRequest JSON to decode")
+
+	timer := time.NewTimer(11 * time.Second)
+    go func() {
+        <-timer.C
+    	assert.Contains(t, NewComers, br.Message.From.Id, "[-] Should be NewComers map")
+    }()
 }

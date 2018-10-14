@@ -28,7 +28,7 @@ func (rh *RouteHandler) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.R
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Body)
-	log.Println(buf.String())
+	log.Println(buf.String()) // TODO: remove
 
 	var br BotIngressRequest
 	err := json.Unmarshal([]byte(buf.String()), &br)

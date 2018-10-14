@@ -5,4 +5,4 @@ type Job struct {
 	rh *RouteHandler
 }
 
-// TODO: type Job interface
+var NewComers map[int]interface{}

@@ -96,6 +96,7 @@ type BotIngressRequestMessage struct {
 
 // https://core.telegram.org/bots/api#user
 type User struct {
+	Id 			int `json:"id"`
 	Username	string	`json:"username"`
 	First_Name	string	`json:"first_name"`
 	IsBot		bool	`json:"is_bot"`

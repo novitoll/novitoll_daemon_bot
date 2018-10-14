@@ -57,6 +57,7 @@ func (br *BotIngressRequest) Process(rh *RouteHandler) {
 
 	results, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		JobNewChatMemberDetector,
+		JobNewChatMemberWaiter,
 		JobUrlDuplicationDetector,
 	})
 
