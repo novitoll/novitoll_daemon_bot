@@ -22,19 +22,18 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		return nil, nil
 	}
 
-	go j.actionOnNewMemberJoin()
+	go j.actionSendMessage(botReplyMessage, false)
 
 	select {
 	case dootId := <-chNewcomer:
-		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 		delete(NewComers, dootId)
+		log.Printf("[+] Newcomer %d has been authenticated", dootId)
+		j.actionSendMessage("Thanks. You are whitelisted", true)
 	case <-time.After(NEWCOMER_TIME_TO_RESPOND_BOT * time.Second):
-		if kicked := j.actionOnNewMemberKick(); kicked {
-			log.Printf("[!] Newcomer %s has been kicked", j.br.Message.NewChatMember.Username)
+		if kicked := j.actionKickChatMember(); kicked {
 			delete(NewComers, j.br.Message.NewChatMember.Id)
+			log.Printf("[!] Newcomer %s has been kicked", j.br.Message.NewChatMember.Username)
 		}
-	default:
-
 	}
 
 	return nil, nil
@@ -48,16 +47,17 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 	return nil, nil
 }
 
-func (j *Job) actionOnNewMemberJoin() {
-	log.Printf("[+] New member has been detected")
-
-	// record a newcomer and wait for his reply on the channel,
-	// otherwise kick that bastard and delete the record from this map
-	NewComers[j.br.Message.NewChatMember.Id] = time.Now()
+func (j *Job) actionSendMessage(text string, isAuth bool) {
+	if !isAuth {
+		// record a newcomer and wait for his reply on the channel,
+		// otherwise kick that bastard and delete the record from this map
+		log.Printf("[+] New member has been detected")
+		NewComers[j.br.Message.NewChatMember.Id] = time.Now()
+	}
 
 	botEgressReq := &BotEgressRequest{
 		ChatId:					j.br.Message.Chat.Id,
-		Text:					botReplyMessage,
+		Text:					text,
 		ParseMode:				ParseModeMarkdown,
 		DisableWebPagePreview:	true,
 		DisableNotification:	true,
@@ -67,7 +67,7 @@ func (j *Job) actionOnNewMemberJoin() {
 	botEgressReq.EgressSendToTelegram(j.rh)
 }
 
-func (j *Job) actionOnNewMemberKick() bool {
+func (j *Job) actionKickChatMember() bool {
 	log.Printf("[+] Kicking a newcomer")
 
 	t := time.Unix(j.br.Message.Date, 0)
