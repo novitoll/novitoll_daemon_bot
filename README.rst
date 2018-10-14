@@ -34,6 +34,11 @@ TODO
 -------
 * Replace hostnames (currently localhost / mock containers are used)
 
+Flow
+-------
+
+.. image:: docs/flow.jpg
+
 License
 -------
 GNU GPL 2.0
