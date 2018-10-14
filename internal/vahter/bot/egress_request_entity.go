@@ -21,7 +21,7 @@ import (
 var (
 	GET = "GET"
 	POST = "POST"
-	TELEGRAM_URL = "https://api.telegram.org/bot%s"
+	TELEGRAM_URL = "https://api.telegram.org/bot%s/sendMessage"
 	ParseModeMarkdown = "Markdown"
 	ParseModeHTML = "HTML"
 )
