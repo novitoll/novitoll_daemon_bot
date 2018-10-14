@@ -13,7 +13,7 @@ const (
 )
 
 var (
-	botReplyMessage = "0!0 Ping, please write me 'pong' within 60 seconds, otherwise you will be kicked for a variety of reasons."
+	botReplyMessage = "Ping, please write me 'pong' within 60 seconds, otherwise you will be kicked for a variety of reasons. #novitollnm"
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
@@ -25,10 +25,14 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	go j.actionSendMessage(botReplyMessage, false)
 
 	select {
-	case dootId := <-chNewcomer:
+	case dootId := <-chNewcomer:		
 		delete(NewComers, dootId)
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
-		j.actionSendMessage("Thanks. You are whitelisted", true)
+
+		if j.rh.Features.NewcomerQuestionnare.ActionNotify {
+			j.actionSendMessage("Thanks. You are whitelisted #novitollwl", true)
+		}
+		
 	case <-time.After(NEWCOMER_TIME_TO_RESPOND_BOT * time.Second):
 		if kicked := j.actionKickChatMember(); kicked {
 			delete(NewComers, j.br.Message.NewChatMember.Id)

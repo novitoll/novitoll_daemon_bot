@@ -6,18 +6,18 @@
     "enabled": true,
     "actionKick": false,
     "actionBan": false,
-    "actionAdminNotify": true
+    "actionNotify": true
   },
   "newcomerQuestionnare": {
     "enabled": true,
-    "actionKick": false,
+    "actionKick": true,
     "actionBan": false,
-    "actionAdminNotify": true
+    "actionNotify": true
   },
   "adDetection": {
     "enabled": true,
     "actionKick": false,
     "actionBan": false,
-    "actionAdminNotify": true
+    "actionNotify": true
   }
 }

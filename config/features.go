@@ -15,5 +15,5 @@ type ConfigOptions struct {
     Enabled		bool `json:"enabled"`
     ActionKick		bool `json:"actionKick"`
     ActionBan		bool `json:"actionBan"`
-    ActionAdminNotify	bool `json:"actionAdminNotify"`
+    ActionNotify	bool `json:"actionNotify"`
 }
