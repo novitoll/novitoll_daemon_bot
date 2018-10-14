@@ -41,19 +41,19 @@ type BotIngressRequest struct {
 
 type BotIngressRequestMessage struct {
 	From 		User
-	Text		string
+	Text		string `json:"text"`
 	Entities	[]Message
-	Date		int64  // time.Unix()
-	MessageId	uint32
-	Chat		Chat
+	Date		int64 `json:"date"` // time.Unix()
+	MessageId	uint32 `json:"message_id"`
+	Chat		Chat `json:"chat"`
 	NewComer	User `json:"new_chat_members"`
 }
 
 // https://core.telegram.org/bots/api#messageentity
 type Message struct {
-	Type		string
-	Length		int
-	Url		string
+	Type		string `json:"type"`
+	Length		int `json:"length"`
+	Url		string `json:"url"`
 	MentionedUser	User `json:"user"`
 }
 
@@ -66,10 +66,10 @@ type User struct {
 }
 
 type Chat struct {
-	Username	string
+	Username	string `json:"username"`
 	First_Name	string `json:"first_name"`
-	Type		string
-	Id		uint32
+	Type		string `json:"type"`
+	Id		uint32 `json:"id"`
 }
 
 var WHITELIST_URLS = []string{
