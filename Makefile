@@ -13,6 +13,9 @@ run:
 	@make build
 	./bot.bin
 
+docker-compose-dev:
+	docker-compose -f deployments/docker-compose-dev.yml up
+
 docker-compose:
 	docker-compose -f deployments/docker-compose.yml up
 

@@ -26,6 +26,7 @@ Make commands
 * `make configure` -- configure `dep` GoLang package and install deps
 * `make build` -- compile Go src to the "$PWD/bot" binary
 * `make run` -- compile and run a standalone Go binary
+* `make docker-compose-dev` -- run docker-compose that brings up 1 redis & 1 vahter-bot containers & 1 telegram-mock image (TODO: push to hub docker)
 * `make docker-compose` -- run docker-compose that brings up 1 redis & 1 vahter-bot containers
 * `make test` -- run unit tests
 * `make debug` -- compile and run `delve` debugger
