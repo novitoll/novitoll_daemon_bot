@@ -7,7 +7,8 @@ import (
 	"encoding/json"
 	"mvdan.cc/xurls"
 	"github.com/justincampbell/timeago"
-
+	
+	netUrl "net/url"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 )
 
@@ -33,6 +34,9 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
 }
 
 func JobUrlDuplicationDetector(j *Job) (bool, error) {
+	if !j.app.Features.UrlDuplication.Enabled {
+		return false, nil
+	}
 	redisConn := redisClient.GetRedisConnection() // TODO: improve this using Redis Pool of connections
 	defer redisConn.Close()
 
@@ -43,6 +47,14 @@ func JobUrlDuplicationDetector(j *Job) (bool, error) {
 
 	for i, url := range urls {
 		log.Printf("[.] Checking %d/%d URL - %s", i + 1, len(urls), url)
+
+		urlStruct, _ := netUrl.Parse(url)
+
+		if j.app.Features.UrlDuplication.IgnoreHostnames && urlStruct.Path == "" {
+			log.Printf("[.] Skipping a hostname URL")
+			continue
+		}
+
 		jsonStr, _ := redisConn.Get(url).Result()
 
 		if jsonStr != "" {
@@ -56,7 +68,9 @@ func JobUrlDuplicationDetector(j *Job) (bool, error) {
 				log.Fatalf("[-] Can not marshal BotIngressRequest.Message from Redis") // should not be the case here
 			}
 
-			err2 := redisConn.Set(url, fromDataBytes, time.Duration(j.app.Features.UrlDuplication.RelevanceTimeout) * time.Second).Err()
+			redisKey := fmt.Sprintf("%d-%s", j.ingressBody.Message.Chat.Id, url)
+
+			err2 := redisConn.Set(redisKey, fromDataBytes, time.Duration(j.app.Features.UrlDuplication.RelevanceTimeout) * time.Second).Err()
 			if err2 != nil {
 				log.Fatalln("[-] Can not put the message to Redis\n", err2)
 				// TODO: notify admin

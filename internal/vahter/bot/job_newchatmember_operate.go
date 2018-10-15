@@ -16,7 +16,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 	newComer := j.ingressBody.Message.NewChatMember
 	newComerConfig := j.app.Features.NewcomerQuestionnare
 
-	if newComer.Id == 0 {
+	if !newComerConfig.Enabled && newComer.Id == 0 {
 		return false, nil
 	}
 
@@ -45,6 +45,9 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 
 func JobNewChatMemberWaiter(j *Job) (bool, error) {
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
+	if !j.app.Features.NewcomerQuestionnare.Enabled {
+		return false, nil
+	}
 	if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok && strings.ToLower(j.ingressBody.Message.Text) == j.app.Features.NewcomerQuestionnare.AuthMessage {
 		chNewcomer <-j.ingressBody.Message.From.Id
 	}

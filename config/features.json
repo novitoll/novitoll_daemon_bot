@@ -4,7 +4,7 @@
   },
   "urlDuplication": {
     "enabled": true,
-    "ignoreHostnames": false,
+    "ignoreHostnames": true,
     "actionNotify": true,
     "relevanceTimeout": 86400
   },
