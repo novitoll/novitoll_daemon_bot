@@ -5,7 +5,8 @@
   "urlDuplication": {
     "enabled": true,
     "ignoreHostnames": false,
-    "actionNotify": true
+    "actionNotify": true,
+    "relevanceTimeout": 86400
   },
   "newcomerQuestionnare": {
     "enabled": true,

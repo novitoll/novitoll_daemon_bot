@@ -48,7 +48,7 @@ func main() {
 	featureFields := reflect.ValueOf(&features).Elem()
 	printReflectValues(featureFields)
 
-	handler := bot.RouteHandler{&features}
+	handler := bot.App{&features}
 	handler.RegisterHandlers()
 
 	log.Printf("[+] Serving TCP 8080 port..")

@@ -118,9 +118,3 @@ type Chat struct {
 	Id         int    `json:"id"`
 	Title      string `json:"title"`
 }
-
-var WHITELIST_URLS = []string{
-	"google.com",
-	"habr.com",
-	"",
-}

@@ -11,10 +11,6 @@ import (
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 )
 
-const (
-	DUPLICATE_URL_EXPIRATION = 1209600  // 2 weeks in seconds
-)
-
 func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
 	log.Printf("[+] POST HTTP request on duplicate detection")
 
@@ -36,13 +32,13 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
 	botEgressReq.EgressSendToTelegram(j.app)
 }
 
-func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
+func JobUrlDuplicationDetector(j *Job) (bool, error) {
 	redisConn := redisClient.GetRedisConnection() // TODO: improve this using Redis Pool of connections
 	defer redisConn.Close()
 
 	urls := xurls.Relaxed.FindAllString(j.ingressBody.Message.Text, -1)
 	if len(urls) == 0 {
-		return nil, nil
+		return false, nil
 	}
 
 	for i, url := range urls {
@@ -60,7 +56,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 				log.Fatalf("[-] Can not marshal BotIngressRequest.Message from Redis") // should not be the case here
 			}
 
-			err2 := redisConn.Set(url, fromDataBytes, DUPLICATE_URL_EXPIRATION * time.Second).Err()
+			err2 := redisConn.Set(url, fromDataBytes, time.Duration(j.app.Features.UrlDuplication.RelevanceTimeout) * time.Second).Err()
 			if err2 != nil {
 				log.Fatalln("[-] Can not put the message to Redis\n", err2)
 				// TODO: notify admin
@@ -68,5 +64,5 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		}
 	}
 
-	return nil, nil
+	return true, nil
 }

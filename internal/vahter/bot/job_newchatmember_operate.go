@@ -11,13 +11,13 @@ var (
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
-func JobNewChatMemberDetector(j *Job) (interface{}, error) {
+func JobNewChatMemberDetector(j *Job) (bool, error) {
 	// for short code reference
 	newComer := j.ingressBody.Message.NewChatMember
 	newComerConfig := j.app.Features.NewcomerQuestionnare
 
 	if newComer.Id == 0 {
-		return nil, nil
+		return false, nil
 	}
 
 	go j.actionSendMessage(botReplyMessage, false)
@@ -29,27 +29,29 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
-			j.actionSendMessage("Thanks. You are whitelisted #novitollwl", true)
+			return j.actionSendMessage("Thanks. You are whitelisted #novitollwl", true)
 		}		
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
-		if kicked := j.actionKickChatMember(); kicked {
+		kicked, err := j.actionKickChatMember()
+		if kicked {
 			delete(NewComers, newComer.Id)
 			log.Printf("[!] Newcomer %s has been kicked", newComer.Username)
 		}
+		return kicked, err
 	}
 
-	return nil, nil
+	return true, nil
 }
 
-func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
+func JobNewChatMemberWaiter(j *Job) (bool, error) {
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
 	if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok && strings.ToLower(j.ingressBody.Message.Text) == j.app.Features.NewcomerQuestionnare.AuthMessage {
 		chNewcomer <-j.ingressBody.Message.From.Id
 	}
-	return nil, nil
+	return true, nil
 }
 
-func (j *Job) actionSendMessage(text string, isAuth bool) {
+func (j *Job) actionSendMessage(text string, isAuth bool) (bool, error) {
 	if !isAuth {
 		// record a newcomer and wait for his reply on the channel,
 		// otherwise kick that bastard and delete the record from this map
@@ -66,11 +68,11 @@ func (j *Job) actionSendMessage(text string, isAuth bool) {
 		ReplyToMessageId:		j.ingressBody.Message.MessageId,
 		ReplyMarkup:			&BotForceReply{ForceReply: true, Selective: true}}
 
-	botEgressReq.EgressSendToTelegram(j.app)
+	return botEgressReq.EgressSendToTelegram(j.app)
 }
 
-func (j *Job) actionKickChatMember() bool {
-	log.Printf("[+] Kicking a newcomer")
+func (j *Job) actionKickChatMember() (bool, error) {
+	log.Printf("[+] Kicking a newcomer %s", j.ingressBody.Message.NewChatMember.Username)
 
 	t := time.Unix(j.ingressBody.Message.Date, 0)
 

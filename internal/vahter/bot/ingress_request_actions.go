@@ -10,15 +10,15 @@ var (
 	completedProcessJobCount = 0
 )
 
-type ProcessJobFn func(job *Job) (interface{}, error)
+type ProcessJobFn func(job *Job) (bool, error)
 
 // br - BotIngressRequest (HTTP POST request body from Telegram)
 // rh - RouteHander, struct which includes the bot's configuration (Telegram token) etc.
 
-func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error) {
+func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]bool, []error) {
 	var wg sync.WaitGroup
 	errJob := make(chan error, len(jobsFn))
-	resultJob := make(chan interface{}, len(jobsFn))
+	resultJob := make(chan bool, len(jobsFn))
 
 	wg.Add(len(jobsFn))
 
@@ -37,7 +37,7 @@ func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error)
 	wg.Wait()
 
 	errJobs := make([]error, 0, len(jobsFn))
-	resultJobs := make([]interface{}, 0, len(jobsFn))
+	resultJobs := make([]bool, 0, len(jobsFn))
 
 	for range jobsFn {
 		select {
@@ -59,6 +59,7 @@ func (ingressBody *BotIngressRequest) Process(app *App) {
 		JobNewChatMemberDetector,
 		JobNewChatMemberWaiter,
 		JobUrlDuplicationDetector,
+		JobMessageStatistics,
 	})
 
 	completedProcessJobCount += 1
