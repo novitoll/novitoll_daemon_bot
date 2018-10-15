@@ -28,8 +28,7 @@ func init() {
 	json.Unmarshal(featuresJsonBytes, &features)
 }
 
-func printReflectValues(v reflect.Value) {
-	s := v
+func printReflectValues(s reflect.Value) {
 	typeOfT := s.Type()
 	for i := 0; i < s.NumField(); i++ {
 	    f := s.Field(i)

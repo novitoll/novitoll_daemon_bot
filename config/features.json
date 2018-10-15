@@ -4,20 +4,16 @@
   },
   "urlDuplication": {
     "enabled": true,
-    "actionKick": false,
-    "actionBan": false,
+    "ignoreHostnames": false,
     "actionNotify": true
   },
   "newcomerQuestionnare": {
     "enabled": true,
     "actionKick": true,
     "actionBan": false,
-    "actionNotify": true
-  },
-  "adDetection": {
-    "enabled": true,
-    "actionKick": false,
-    "actionBan": false,
-    "actionNotify": true
+    "actionNotify": true,
+    "authMessage": "pong",
+    "authTimeout": 60,
+    "kickBanTimeout": 60
   }
 }

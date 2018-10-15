@@ -24,23 +24,23 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
 	botReplyMessage := "Your message contains duplicate URL. Please dont flood.\n"
 	botReplyMessage += fmt.Sprintf("Last time it was posted from @%s %s ago. #novitollurl", duplicatedMsg.From.Username, timeago.FromDuration(d))
 
-	botEgressReq := &BotEgressRequest{
-		ChatId:					j.br.Message.Chat.Id,
+	botEgressReq := &BotEgressSendMessage{
+		ChatId:					j.ingressBody.Message.Chat.Id,
 		Text:					botReplyMessage,
 		ParseMode:				ParseModeMarkdown,
 		DisableWebPagePreview:	true,
 		DisableNotification:	true,
-		ReplyToMessageId:		j.br.Message.MessageId,
+		ReplyToMessageId:		j.ingressBody.Message.MessageId,
 		ReplyMarkup:			&BotForceReply{ForceReply: true, Selective: true}}
 
-	botEgressReq.EgressSendToTelegram(j.rh)
+	botEgressReq.EgressSendToTelegram(j.app)
 }
 
 func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	redisConn := redisClient.GetRedisConnection() // TODO: improve this using Redis Pool of connections
 	defer redisConn.Close()
 
-	urls := xurls.Relaxed.FindAllString(j.br.Message.Text, -1)
+	urls := xurls.Relaxed.FindAllString(j.ingressBody.Message.Text, -1)
 	if len(urls) == 0 {
 		return nil, nil
 	}
@@ -55,7 +55,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 			json.Unmarshal([]byte(jsonStr), &duplicatedMsg)
 			j.actionOnURLDuplicate(&duplicatedMsg)
 		} else {
-			fromDataBytes, err := json.Marshal(j.br.Message)
+			fromDataBytes, err := json.Marshal(j.ingressBody.Message)
 			if err != nil {
 				log.Fatalf("[-] Can not marshal BotIngressRequest.Message from Redis") // should not be the case here
 			}

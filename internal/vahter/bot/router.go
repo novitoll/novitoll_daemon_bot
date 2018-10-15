@@ -9,17 +9,17 @@ import (
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 )
 
-type RouteHandler struct {
+type App struct {
 	Features *cfg.FeaturesConfig
 }
 
-func (rh *RouteHandler) RegisterHandlers() {
-	http.HandleFunc("/check", rh.CheckMessageHandlerFunc)
+func (app *App) RegisterHandlers() {
+	http.HandleFunc("/check", app.CheckMessageHandlerFunc)
 
 	log.Printf("[+] Handlers for HTTP end-points are registered")
 }
 
-func (rh *RouteHandler) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
+func (app *App) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		msg := &RouteError{w, 400, nil, "Please send a request body"}
 		log.Fatalln(msg.Error())
@@ -38,6 +38,6 @@ func (rh *RouteHandler) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	go br.Process(rh)
+	go br.Process(app)
     w.WriteHeader(http.StatusAccepted)
 }

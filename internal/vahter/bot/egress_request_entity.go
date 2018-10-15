@@ -19,12 +19,12 @@ import (
 */
 
 var (
-	GET = "GET"
-	POST = "POST"
-	TELEGRAM_URL = "https://api.telegram.org/bot%s/%s"
-	TELEGRAM_TOKEN = "123"
+	GET               = "GET"
+	POST              = "POST"
+	TELEGRAM_URL      = "https://api.telegram.org/bot%s/%s"
+	TELEGRAM_TOKEN    = "123"
 	ParseModeMarkdown = "Markdown"
-	ParseModeHTML = "HTML"
+	ParseModeHTML     = "HTML"
 )
 
 func init() {
@@ -37,25 +37,25 @@ func init() {
 }
 
 // https://core.telegram.org/bots/api#sendmessage
-type BotEgressRequest struct {
-	ChatId			int `json:"chat_id"`
-	Text			string `json:"text"`
-	ParseMode		string `json:"parse_mode"`
-	DisableWebPagePreview	bool `json:"disable_web_page_preview"`
-	DisableNotification	bool `json:"disable_notification"`
-	ReplyToMessageId	int `json:"reply_to_message_id"`
-	ReplyMarkup 		*BotForceReply
+type BotEgressSendMessage struct {
+	ChatId                int    `json:"chat_id"`
+	Text                  string `json:"text"`
+	ParseMode             string `json:"parse_mode"`
+	DisableWebPagePreview bool   `json:"disable_web_page_preview"`
+	DisableNotification   bool   `json:"disable_notification"`
+	ReplyToMessageId      int    `json:"reply_to_message_id"`
+	ReplyMarkup           *BotForceReply
 }
 
 // https://core.telegram.org/bots/api#forcereply
 type BotForceReply struct {
-	ForceReply 	bool `json:"force_reply"`
-	Selective 	bool `json:"selective"`
+	ForceReply bool `json:"force_reply"`
+	Selective  bool `json:"selective"`
 }
 
 // https://core.telegram.org/bots/api#kickchatmember
 type BotEgressKickChatMember struct {
-	ChatId int `json:"chat_id"`
-	UserId int `json:"user_id"`
+	ChatId    int   `json:"chat_id"`
+	UserId    int   `json:"user_id"`
 	UntilDate int64 `json:"until_date"`
 }

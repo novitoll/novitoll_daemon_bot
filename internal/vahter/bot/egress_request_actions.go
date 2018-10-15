@@ -31,7 +31,7 @@ func sendHTTP(req *http.Request) bool {
 	return true
 }
 
-func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
+func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "sendMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
@@ -39,7 +39,7 @@ func (reqBody *BotEgressRequest) EgressSendToTelegram(rh *RouteHandler) {
 	sendHTTP(req)
 }
 
-func (reqBody *BotEgressKickChatMember) EgressKickChatMember(rh *RouteHandler) bool {
+func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) bool {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "kickChatMember")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))

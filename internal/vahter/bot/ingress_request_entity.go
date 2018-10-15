@@ -78,45 +78,45 @@ package bot
 */
 
 type BotIngressRequest struct {
-	Update_Id	int `json:"update_id"`
-	Message		BotIngressRequestMessage
+	Update_Id int `json:"update_id"`
+	Message   BotIngressRequestMessage
 }
 
 type BotIngressRequestMessage struct {
-	From 		User
-	Text		string `json:"text"`
-	Entities	[]Message
-	Date		int64 `json:"date"` // time.Unix()
-	MessageId	int `json:"message_id"`
-	Chat		Chat `json:"chat"`
-	NewChatMembers	[]User `json:"new_chat_members"`
-	NewChatMember User `json:"new_chat_member"`
-	NewChatParticipant User `json:"new_chat_participant"`
+	From               User
+	Text               string `json:"text"`
+	Entities           []Message
+	Date               int64  `json:"date"` // time.Unix()
+	MessageId          int    `json:"message_id"`
+	Chat               Chat   `json:"chat"`
+	NewChatMembers     []User `json:"new_chat_members"`
+	NewChatMember      User   `json:"new_chat_member"`
+	NewChatParticipant User   `json:"new_chat_participant"`
 }
 
 // https://core.telegram.org/bots/api#user
 type User struct {
-	Id 			int `json:"id"`
-	Username	string	`json:"username"`
-	First_Name	string	`json:"first_name"`
-	IsBot		bool	`json:"is_bot"`
-	LanguageCode	string	`json:"language_code"`
+	Id           int    `json:"id"`
+	Username     string `json:"username"`
+	First_Name   string `json:"first_name"`
+	IsBot        bool   `json:"is_bot"`
+	LanguageCode string `json:"language_code"`
 }
 
 // https://core.telegram.org/bots/api#messageentity
 type Message struct {
-	Type		string `json:"type"`
-	Length		int `json:"length"`
-	Url		string `json:"url"`
-	MentionedUser	User `json:"user"`
+	Type          string `json:"type"`
+	Length        int    `json:"length"`
+	Url           string `json:"url"`
+	MentionedUser User   `json:"user"`
 }
 
 type Chat struct {
-	Username	string `json:"username"`
-	First_Name	string `json:"first_name"`
-	Type		string `json:"type"`
-	Id		int `json:"id"`
-	Title 	string `json:"title"`
+	Username   string `json:"username"`
+	First_Name string `json:"first_name"`
+	Type       string `json:"type"`
+	Id         int    `json:"id"`
+	Title      string `json:"title"`
 }
 
 var WHITELIST_URLS = []string{

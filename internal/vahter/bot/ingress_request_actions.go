@@ -50,10 +50,10 @@ func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error)
 	return resultJobs, errJobs
 }
 
-func (br *BotIngressRequest) Process(rh *RouteHandler) {
-	log.Printf("[.] Processing message from -- Username: %s, Chat: %s, Message_Id: %d", br.Message.From.Username, br.Message.Chat.Username, br.Message.MessageId)
+func (ingressBody *BotIngressRequest) Process(app *App) {
+	log.Printf("[.] Processing message from -- Username: %s, Chat: %s, Message_Id: %d", ingressBody.Message.From.Username, ingressBody.Message.Chat.Username, ingressBody.Message.MessageId)
 
-	job := &Job{br, rh}
+	job := &Job{ingressBody, app}
 
 	results, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		JobNewChatMemberDetector,

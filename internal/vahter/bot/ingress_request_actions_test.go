@@ -1,20 +1,20 @@
 package bot
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
-	"encoding/json"
 
-	"github.com/stretchr/testify/assert"
-	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
+	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
 	botRequestMessageMigration = `
 	{"update_id":53205698, "message":{"message_id":108,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515199,"migrate_to_chat_id":-1001276148791}}
 	`
-	
+
 	botRequestNewComer = `
 	{"update_id":53205697, "message":{"message_id":107,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515176,"new_chat_participant":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_member":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_members":[{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"}]}}
 	`
@@ -88,20 +88,20 @@ func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotIngressRequest) {
 	admins := []string{"novitoll"}
 	assert.Equal(t, features.NotificationTarget.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
 
-	var br BotIngressRequest
-	err2 := json.Unmarshal([]byte(botRequestPlainText), &br)
+	var ingressBody BotIngressRequest
+	err2 := json.Unmarshal([]byte(botRequestPlainText), &ingressBody)
 	assert.Nil(t, err2, "[-] Should be valid BotIngressRequest JSON to decode")
 
-	assert.Equal(t, br.Message.From.Username, "novitoll", "[-] Should be equal decoded BotIngressRequest struct Message.From.Username field")
+	assert.Equal(t, ingressBody.Message.From.Username, "novitoll", "[-] Should be equal decoded BotIngressRequest struct Message.From.Username field")
 
-	return &features, &br
+	return &features, &ingressBody
 }
 
 func TestURLDuplication(t *testing.T) {
 	pFeatures, pBotRequest := configureStructs(t)
 
-	rh := RouteHandler{pFeatures}
-	pBotRequest.Process(&rh)
+	app := App{pFeatures}
+	pBotRequest.Process(&app)
 
 	client := redisClient.GetRedisConnection()
 	defer client.Close()
@@ -112,23 +112,23 @@ func TestURLDuplication(t *testing.T) {
 }
 
 func TestDifferentIngressMessageStructs(t *testing.T) {
-	var br BotIngressRequest
-	err := json.Unmarshal([]byte(botRequestMessageMigration), &br)
+	var ingressBody BotIngressRequest
+	err := json.Unmarshal([]byte(botRequestMessageMigration), &ingressBody)
 	assert.Nil(t, err, "[-] Should be valid BotIngressRequest JSON to decode")
 
-	var br2 BotIngressRequest
-	err2 := json.Unmarshal([]byte(botRequestNewComer), &br2)
+	var ingressBody2 BotIngressRequest
+	err2 := json.Unmarshal([]byte(botRequestNewComer), &ingressBody2)
 	assert.Nil(t, err2, "[-] Should be valid BotIngressRequest JSON to decode")
 }
 
 func TestNewComer(t *testing.T) {
-	var br BotIngressRequest
-	err := json.Unmarshal([]byte(botRequestNewComer), &br)
+	var ingressBody BotIngressRequest
+	err := json.Unmarshal([]byte(botRequestNewComer), &ingressBody)
 	assert.Nil(t, err, "[-] Should be valid BotIngressRequest JSON to decode")
 
 	timer := time.NewTimer(11 * time.Second)
-    go func() {
-        <-timer.C
-    	assert.Contains(t, NewComers, br.Message.From.Id, "[-] Should be NewComers map")
-    }()
+	go func() {
+		<-timer.C
+		assert.Contains(t, NewComers, ingressBody.Message.From.Id, "[-] Should be NewComers map")
+	}()
 }
