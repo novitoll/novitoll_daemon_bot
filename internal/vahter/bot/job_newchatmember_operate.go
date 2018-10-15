@@ -55,7 +55,8 @@ func (j *Job) actionSendMessage(text string, isAuth bool) (bool, error) {
 	if !isAuth {
 		// record a newcomer and wait for his reply on the channel,
 		// otherwise kick that bastard and delete the record from this map
-		log.Printf("[+] New member has been detected")
+		newComer := j.ingressBody.Message.NewChatMember
+		log.Printf("[+] New member %d(@%s) has been detected", newComer.Id, newComer.Username)
 		NewComers[j.ingressBody.Message.NewChatMember.Id] = time.Now()
 	}
 
@@ -72,8 +73,7 @@ func (j *Job) actionSendMessage(text string, isAuth bool) (bool, error) {
 }
 
 func (j *Job) actionKickChatMember() (bool, error) {
-	tMsg := time.Unix(j.ingressBody.Message.Date, 0)
-	t := tMsg.Add(time.Duration(j.app.Features.NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
+	t := time.Now().Add(time.Duration(j.app.Features.NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
 
 	log.Printf("[+] Kicking a newcomer %d(@%s) until %d", j.ingressBody.Message.NewChatMember.Id, j.ingressBody.Message.NewChatMember.Username, t)
 
