@@ -15,10 +15,10 @@ Features
 
 Bot features can be enabled/disabled via `config/features.json` and its ad-hoc struct `config/features.go`.
 
-* duplicate hyperlinks detection within the certain amount of time (2 weeks)
+* duplicate hyperlinks detection within the certain amount of time
+* newcomer questionnaire in bot's IM to prevent newcomers' shadow mode
 * ad detection (TBD)
 * nude, pornography detection in image (TBD)
-* newcomer questionnaire in bot's IM to prevent newcomers' shadow mode (TBD)
 * batch scanning of users' avatars, and posting images' for steganography analysis (+ VirusTotal?) (TBD)
 
 Make commands
