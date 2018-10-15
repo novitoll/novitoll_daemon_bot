@@ -48,14 +48,17 @@ func JobUrlDuplicationDetector(j *Job) (bool, error) {
 	for i, url := range urls {
 		log.Printf("[.] Checking %d/%d URL - %s", i + 1, len(urls), url)
 
-		urlStruct, _ := netUrl.Parse(url)
-
-		if j.app.Features.UrlDuplication.IgnoreHostnames && urlStruct.Path == "" {
-			log.Printf("[.] Skipping a hostname URL")
-			continue
+		if j.app.Features.UrlDuplication.IgnoreHostnames {
+			u, err := netUrl.ParseRequestURI(url)
+			if err != nil || u.Path == "" {
+				log.Printf("[.] Skipping a hostname URL")
+				continue
+			}
 		}
 
-		jsonStr, _ := redisConn.Get(url).Result()
+		redisKey := fmt.Sprintf("%d-%s", j.ingressBody.Message.Chat.Id, url)
+
+		jsonStr, _ := redisConn.Get(redisKey).Result()
 
 		if jsonStr != "" {
 			log.Printf("[!] This message contains the duplicate URL %s", url)
@@ -66,9 +69,7 @@ func JobUrlDuplicationDetector(j *Job) (bool, error) {
 			fromDataBytes, err := json.Marshal(j.ingressBody.Message)
 			if err != nil {
 				log.Fatalf("[-] Can not marshal BotIngressRequest.Message from Redis") // should not be the case here
-			}
-
-			redisKey := fmt.Sprintf("%d-%s", j.ingressBody.Message.Chat.Id, url)
+			}			
 
 			err2 := redisConn.Set(redisKey, fromDataBytes, time.Duration(j.app.Features.UrlDuplication.RelevanceTimeout) * time.Second).Err()
 			if err2 != nil {
