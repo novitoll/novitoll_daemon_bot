@@ -14,7 +14,7 @@
     "actionBan": false,
     "actionNotify": true,
     "authMessage": "pong",
-    "authTimeout": 60,
+    "authTimeout": 120,
     "kickBanTimeout": 60
   }
 }

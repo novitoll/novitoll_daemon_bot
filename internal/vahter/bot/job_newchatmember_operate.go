@@ -2,12 +2,13 @@ package bot
 
 import (
 	"log"
+	"fmt"
 	"strings"
 	"time"
 )
 
 var (
-	botReplyMessage = "Ping, please write me *pong* within 60 seconds, otherwise you will be kicked for a variety of reasons. #novitollnm"
+	botReplyMessage = "Ping, please write me *pong* within %d seconds, otherwise you will be kicked for %d due to a variety of reasons. #novitollnm"
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
@@ -20,7 +21,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 		return false, nil
 	}
 
-	go j.actionSendMessage(botReplyMessage, false)
+	go j.actionSendMessage(fmt.Sprintf(botReplyMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout), false)
 
 	// blocks the current Job goroutine until either of these 2 channels receive the value
 	select {
