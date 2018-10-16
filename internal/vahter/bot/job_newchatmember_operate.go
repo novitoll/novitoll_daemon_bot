@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	botReplyMessage = "Ping, please write me *pong* within %d seconds, otherwise you will be kicked for %d due to a variety of reasons. #novitollnm"
+	botReplyMessage = "Ping? Please write here *pong* within %d seconds, otherwise you will be kicked for %d due to a variety of reasons. #novitollnm"
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
@@ -17,7 +17,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 	newComer := j.ingressBody.Message.NewChatMember
 	newComerConfig := j.app.Features.NewcomerQuestionnare
 
-	if !newComerConfig.Enabled || newComer.Id == 0 {
+	if !newComerConfig.Enabled || newComer.Id == 0 || newComer.Username == "@novitoll_daemon_bot" {
 		return false, nil
 	}
 
