@@ -61,6 +61,9 @@ func (j *Job) actionSendMessage(text string, isAuth bool) (bool, error) {
 		NewComers[j.ingressBody.Message.NewChatMember.Id] = time.Now()
 	}
 
+	var keyBtns []*KeyboardButton
+	keyBtns = append(keyBtns, &KeyboardButton{j.app.Features.NewcomerQuestionnare.AuthMessage})
+
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:					j.ingressBody.Message.Chat.Id,
 		Text:					text,
@@ -68,7 +71,8 @@ func (j *Job) actionSendMessage(text string, isAuth bool) (bool, error) {
 		DisableWebPagePreview:	true,
 		DisableNotification:	true,
 		ReplyToMessageId:		j.ingressBody.Message.MessageId,
-		ReplyMarkup:			&BotForceReply{ForceReply: true, Selective: true}}
+		ReplyMarkup:			&ReplyKeyboardMarkup{keyBtns, true},
+	}
 
 	return botEgressReq.EgressSendToTelegram(j.app)
 }
