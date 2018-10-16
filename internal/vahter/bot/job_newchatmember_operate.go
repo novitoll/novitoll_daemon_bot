@@ -11,6 +11,8 @@ var (
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
+// TODO: this method is too complex, make it more lightweight
+
 func JobNewChatMemberDetector(j *Job) (bool, error) {
 	// for short code reference
 	newComer := j.ingressBody.Message.NewChatMember
@@ -26,7 +28,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 
 	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
 
-	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{keyBtns, true}, false)
+	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{keyBtns, true, true}, false)
 
 	// blocks the current Job goroutine until either of these 2 channels receive the value
 	select {
