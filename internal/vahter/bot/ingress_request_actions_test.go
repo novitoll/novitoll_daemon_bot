@@ -100,7 +100,7 @@ func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotIngressRequest) {
 func TestURLDuplication(t *testing.T) {
 	pFeatures, pBotRequest := configureStructs(t)
 
-	app := App{pFeatures}
+	app := App{pFeatures, "en-us"}
 	pBotRequest.Process(&app)
 
 	client := redisClient.GetRedisConnection()

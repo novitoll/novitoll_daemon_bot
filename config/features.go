@@ -18,6 +18,10 @@ type NewcomerConfigOptions struct {
     AuthMessage	string `json:"authMessage"`
     AuthTimeout	uint8 `json:"authTimeout"`
     KickBanTimeout uint8 `json:"kickBanTimeout"`
+    I18n map[string]struct {
+    	WelcomeMessage string `json:"welcomeMessage"`
+    	AuthOKMessage string `json:"authOKMessage"`
+	} `json:"i18n"`
 }
 
 type UrlConfigOptions struct {

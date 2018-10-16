@@ -11,6 +11,7 @@ import (
 
 type App struct {
 	Features *cfg.FeaturesConfig
+	Lang string
 }
 
 func (app *App) RegisterHandlers() {

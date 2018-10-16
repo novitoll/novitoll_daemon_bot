@@ -15,9 +15,11 @@ import (
 
 var (
 	features cfg.FeaturesConfig
+	lang string = "en-us"
 )
 
 func init() {
+	// 1. load features configuration
 	fileJson, err := os.Open("config/features.json")
 	if err != nil {
 		log.Fatalln("[-] Can not open features JSON\n", err)
@@ -26,6 +28,14 @@ func init() {
 
 	featuresJsonBytes, _ := ioutil.ReadAll(fileJson)
 	json.Unmarshal(featuresJsonBytes, &features)
+
+	// 2. setup application i18n
+	if l, ok := os.LookupEnv("APP_LANG"); ok {
+		lang = l
+	}
+	if _, ok := features.NewcomerQuestionnare.I18n[lang]; !ok {
+		panic(fmt.Sprintf("Unknown language %s", lang))
+	}
 }
 
 func printReflectValues(s reflect.Value) {
@@ -48,7 +58,7 @@ func main() {
 	featureFields := reflect.ValueOf(&features).Elem()
 	printReflectValues(featureFields)
 
-	handler := bot.App{&features}
+	handler := bot.App{&features, lang}
 	handler.RegisterHandlers()
 
 	log.Printf("[+] Serving TCP 8080 port..")

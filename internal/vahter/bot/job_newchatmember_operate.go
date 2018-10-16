@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	botReplyMessage = "Ping? Please write here *pong* within %d seconds, otherwise you will be kicked for %d due to a variety of reasons. #novitollnm"
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
@@ -16,12 +15,13 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 	// for short code reference
 	newComer := j.ingressBody.Message.NewChatMember
 	newComerConfig := j.app.Features.NewcomerQuestionnare
+	botReplyMsg := newComerConfig.I18n[j.app.Lang]
 
 	if !newComerConfig.Enabled || newComer.Id == 0 || newComer.Username == "@novitoll_daemon_bot" {
 		return false, nil
 	}
 
-	go j.actionSendMessage(fmt.Sprintf(botReplyMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout), false)
+	go j.actionSendMessage(fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout), false)
 
 	// blocks the current Job goroutine until either of these 2 channels receive the value
 	select {
@@ -30,7 +30,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
-			return j.actionSendMessage("Thanks. You are whitelisted #novitollwl", true)
+			return j.actionSendMessage(botReplyMsg.AuthOKMessage, true)
 		}		
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
 		kicked, err := j.actionKickChatMember()

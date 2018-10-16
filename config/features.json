@@ -13,6 +13,16 @@
     "actionKick": true,
     "actionBan": false,
     "actionNotify": true,
+    "i18n": {
+      "en-us": {
+        "welcomeMessage": "Ping? Please write here *pong* within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
+        "authOKMessage": "Thanks. You are whitelisted."
+      },
+      "rus": {
+        "welcomeMessage": "Пинг? Напишите pong в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
+        "authOKMessage": "Спасибо, вы авторизованы."
+      }
+    },
     "authMessage": "pong",
     "authTimeout": 120,
     "kickBanTimeout": 60

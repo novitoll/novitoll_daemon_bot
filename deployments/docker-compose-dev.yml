@@ -15,6 +15,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - TELEGRAM_URL=http://telegrammock:8081/%s/%s
+      - APP_LANG=en-us
     ports:
       - "8080:8080"
     links:
