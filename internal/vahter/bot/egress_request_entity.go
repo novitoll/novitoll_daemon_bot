@@ -55,7 +55,7 @@ type BotForceReply struct {
 
 // https://core.telegram.org/bots/api#replykeyboardmarkup
 type ReplyKeyboardMarkup struct {
-	Keyboard []*KeyboardButton `json:"keyboard"`
+	Keyboard [][]KeyboardButton `json:"keyboard"`
 	OneTimeKeyboard bool `json:"one_time_keyboard"`
 	Selective  bool `json:"selective"`
 }
