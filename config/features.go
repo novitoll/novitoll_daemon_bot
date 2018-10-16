@@ -15,12 +15,12 @@ type NewcomerConfigOptions struct {
     ActionKick	bool `json:"actionKick"`
     ActionBan	bool `json:"actionBan"`
     ActionNotify	bool `json:"actionNotify"`
-    AuthMessage	string `json:"authMessage"`
     AuthTimeout	uint8 `json:"authTimeout"`
     KickBanTimeout uint8 `json:"kickBanTimeout"`
     I18n map[string]struct {
     	WelcomeMessage string `json:"welcomeMessage"`
     	AuthOKMessage string `json:"authOKMessage"`
+        AuthMessage string `json:"authMessage"`
 	} `json:"i18n"`
 }
 

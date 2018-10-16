@@ -2,31 +2,27 @@
 version: '3.3'
 services:
   redis:
-    container_name: redis
+    container_name: redis-dev
     image: redis:5.0-rc
   vahter:
     build:
       context: ../
       args:
         PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
-    image: vahter-bot:0.0.3
-    container_name: vahter-bot
+    image: vahter-bot
+    container_name: vahter-bot-dev
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - TELEGRAM_URL=http://telegrammock:8081/%s/%s
-      - APP_LANG=en-us
+      - APP_LANG=rus
+    env_file:
+      - ./.env-green
     ports:
-      - "8080:8080"
+      - "8081:8080"
     links:
       - redis
-      - telegrammock
     depends_on:
       - redis
     volumes:
       - "../:/opt/src/github.com/novitoll/novitoll_daemon_bot"
-  telegrammock:
-    build:
-      context: ../../telegram-mock
-    image: telegrammock
-    container_name: telegrammock
+  

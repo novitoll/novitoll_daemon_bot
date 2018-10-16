@@ -13,11 +13,14 @@ run:
 	@make build
 	./bot.bin
 
-docker-compose-dev:
-	docker-compose -f deployments/docker-compose-dev.yml up
+docker-compose-local:
+	docker-compose -f deployments/docker-compose-local.yml up -d
 
 docker-compose:
 	docker-compose -f deployments/docker-compose.yml up -d
+
+docker-compose-stop:
+	docker-compose -f deployments/docker-compose.yml stop
 
 debug:
 	dlv debug --output bot.bin cmd/novitoll_daemon_bot/main.go

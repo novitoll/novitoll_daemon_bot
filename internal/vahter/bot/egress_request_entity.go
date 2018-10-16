@@ -44,13 +44,25 @@ type BotEgressSendMessage struct {
 	DisableWebPagePreview bool   `json:"disable_web_page_preview"`
 	DisableNotification   bool   `json:"disable_notification"`
 	ReplyToMessageId      int    `json:"reply_to_message_id"`
-	ReplyMarkup           *BotForceReply
+	ReplyMarkup           interface{} `json:"reply_markup"`
 }
 
 // https://core.telegram.org/bots/api#forcereply
 type BotForceReply struct {
 	ForceReply bool `json:"force_reply"`
 	Selective  bool `json:"selective"`
+}
+
+// https://core.telegram.org/bots/api#replykeyboardmarkup
+type ReplyKeyboardMarkup struct {
+	Keyboard [][]KeyboardButton `json:"keyboard"`
+	OneTimeKeyboard bool `json:"one_time_keyboard"`
+	Selective  bool `json:"selective"`
+}
+
+// https://core.telegram.org/bots/api#keyboardbutton
+type KeyboardButton struct {
+	Text string `json:"text"`
 }
 
 // https://core.telegram.org/bots/api#kickchatmember

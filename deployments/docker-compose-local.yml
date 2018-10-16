@@ -14,15 +14,21 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - APP_LANG=rus
+      - TELEGRAM_URL=http://telegrammock:8081/%s/%s
+      - APP_LANG=en-us
     env_file:
-      - ./.env
+      - ./.env-local
     ports:
       - "8080:8080"
     links:
       - redis
+      - telegrammock
     depends_on:
       - redis
     volumes:
       - "../:/opt/src/github.com/novitoll/novitoll_daemon_bot"
-  
+  telegrammock:
+    build:
+      context: ../../telegram-mock
+    image: telegrammock
+    container_name: telegrammock
