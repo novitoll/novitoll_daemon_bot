@@ -21,7 +21,12 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 		return false, nil
 	}
 
-	go j.actionSendMessage(fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout), false)
+	var keyBtns []*KeyboardButton
+	keyBtns = append(keyBtns, &KeyboardButton{j.app.Features.NewcomerQuestionnare.AuthMessage})
+
+	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
+
+	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{keyBtns, true}, false)
 
 	// blocks the current Job goroutine until either of these 2 channels receive the value
 	select {
@@ -30,7 +35,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
-			return j.actionSendMessage(botReplyMsg.AuthOKMessage, true)
+			return j.actionSendMessage(botReplyMsg.AuthOKMessage, &BotForceReply{true, true}, true)
 		}		
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
 		kicked, err := j.actionKickChatMember()
@@ -52,17 +57,14 @@ func JobNewChatMemberWaiter(j *Job) (bool, error) {
 	return true, nil
 }
 
-func (j *Job) actionSendMessage(text string, isAuth bool) (bool, error) {
+func (j *Job) actionSendMessage(text string, reply interface{}, isAuth bool) (bool, error) {
 	if !isAuth {
 		// record a newcomer and wait for his reply on the channel,
 		// otherwise kick that bastard and delete the record from this map
 		newComer := j.ingressBody.Message.NewChatMember
 		log.Printf("[+] New member %d(@%s) has been detected", newComer.Id, newComer.Username)
 		NewComers[j.ingressBody.Message.NewChatMember.Id] = time.Now()
-	}
-
-	var keyBtns []*KeyboardButton
-	keyBtns = append(keyBtns, &KeyboardButton{j.app.Features.NewcomerQuestionnare.AuthMessage})
+	}	
 
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:					j.ingressBody.Message.Chat.Id,
@@ -71,7 +73,7 @@ func (j *Job) actionSendMessage(text string, isAuth bool) (bool, error) {
 		DisableWebPagePreview:	true,
 		DisableNotification:	true,
 		ReplyToMessageId:		j.ingressBody.Message.MessageId,
-		ReplyMarkup:			&ReplyKeyboardMarkup{keyBtns, true},
+		ReplyMarkup:			reply,
 	}
 
 	return botEgressReq.EgressSendToTelegram(j.app)
