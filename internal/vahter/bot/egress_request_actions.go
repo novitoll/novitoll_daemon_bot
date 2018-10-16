@@ -17,6 +17,13 @@ func sendHTTP(req *http.Request) (bool, error) {
 		}).Dial,
 		TLSHandshakeTimeout: 5 * time.Second,
 	}
+	
+	// TODO remove
+	log.Println("[!] POST HTTP egress to Telegram")
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(req.Body)
+	log.Println(buf.String())
+
 	client := &http.Client{
 		Timeout: time.Second * 10,
 		Transport: netTransport,

@@ -16,7 +16,7 @@ services:
       - REDIS_PORT=6379
       - APP_LANG=rus
     env_file:
-      - ./.env
+      - ./.env-green
     ports:
       - "8081:8080"
     links:
