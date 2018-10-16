@@ -40,7 +40,7 @@ func JobUrlDuplicationDetector(j *Job) (bool, error) {
 	redisConn := redisClient.GetRedisConnection() // TODO: improve this using Redis Pool of connections
 	defer redisConn.Close()
 
-	urls := xurls.Relaxed.FindAllString(j.ingressBody.Message.Text, -1)
+	urls := xurls.Relaxed().FindAllString(j.ingressBody.Message.Text, -1)
 	if len(urls) == 0 {
 		return false, nil
 	}

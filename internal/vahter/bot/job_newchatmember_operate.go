@@ -3,7 +3,6 @@ package bot
 import (
 	"log"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -64,7 +63,7 @@ func JobNewChatMemberWaiter(j *Job) (bool, error) {
 	authMsg := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang].AuthMessage
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
-	if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok && strings.ToLower(j.ingressBody.Message.Text) == authMsg {
+	if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok && j.ingressBody.Message.Text == authMsg {
 		chNewcomer <-j.ingressBody.Message.From.Id
 	}
 	return true, nil

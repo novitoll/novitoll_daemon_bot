@@ -17,12 +17,12 @@
       "en-us": {
         "welcomeMessage": "Ping? Please answere here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
-        "authMessage": "I am not a robot. I can write a symphony and turn the canvas into the beautiful masterpiece."
+        "authMessage": "I am not a robot.\nI can write a symphony \nand turn the canvas into the beautiful masterpiece."
       },
       "rus": {
         "welcomeMessage": "Пинг? Ответьте в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
-        "authMessage": "Я - не робот. Я могу сочинить симфонию и превратить кусок холста в искусство."
+        "authMessage": "Я - не робот.\nЯ могу сочинить симфонию \nи превратить кусок холста в искусство."
       }
     },    
     "authTimeout": 120,
