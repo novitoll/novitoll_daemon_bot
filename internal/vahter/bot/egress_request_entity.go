@@ -57,7 +57,6 @@ type BotForceReply struct {
 type ReplyKeyboardMarkup struct {
 	Keyboard [][]KeyboardButton `json:"keyboard"`
 	OneTimeKeyboard bool `json:"one_time_keyboard"`
-	ResizeKeyboard bool `json:"resize_keyboard"`
 	Selective  bool `json:"selective"`
 }
 
@@ -71,4 +70,9 @@ type BotEgressKickChatMember struct {
 	ChatId    int   `json:"chat_id"`
 	UserId    int   `json:"user_id"`
 	UntilDate int64 `json:"until_date"`
+}
+
+type BotEgressDeleteMessage struct {
+	ChatId int `json:"chat_id"`
+	MessageId int `json:"message_id"`
 }

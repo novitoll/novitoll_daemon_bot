@@ -33,7 +33,7 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) {
 	botEgressReq.EgressSendToTelegram(j.app)
 }
 
-func JobUrlDuplicationDetector(j *Job) (bool, error) {
+func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	if !j.app.Features.UrlDuplication.Enabled {
 		return false, nil
 	}

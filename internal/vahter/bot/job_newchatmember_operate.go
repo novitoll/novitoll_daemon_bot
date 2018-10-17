@@ -6,18 +6,21 @@ import (
 	"time"
 )
 
+const (
+	TIME_TO_DELETE_REPLY_MSG = 10
+)
+
 var (
 	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
 // TODO: this method is too complex, make it more lightweight
 
-func JobNewChatMemberDetector(j *Job) (bool, error) {
+func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// for short code reference
 	newComer := j.ingressBody.Message.NewChatMember
 	newComerConfig := j.app.Features.NewcomerQuestionnare
 	botReplyMsg := newComerConfig.I18n[j.app.Lang]
-	btnMsg := botReplyMsg.AuthMessage
 
 	if !newComerConfig.Enabled || newComer.Id == 0 || newComer.Username == "@novitoll_daemon_bot" {
 		return false, nil
@@ -25,26 +28,21 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 
 	keyBtns := [][]KeyboardButton{
 		[]KeyboardButton{
-			KeyboardButton{btnMsg},
+			KeyboardButton{botReplyMsg.AuthMessage},
 		},
 	}
 
-	var username string = "<no_username>"
-	if newComer.Username != "" {
-		username = fmt.Sprintf("@%s", newComer.Username)
-	}
-
-	welcomeMsg := fmt.Sprintf(username, botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
+	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
 
 	// record a newcomer and wait for his reply on the channel,
-	// otherwise kick that bastard and delete the record from this map
+	// otherwise kick that not-doot and delete the record from this map
 	log.Printf("[+] New member %d(@%s) has been detected", newComer.Id, newComer.Username)
 	NewComers[newComer.Id] = time.Now()
 
+	// sends the welcome authentication message
 	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{
 		Keyboard: keyBtns,
 		OneTimeKeyboard: true,
-		ResizeKeyboard: true,
 		Selective: true,
 	})
 
@@ -59,7 +57,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 		}		
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
 		kicked, err := j.actionKickChatMember()
-		if kicked {
+		if err == nil {
 			delete(NewComers, newComer.Id)
 			log.Printf("[!] Newcomer %d(@%s) has been kicked", newComer.Id, newComer.Username)
 		}
@@ -69,7 +67,7 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 	return true, nil
 }
 
-func JobNewChatMemberWaiter(j *Job) (bool, error) {
+func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 	authMsg := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang].AuthMessage
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
@@ -79,7 +77,11 @@ func JobNewChatMemberWaiter(j *Job) (bool, error) {
 	return true, nil
 }
 
-func (j *Job) actionSendMessage(text string, reply interface{}) (bool, error) {
+/*
+	Action functions
+*/
+
+func (j *Job) actionSendMessage(text string, reply interface{}) (interface{}, error) {
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:					j.ingressBody.Message.Chat.Id,
 		Text:					text,
@@ -89,11 +91,17 @@ func (j *Job) actionSendMessage(text string, reply interface{}) (bool, error) {
 		ReplyToMessageId:		j.ingressBody.Message.MessageId,
 		ReplyMarkup:			reply,
 	}
-
-	return botEgressReq.EgressSendToTelegram(j.app)
+	replyMsgBody, err := botEgressReq.EgressSendToTelegram(j.app)
+	if err != nil {
+		return false, err
+	}
+	
+	// cleanup reply messages
+	go j.actionDeleteMessage(replyMsgBody)
+	return replyMsgBody, err
 }
 
-func (j *Job) actionKickChatMember() (bool, error) {
+func (j *Job) actionKickChatMember() (interface{}, error) {
 	t := time.Now().Add(time.Duration(j.app.Features.NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
 
 	log.Printf("[+] Kicking a newcomer %d(@%s) until %d", j.ingressBody.Message.NewChatMember.Id, j.ingressBody.Message.NewChatMember.Username, t)
@@ -103,6 +111,17 @@ func (j *Job) actionKickChatMember() (bool, error) {
 		UserId: j.ingressBody.Message.NewChatMember.Id,
 		UntilDate: t,
 	}
-
 	return botEgressReq.EgressKickChatMember(j.app)
+}
+
+func (j *Job) actionDeleteMessage(response *BotIngressRequest) (interface{}, error) {
+	for range time.Tick(TIME_TO_DELETE_REPLY_MSG * time.Second) {
+		log.Printf("[+] Deleting a reply message %d", response.Message.MessageId)
+		botEgressReq := &BotEgressDeleteMessage{
+			ChatId:					response.Message.Chat.Id,
+			MessageId:				response.Message.MessageId,
+		}
+		botEgressReq.EgressDeleteMessage(j.app)
+	}
+	return true, nil
 }

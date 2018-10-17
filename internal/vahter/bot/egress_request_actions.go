@@ -10,7 +10,9 @@ import (
 	"encoding/json"
 )
 
-func sendHTTP(req *http.Request) (bool, error) {
+func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
+	var replyMsgBody BotIngressRequest
+
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
 		Timeout: 5 * time.Second,
@@ -25,16 +27,22 @@ func sendHTTP(req *http.Request) (bool, error) {
 		Timeout: time.Second * 10,
 		Transport: netTransport,
 	}
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
+	response, err := client.Do(req)
+	defer response.Body.Close()
 	if err != nil {
 		log.Fatalln("[-] Can not send message to Telegram\n", err)
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	json.Unmarshal([]byte(buf.String()), &replyMsgBody)
+	return &replyMsgBody, err
 }
 
-func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (bool, error) {
+// TODO: Factory? these functions are similar, difference is request body and Telegram command
+
+func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (*BotIngressRequest, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "sendMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
@@ -42,9 +50,17 @@ func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (bool, error
 	return sendHTTP(req)
 }
 
-func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (bool, error) {
+func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (*BotIngressRequest, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "kickChatMember")
+	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+	return sendHTTP(req)
+}
+
+func (reqBody *BotEgressDeleteMessage) EgressDeleteMessage(app *App) (*BotIngressRequest, error) {
+	jsonValue, _ := json.Marshal(reqBody)
+	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "deleteMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
 	return sendHTTP(req)
