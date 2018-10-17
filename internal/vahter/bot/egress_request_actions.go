@@ -6,13 +6,12 @@ import (
 	"bytes"
 	"time"
 	"net"
+	"errors"
 	"net/http"
 	"encoding/json"
 )
 
 func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
-	var replyMsgBody BotIngressRequest
-
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
 		Timeout: 5 * time.Second,
@@ -32,14 +31,19 @@ func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
 		log.Fatalln("[-] Can not send message to Telegram\n", err)
 		return nil, err
 	}
-	
+
+	var replyMsgBody BotIngressResponse
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal([]byte(buf.String()), &replyMsgBody)
-
 	defer response.Body.Close()
-	
-	return &replyMsgBody, err
+
+	if !replyMsgBody.Ok {
+		err = errors.New(fmt.Sprintf("ERROR - %d; %s", replyMsgBody.ErrorCode, replyMsgBody.Description))
+		return nil, err
+	} else {
+		return &replyMsgBody.Result, err
+	}
 }
 
 // TODO: Factory? these functions are similar, difference is request body and Telegram command
