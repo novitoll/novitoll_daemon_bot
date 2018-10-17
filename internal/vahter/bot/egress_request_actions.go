@@ -28,7 +28,6 @@ func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
 		Transport: netTransport,
 	}
 	response, err := client.Do(req)
-	defer response.Body.Close()
 	if err != nil {
 		log.Fatalln("[-] Can not send message to Telegram\n", err)
 		return nil, err
@@ -37,6 +36,9 @@ func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(response.Body)
 	json.Unmarshal([]byte(buf.String()), &replyMsgBody)
+
+	defer response.Body.Close()
+	
 	return &replyMsgBody, err
 }
 

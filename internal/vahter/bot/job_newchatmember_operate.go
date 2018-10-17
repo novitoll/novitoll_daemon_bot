@@ -122,6 +122,7 @@ func (j *Job) actionDeleteMessage(response *BotIngressRequest) (interface{}, err
 			MessageId:				response.Message.MessageId,
 		}
 		botEgressReq.EgressDeleteMessage(j.app)
+		break
 	}
 	return true, nil
 }
