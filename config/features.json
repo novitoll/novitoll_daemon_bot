@@ -15,14 +15,14 @@
     "actionNotify": true,
     "i18n": {
       "en-us": {
-        "welcomeMessage": "Ping? Please answere here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
+        "welcomeMessage": "%s, ping? Please answere here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
-        "authMessage": "I am not a robot.\nI can write a symphony \nand turn the canvas into the beautiful masterpiece."
+        "authMessage": "I am not a bot"
       },
       "rus": {
-        "welcomeMessage": "Пинг? Ответьте в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
+        "welcomeMessage": "@%s, пинг? Ответьте в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
-        "authMessage": "Я - не робот.\nЯ могу сочинить симфонию \nи превратить кусок холста в искусство."
+        "authMessage": "Я - не бот"
       }
     },    
     "authTimeout": 120,

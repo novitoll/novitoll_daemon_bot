@@ -29,14 +29,24 @@ func JobNewChatMemberDetector(j *Job) (bool, error) {
 		},
 	}
 
-	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
+	var username string = "<no_username>"
+	if newComer.Username != "" {
+		username = fmt.Sprintf("@%s", newComer.Username)
+	}
+
+	welcomeMsg := fmt.Sprintf(username, botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that bastard and delete the record from this map
 	log.Printf("[+] New member %d(@%s) has been detected", newComer.Id, newComer.Username)
-	NewComers[j.ingressBody.Message.NewChatMember.Id] = time.Now()
+	NewComers[newComer.Id] = time.Now()
 
-	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{keyBtns, true, true})
+	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{
+		Keyboard: keyBtns,
+		OneTimeKeyboard: true,
+		ResizeKeyboard: true,
+		Selective: true,
+	})
 
 	// blocks the current Job goroutine until either of these 2 channels receive the value
 	select {

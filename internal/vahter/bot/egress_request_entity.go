@@ -57,6 +57,7 @@ type BotForceReply struct {
 type ReplyKeyboardMarkup struct {
 	Keyboard [][]KeyboardButton `json:"keyboard"`
 	OneTimeKeyboard bool `json:"one_time_keyboard"`
+	ResizeKeyboard bool `json:"resize_keyboard"`
 	Selective  bool `json:"selective"`
 }
 
