@@ -14,10 +14,13 @@ run:
 	./bot.bin
 
 docker-compose-local:
-	docker-compose -f deployments/docker-compose-local.yml up -d
+	docker-compose -f deployments/docker-compose-local.yml up
 
 docker-compose:
 	docker-compose -f deployments/docker-compose.yml up -d
+
+docker-compose-green:
+	docker-compose -f deployments/docker-compose-green.yml up
 
 docker-compose-stop:
 	docker-compose -f deployments/docker-compose.yml stop
