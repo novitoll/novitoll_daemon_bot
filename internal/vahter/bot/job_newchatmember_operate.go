@@ -32,7 +32,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		},
 	}
 
-	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
+	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)	
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
@@ -54,17 +54,17 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 		if newComerConfig.ActionNotify {
 			return j.actionSendMessage(botReplyMsg.AuthOKMessage, &BotForceReply{true, true})
-		}		
+		} else {
+			return true, nil
+		}
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
-		kicked, err := j.actionKickChatMember()
+		response, err := j.actionKickChatMember()
 		if err == nil {
 			delete(NewComers, newComer.Id)
 			log.Printf("[!] Newcomer %d(@%s) has been kicked", newComer.Id, newComer.Username)
 		}
-		return kicked, err
+		return response, err
 	}
-
-	return true, nil
 }
 
 func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
@@ -117,6 +117,7 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 func (j *Job) actionDeleteMessage(response *BotIngressRequest) (interface{}, error) {
 	for range time.Tick(TIME_TO_DELETE_REPLY_MSG * time.Second) {
 		log.Printf("[+] Deleting a reply message %d", response.Message.MessageId)
+		
 		botEgressReq := &BotEgressDeleteMessage{
 			ChatId:					response.Message.Chat.Id,
 			MessageId:				response.Message.MessageId,
