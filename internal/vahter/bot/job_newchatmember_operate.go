@@ -1,8 +1,8 @@
 package bot
 
 import (
-	"log"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -11,7 +11,7 @@ const (
 )
 
 var (
-	chNewcomer = make(chan int)  // unbuffered chhanel to wait for the certain time for the newcomer's response
+	chNewcomer = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
 // TODO: this method is too complex, make it more lightweight
@@ -32,18 +32,18 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		},
 	}
 
-	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)	
+	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
-	log.Printf("[+] New member %d(@%s) has been detected", newComer.Id, newComer.Username)
+	log.Printf("[.] New member %d(@%s) has been detected", newComer.Id, newComer.Username)
 	NewComers[newComer.Id] = time.Now()
 
 	// sends the welcome authentication message
 	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{
-		Keyboard: keyBtns,
+		Keyboard:        keyBtns,
 		OneTimeKeyboard: true,
-		Selective: true,
+		Selective:       true,
 	})
 
 	// blocks the current Job goroutine until either of these 2 channels receive the value
@@ -72,7 +72,7 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
 	if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok && j.ingressBody.Message.Text == authMsg {
-		chNewcomer <-j.ingressBody.Message.From.Id
+		chNewcomer <- j.ingressBody.Message.From.Id
 	}
 	return true, nil
 }
@@ -83,19 +83,19 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 
 func (j *Job) actionSendMessage(text string, reply interface{}) (interface{}, error) {
 	botEgressReq := &BotEgressSendMessage{
-		ChatId:					j.ingressBody.Message.Chat.Id,
-		Text:					text,
-		ParseMode:				ParseModeMarkdown,
-		DisableWebPagePreview:	true,
-		DisableNotification:	true,
-		ReplyToMessageId:		j.ingressBody.Message.MessageId,
-		ReplyMarkup:			reply,
+		ChatId:                j.ingressBody.Message.Chat.Id,
+		Text:                  text,
+		ParseMode:             ParseModeMarkdown,
+		DisableWebPagePreview: true,
+		DisableNotification:   true,
+		ReplyToMessageId:      j.ingressBody.Message.MessageId,
+		ReplyMarkup:           reply,
 	}
 	replyMsgBody, err := botEgressReq.EgressSendToTelegram(j.app)
 	if err != nil {
 		return false, err
 	}
-	
+
 	// cleanup reply messages
 	go j.actionDeleteMessage(replyMsgBody)
 	return replyMsgBody, err
@@ -104,11 +104,11 @@ func (j *Job) actionSendMessage(text string, reply interface{}) (interface{}, er
 func (j *Job) actionKickChatMember() (interface{}, error) {
 	t := time.Now().Add(time.Duration(j.app.Features.NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
 
-	log.Printf("[+] Kicking a newcomer %d(@%s) until %d", j.ingressBody.Message.NewChatMember.Id, j.ingressBody.Message.NewChatMember.Username, t)
+	log.Printf("[.] Kicking a newcomer %d(@%s) until %d", j.ingressBody.Message.NewChatMember.Id, j.ingressBody.Message.NewChatMember.Username, t)
 
 	botEgressReq := &BotEgressKickChatMember{
-		ChatId: j.ingressBody.Message.Chat.Id,
-		UserId: j.ingressBody.Message.NewChatMember.Id,
+		ChatId:    j.ingressBody.Message.Chat.Id,
+		UserId:    j.ingressBody.Message.NewChatMember.Id,
 		UntilDate: t,
 	}
 	return botEgressReq.EgressKickChatMember(j.app)
@@ -116,11 +116,11 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 
 func (j *Job) actionDeleteMessage(response *BotIngressRequest) (interface{}, error) {
 	for range time.Tick(TIME_TO_DELETE_REPLY_MSG * time.Second) {
-		log.Printf("[+] Deleting a reply message %d", response.Message.MessageId)
-		
+		log.Printf("[.] Deleting a reply message %d", response.Message.MessageId)
+
 		botEgressReq := &BotEgressDeleteMessage{
-			ChatId:					response.Message.Chat.Id,
-			MessageId:				response.Message.MessageId,
+			ChatId:    response.Message.Chat.Id,
+			MessageId: response.Message.MessageId,
 		}
 		botEgressReq.EgressDeleteMessage(j.app)
 		break

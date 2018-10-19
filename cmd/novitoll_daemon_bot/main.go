@@ -34,7 +34,7 @@ func init() {
 		lang = l
 	}
 	if _, ok := features.NewcomerQuestionnare.I18n[lang]; !ok {
-		panic(fmt.Sprintf("Unknown language %s", lang))
+		panic(fmt.Sprintf("Unknown language - %s", lang))
 	}
 }
 

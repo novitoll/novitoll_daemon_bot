@@ -1,29 +1,28 @@
 package bot
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
-	"bytes"
-	"time"
 	"net"
-	"errors"
 	"net/http"
-	"encoding/json"
+	"time"
 )
 
 func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
-		Timeout: 5 * time.Second,
+			Timeout: 5 * time.Second,
 		}).Dial,
 		TLSHandshakeTimeout: 5 * time.Second,
 	}
-	
-	// TODO remove
-	log.Println("[!] POST HTTP egress to Telegram")
+
+	log.Println("[.] POST HTTP egress to Telegram")
 
 	client := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout:   time.Second * 10,
 		Transport: netTransport,
 	}
 	response, err := client.Do(req)

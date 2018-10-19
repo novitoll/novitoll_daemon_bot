@@ -12,9 +12,6 @@ var (
 
 type ProcessJobFn func(job *Job) (interface{}, error)
 
-// br - BotIngressRequest (HTTP POST request body from Telegram)
-// rh - RouteHander, struct which includes the bot's configuration (Telegram token) etc.
-
 func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error) {
 	var wg sync.WaitGroup
 	errJob := make(chan error, len(jobsFn))
@@ -51,7 +48,7 @@ func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error)
 }
 
 func (ingressBody *BotIngressRequest) Process(app *App) {
-	log.Printf("[.] Processing message from -- Username: %s, Chat: %s, Message_Id: %d", ingressBody.Message.From.Username, ingressBody.Message.Chat.Username, ingressBody.Message.MessageId)
+	log.Printf("[.] Process: Running. Message from -- Username: %s, Chat: %s, Message_Id: %d", ingressBody.Message.From.Username, ingressBody.Message.Chat.Username, ingressBody.Message.MessageId)
 
 	job := &Job{ingressBody, app}
 
