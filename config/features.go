@@ -28,5 +28,5 @@ type UrlConfigOptions struct {
 	Enabled		bool `json:"enabled"`
 	IgnoreHostnames bool `json:"ignoreHostnames"`
 	ActionNotify	bool `json:"actionNotify"`
-	RelevanceTimeout uint8 `json:"relevanceTimeout"`
+	RelevanceTimeout int `json:"relevanceTimeout"`
 }

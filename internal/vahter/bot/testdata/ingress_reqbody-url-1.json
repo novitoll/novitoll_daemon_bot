@@ -1,0 +1,28 @@
+{
+  "message": {
+    "from": {
+      "username": "novitoll",
+      "first_name": "novitoll",
+      "is_bot": false,
+      "id": 345019684,
+      "language_code": "en-US"
+    },
+    "text": "message https://test-123.com",
+    "entities": [
+      {
+        "length": 101,
+        "type": "url",
+        "offset": 0
+      }
+    ],
+    "chat": {
+      "username": "novitoll",
+      "first_name": "novitoll",
+      "type": "private",
+      "id": 345019684
+    },
+    "date": 1537020424,
+    "message_id": 28
+  },
+  "update_id": 776799951
+}
