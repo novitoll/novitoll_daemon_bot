@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
+func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
 			Timeout: 5 * time.Second,
@@ -47,7 +47,7 @@ func sendHTTP(req *http.Request) (*BotIngressRequest, error) {
 
 // TODO: Factory? these functions are similar, difference is request body and Telegram command
 
-func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (*BotIngressRequest, error) {
+func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (*BotIngressRequestMessage, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "sendMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
@@ -55,7 +55,7 @@ func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (*BotIngress
 	return sendHTTP(req)
 }
 
-func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (*BotIngressRequest, error) {
+func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (*BotIngressRequestMessage, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "kickChatMember")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
@@ -63,7 +63,7 @@ func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (*BotIngr
 	return sendHTTP(req)
 }
 
-func (reqBody *BotEgressDeleteMessage) EgressDeleteMessage(app *App) (*BotIngressRequest, error) {
+func (reqBody *BotEgressDeleteMessage) EgressDeleteMessage(app *App) (*BotIngressRequestMessage, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "deleteMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))

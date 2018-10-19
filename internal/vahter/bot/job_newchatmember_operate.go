@@ -114,13 +114,13 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 	return botEgressReq.EgressKickChatMember(j.app)
 }
 
-func (j *Job) actionDeleteMessage(response *BotIngressRequest) (interface{}, error) {
+func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage) (interface{}, error) {
 	for range time.Tick(TIME_TO_DELETE_REPLY_MSG * time.Second) {
-		log.Printf("[.] Deleting a reply message %d", response.Message.MessageId)
+		log.Printf("[.] Deleting a reply message %d", response.MessageId)
 
 		botEgressReq := &BotEgressDeleteMessage{
-			ChatId:    response.Message.Chat.Id,
-			MessageId: response.Message.MessageId,
+			ChatId:    response.Chat.Id,
+			MessageId: response.MessageId,
 		}
 		_, err := botEgressReq.EgressDeleteMessage(j.app)
 		if err != nil {

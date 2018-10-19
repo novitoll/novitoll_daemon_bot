@@ -17,6 +17,7 @@ var (
 	admins = []string{"novitoll"}
 	gopath, _ = os.LookupEnv("GOPATH")
 	gopathPostfix = "src/github.com/novitoll/novitoll_daemon_bot"
+	testdataDirPath = "internal/vahter/bot/testdata"
 )
 
 func concatStringsWithSlash(s []string) string {
@@ -58,14 +59,14 @@ func TestDifferentIngressMessageStructs(t *testing.T) {
 	}
 
 	for _, f := range files {
-		s := []string{"internal/vahter/bot/testdata", f.Name()}
+		s := []string{testdataDirPath, f.Name()}
 		configureStructs(t, concatStringsWithSlash(s))
 	}	
 }
 
 func TestURLDuplication(t *testing.T) {
-	reqBodyFilepath := "internal/vahter/bot/testdata/ingress_reqbody-url-1.json"
-	pFeatures, pBotRequest := configureStructs(t, reqBodyFilepath)
+	s := []string{testdataDirPath, "ingress_reqbody-url-1.json"}
+	pFeatures, pBotRequest := configureStructs(t, concatStringsWithSlash(s))
 
 	app := App{pFeatures, "en-us"}
 	pBotRequest.Process(&app)
@@ -76,6 +77,12 @@ func TestURLDuplication(t *testing.T) {
 	expected := client.Get("https://test-123.com")
 
 	assert.NotNilf(t, expected, "[-] Value from Redis should not be Nil found by key=extracted URL from message")
+}
+
+func TestTelegramResponseBodyStruct(t *testing.T) {
+	s := []string{testdataDirPath, "ingress_responsebody-1.json"}
+	_, pTelegramResponse := configureStructs(t, concatStringsWithSlash(s))
+	assert.NotNilf(t, pTelegramResponse, "[-] Telegram response body should not be empty but valid")
 }
 
 func TestNewComer(t *testing.T) {

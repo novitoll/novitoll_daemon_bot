@@ -67,7 +67,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	return true, nil
 }
 
-func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (*BotIngressRequest, error) {
+func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (interface{}, error) {
 	log.Printf("[.] POST HTTP request on duplicate detection")
 
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))

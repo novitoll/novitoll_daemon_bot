@@ -133,10 +133,10 @@ package bot
 */
 
 type BotIngressResponse struct {
-	Ok          bool              `json:"ok"`
-	Result      BotIngressRequest `json:"result"`
-	ErrorCode   int               `json:"error_code"`
-	Description string            `json:"description"`
+	Ok          bool                     `json:"ok"`
+	Result      BotIngressRequestMessage `json:"result"`
+	ErrorCode   int                      `json:"error_code"`
+	Description string                   `json:"description"`
 }
 
 type BotIngressRequest struct {
