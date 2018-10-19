@@ -53,7 +53,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
-			return j.actionSendMessage(botReplyMsg.AuthOKMessage, &BotForceReply{true, true})
+			return j.actionSendMessage(botReplyMsg.AuthOKMessage, &BotForceReply{ForceReply: true, Selective: true})
 		} else {
 			return true, nil
 		}
