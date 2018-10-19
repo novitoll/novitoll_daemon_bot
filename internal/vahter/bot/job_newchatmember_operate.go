@@ -122,8 +122,12 @@ func (j *Job) actionDeleteMessage(response *BotIngressRequest) (interface{}, err
 			ChatId:    response.Message.Chat.Id,
 			MessageId: response.Message.MessageId,
 		}
-		botEgressReq.EgressDeleteMessage(j.app)
-		break
+		_, err := botEgressReq.EgressDeleteMessage(j.app)
+		if err != nil {
+			return false, err
+		} else {
+			break // found the another way of quitting the timer
+		}
 	}
 	return true, nil
 }
