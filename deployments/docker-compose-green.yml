@@ -1,10 +1,10 @@
 ---
 version: '3.3'
 services:
-  redis:
+  redis-dev:
     container_name: redis-dev
     image: redis:5.0-rc
-  vahter:
+  vahter-dev:
     build:
       context: ../
       args:
@@ -12,7 +12,7 @@ services:
     image: vahter-bot
     container_name: vahter-bot-dev
     environment:
-      - REDIS_HOST=redis
+      - REDIS_HOST=redis-dev
       - REDIS_PORT=6379
       - APP_LANG=rus
     env_file:
@@ -20,9 +20,8 @@ services:
     ports:
       - "8081:8080"
     links:
-      - redis
+      - redis-dev
     depends_on:
-      - redis
+      - redis-dev
     volumes:
       - "../:/opt/src/github.com/novitoll/novitoll_daemon_bot"
-  

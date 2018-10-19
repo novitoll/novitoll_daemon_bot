@@ -1,0 +1,21 @@
+{
+  "update_id": 53205698,
+  "message": {
+    "message_id": 108,
+    "from": {
+      "id": 345019684,
+      "is_bot": false,
+      "first_name": "novitoll",
+      "username": "novitoll",
+      "language_code": "en-US"
+    },
+    "chat": {
+      "id": -253761934,
+      "title": "test_novitoll_daemon_bot",
+      "type": "group",
+      "all_members_are_administrators": true
+    },
+    "date": 1539515199,
+    "migrate_to_chat_id": -1001276148791
+  }
+}

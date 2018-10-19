@@ -1,13 +1,11 @@
-// TODO: Move this to the another package
-
-package bot
+package nlp
 
 import (
 	"fmt"
 )
 
-func (br *BotIngressRequest) CheckForAd(ch chan bool) {
-	tokens := tokenizer(br.Message.Text)  // X features
+func Vectorize(ch chan bool, text string) {
+	tokens := tokenizer(text) // X features
 	if tokens != nil {
 		fmt.Printf("good")
 	}
@@ -25,11 +23,10 @@ func tokenizer(text string) []string {
 }
 
 type TextClassifierModel struct {
-
 }
 
 type NaiveBayesClassifier struct {
-	X []string  // convert to slice
+	X []string // convert to slice
 	y []string
 }
 

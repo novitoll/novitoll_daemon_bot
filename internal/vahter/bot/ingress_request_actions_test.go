@@ -1,104 +1,72 @@
 package bot
 
 import (
-	"encoding/json"
-	"testing"
+	"os"
 	"time"
+	"strings"
+	"testing"
+	"io/ioutil"
+	"encoding/json"
+	"github.com/stretchr/testify/assert"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
-	botRequestMessageMigration = `
-	{"update_id":53205698, "message":{"message_id":108,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515199,"migrate_to_chat_id":-1001276148791}}
-	`
-
-	botRequestNewComer = `
-	{"update_id":53205697, "message":{"message_id":107,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-253761934,"title":"test_novitoll_daemon_bot","type":"group","all_members_are_administrators":true},"date":1539515176,"new_chat_participant":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_member":{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"},"new_chat_members":[{"id":553713145,"is_bot":true,"first_name":"novitoll_daemon_bot","username":"novitoll_daemon_bot"}]}}
-	`
-
-	botRequestPlainText = `
-		{"message": {
-		"from": {
-		  "username": "novitoll",
-		  "first_name": "novitoll",
-		  "is_bot": false,
-		  "id": 345019684,
-		  "language_code": "en-US"
-		},
-		"text": "message https://test-123.com",
-		"entities": [
-		  {
-		    "length": 101,
-		    "type": "url",
-		    "offset": 0
-		  }
-		],
-		"chat": {
-		  "username": "novitoll",
-		  "first_name": "novitoll",
-		  "type": "private",
-		  "id": 345019684
-		},
-		"date": 1537020424,
-		"message_id": 28
-		},
-		"update_id": 776799951
-		}`
-
-	botRequestMemberLeftChat = `
-	{"update_id":53205716, "message":{"message_id":25,"from":{"id":345019684,"is_bot":false,"first_name":"novitoll","username":"novitoll","language_code":"en-US"},"chat":{"id":-1001276148791,"title":"test_novitoll_daemon_bot","type":"supergroup"},"date":1539530333,"left_chat_participant":{"id":574825208,"is_bot":false,"first_name":"N2","username":"Novitoll_2"},"left_chat_member":{"id":574825208,"is_bot":false,"first_name":"N2","username":"Novitoll_2"}}}
-	`
+	admins = []string{"novitoll"}
+	gopath, _ = os.LookupEnv("GOPATH")
+	gopathPostfix = "src/github.com/novitoll/novitoll_daemon_bot"
+	testdataDirPath = "internal/vahter/bot/testdata"
 )
 
-func configureStructs(t *testing.T) (*cfg.FeaturesConfig, *BotIngressRequest) {
-	var featuresConfig string
+func concatStringsWithSlash(s []string) string {
+	 return strings.Join(s[:], "/")
+}
 
-	featuresConfig = `
-	{
-	  "notificationTarget": {
-	    "admins": ["novitoll"]
-	  },
-	  "urlDuplication": {
-	    "enabled": true,
-	    "actionKick": false,
-	    "actionBan": false,
-	    "actionAdminNotify": true
-	  },
-	  "newcomerQuestionnare": {
-	    "enabled": true,
-	    "actionKick": false,
-	    "actionBan": false,
-	    "actionAdminNotify": true
-	  },
-	  "adDetection": {
-	    "enabled": true,
-	    "actionKick": false,
-	    "actionBan": false,
-	    "actionAdminNotify": true
-	  }
-	}`
+func filepathToStruct(t *testing.T, filepath string, pData interface{}) {
+	var absolutePath string = concatStringsWithSlash([]string{gopath, gopathPostfix, filepath})
+	fileJson, err := os.Open(absolutePath)
+	defer fileJson.Close()
 
-	var features cfg.FeaturesConfig
-	err := json.Unmarshal([]byte(featuresConfig), &features)
+	if err != nil {
+		panic(err)
+		assert.Nil(t, err, "[-] Should be a valid existing file")
+	}
+
+	jsonBytes, _ := ioutil.ReadAll(fileJson)
+	err = json.Unmarshal(jsonBytes, pData)
 	assert.Nil(t, err, "[-] Should be valid features config JSON to decode")
+}
 
-	admins := []string{"novitoll"}
+func configureStructs(t *testing.T, reqBodyFilepath string) (*cfg.FeaturesConfig, *BotIngressRequest) {
+	// FeaturesConfig init
+	var features cfg.FeaturesConfig
+	filepathToStruct(t, "config/features.json", &features)
 	assert.Equal(t, features.NotificationTarget.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
 
+	// BotIngressRequest init
 	var ingressBody BotIngressRequest
-	err2 := json.Unmarshal([]byte(botRequestPlainText), &ingressBody)
-	assert.Nil(t, err2, "[-] Should be valid BotIngressRequest JSON to decode")
-
-	assert.Equal(t, ingressBody.Message.From.Username, "novitoll", "[-] Should be equal decoded BotIngressRequest struct Message.From.Username field")
+	filepathToStruct(t, reqBodyFilepath, &ingressBody)
 
 	return &features, &ingressBody
 }
 
+func TestDifferentIngressMessageStructs(t *testing.T) {
+	files, err := ioutil.ReadDir("testdata")
+	if err != nil {
+		assert.Nil(t, err, "[-] Should be no error in loading testdata")
+	}
+
+	for _, f := range files {
+		s := []string{testdataDirPath, f.Name()}
+		configureStructs(t, concatStringsWithSlash(s))
+	}	
+}
+
 func TestURLDuplication(t *testing.T) {
-	pFeatures, pBotRequest := configureStructs(t)
+	s := []string{testdataDirPath, "ingress_reqbody-url-1.json"}
+	pFeatures, pBotRequest := configureStructs(t, concatStringsWithSlash(s))
 
 	app := App{pFeatures, "en-us"}
 	pBotRequest.Process(&app)
@@ -111,24 +79,19 @@ func TestURLDuplication(t *testing.T) {
 	assert.NotNilf(t, expected, "[-] Value from Redis should not be Nil found by key=extracted URL from message")
 }
 
-func TestDifferentIngressMessageStructs(t *testing.T) {
-	var ingressBody BotIngressRequest
-	err := json.Unmarshal([]byte(botRequestMessageMigration), &ingressBody)
-	assert.Nil(t, err, "[-] Should be valid BotIngressRequest JSON to decode")
-
-	var ingressBody2 BotIngressRequest
-	err2 := json.Unmarshal([]byte(botRequestNewComer), &ingressBody2)
-	assert.Nil(t, err2, "[-] Should be valid BotIngressRequest JSON to decode")
+func TestTelegramResponseBodyStruct(t *testing.T) {
+	s := []string{testdataDirPath, "ingress_responsebody-1.json"}
+	_, pTelegramResponse := configureStructs(t, concatStringsWithSlash(s))
+	assert.NotNilf(t, pTelegramResponse, "[-] Telegram response body should not be empty but valid")
 }
 
 func TestNewComer(t *testing.T) {
-	var ingressBody BotIngressRequest
-	err := json.Unmarshal([]byte(botRequestNewComer), &ingressBody)
-	assert.Nil(t, err, "[-] Should be valid BotIngressRequest JSON to decode")
+	reqBodyFilepath := "internal/vahter/bot/testdata/ingress_reqbody-newchatmember-1.json"
+	_, pBotRequest := configureStructs(t, reqBodyFilepath)
 
 	timer := time.NewTimer(11 * time.Second)
 	go func() {
 		<-timer.C
-		assert.Contains(t, NewComers, ingressBody.Message.From.Id, "[-] Should be NewComers map")
+		assert.Contains(t, NewComers, pBotRequest.Message.From.Id, "[-] Should be NewComers map")
 	}()
 }

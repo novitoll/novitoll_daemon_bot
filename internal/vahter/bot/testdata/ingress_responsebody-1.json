@@ -1,0 +1,56 @@
+{
+  "ok": true,
+  "result": {
+    "message_id": 107,
+    "from": {
+      "id": 1,
+      "is_bot": true,
+      "first_name": "novitoll_daemon_bot_test",
+      "username": "novitoll_daemon_bot_test_bot"
+    },
+    "chat": {
+      "id": -2,
+      "title": "test2_novitoll_daemon_bot",
+      "type": "group",
+      "all_members_are_administrators": false
+    },
+    "date": 1539940179,
+    "reply_to_message": {
+      "message_id": 106,
+      "from": {
+        "id": 3,
+        "is_bot": false,
+        "first_name": "N2",
+        "username": "Novitoll_2"
+      },
+      "chat": {
+        "id": -2,
+        "title": "test2_novitoll_daemon_bot",
+        "type": "group",
+        "all_members_are_administrators": false
+      },
+      "date": 1539940178,
+      "new_chat_participant": {
+        "id": 3,
+        "is_bot": false,
+        "first_name": "N2",
+        "username": "Novitoll_2"
+      },
+      "new_chat_member": {
+        "id": 3,
+        "is_bot": false,
+        "first_name": "N2",
+        "username": "Novitoll_2"
+      },
+      "new_chat_members": [
+        {
+          "id": 3,
+          "is_bot": false,
+          "first_name": "N2",
+          "username": "Novitoll_2"
+        }
+      ]
+    },
+    "text": "Пинг? Ответьте в течении 120 секунд, в противном случае вы будете исключены из группы на 60 секунд по разным причинам."
+  }
+}

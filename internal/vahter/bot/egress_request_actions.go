@@ -1,40 +1,56 @@
 package bot
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
-	"bytes"
-	"time"
 	"net"
 	"net/http"
-	"encoding/json"
+	"time"
 )
 
-func sendHTTP(req *http.Request) (bool, error) {
+func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
-		Timeout: 5 * time.Second,
+			Timeout: 5 * time.Second,
 		}).Dial,
 		TLSHandshakeTimeout: 5 * time.Second,
 	}
-	
-	// TODO remove
-	log.Println("[!] POST HTTP egress to Telegram")
+
+	log.Println("[.] POST HTTP egress to Telegram")
 
 	client := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout:   time.Second * 10,
 		Transport: netTransport,
 	}
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
+	response, err := client.Do(req)
 	if err != nil {
 		log.Fatalln("[-] Can not send message to Telegram\n", err)
-		return false, err
+		return nil, err
 	}
-	return true, nil
+
+	var replyMsgBody BotIngressResponse
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(response.Body)
+	err = json.Unmarshal([]byte(buf.String()), &replyMsgBody)
+	defer response.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	if !replyMsgBody.Ok {
+		err = errors.New(fmt.Sprintf("ERROR - %d; %s", replyMsgBody.ErrorCode, replyMsgBody.Description))
+		return nil, err
+	} else {
+		return &replyMsgBody.Result, err
+	}
 }
 
-func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (bool, error) {
+// TODO: Factory? these functions are similar, difference is request body and Telegram command
+
+func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (*BotIngressRequestMessage, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "sendMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
@@ -42,9 +58,17 @@ func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (bool, error
 	return sendHTTP(req)
 }
 
-func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (bool, error) {
+func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (*BotIngressRequestMessage, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "kickChatMember")
+	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+	return sendHTTP(req)
+}
+
+func (reqBody *BotEgressDeleteMessage) EgressDeleteMessage(app *App) (*BotIngressRequestMessage, error) {
+	jsonValue, _ := json.Marshal(reqBody)
+	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "deleteMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
 	return sendHTTP(req)

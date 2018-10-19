@@ -5,4 +5,6 @@ type Job struct {
 	app *App
 }
 
-var NewComers = make(map[int]interface{})
+var (
+	NewComers = make(map[int]interface{})
+)
