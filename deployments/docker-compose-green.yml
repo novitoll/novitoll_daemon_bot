@@ -12,7 +12,7 @@ services:
     image: vahter-bot
     container_name: vahter-bot-dev
     environment:
-      - REDIS_HOST=redis
+      - REDIS_HOST=redis-dev
       - REDIS_PORT=6379
       - APP_LANG=rus
     env_file:

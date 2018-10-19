@@ -31,17 +31,21 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 		return nil, err
 	}
 
-	var replyMsgBody BotIngressResponse
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(response.Body)
-	json.Unmarshal([]byte(buf.String()), &replyMsgBody)
-	defer response.Body.Close()
+	if response.Body != nil {
+		var replyMsgBody BotIngressResponse
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(response.Body)
+		json.Unmarshal([]byte(buf.String()), &replyMsgBody)
+		defer response.Body.Close()
 
-	if !replyMsgBody.Ok {
-		err = errors.New(fmt.Sprintf("ERROR - %d; %s", replyMsgBody.ErrorCode, replyMsgBody.Description))
-		return nil, err
+		if !replyMsgBody.Ok {
+			err = errors.New(fmt.Sprintf("ERROR - %d; %s", replyMsgBody.ErrorCode, replyMsgBody.Description))
+			return nil, err
+		} else {
+			return &replyMsgBody.Result, err
+		}
 	} else {
-		return &replyMsgBody.Result, err
+		return nil, nil
 	}
 }
 

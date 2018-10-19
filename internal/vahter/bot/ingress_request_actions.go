@@ -62,7 +62,7 @@ func (ingressBody *BotIngressRequest) Process(app *App) {
 	completedProcessJobCount += 1
 
 	for _, e := range errors {
-		log.Fatalf(e.Error())
+		log.Fatalf("[-] %s", e.Error())
 	}
 
 	log.Printf("[+] %d. Process: Completed. Success/Failed=%d/%d", completedProcessJobCount, len(results), len(errors))
