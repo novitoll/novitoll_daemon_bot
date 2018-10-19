@@ -36,6 +36,9 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 	buf.ReadFrom(response.Body)
 	err = json.Unmarshal([]byte(buf.String()), &replyMsgBody)
 	defer response.Body.Close()
+	if err != nil {
+		return nil, err
+	}
 
 	if !replyMsgBody.Ok {
 		err = errors.New(fmt.Sprintf("ERROR - %d; %s", replyMsgBody.ErrorCode, replyMsgBody.Description))

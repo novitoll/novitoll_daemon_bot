@@ -1,15 +1,16 @@
 package bot
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/justincampbell/timeago"
 	"log"
-	"mvdan.cc/xurls"
 	"time"
+	"strings"
+	"encoding/json"
+	"mvdan.cc/xurls"
+	"github.com/justincampbell/timeago"
+	netUrl "net/url"
 
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
-	netUrl "net/url"
 )
 
 func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
@@ -73,17 +74,20 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
 	d, _ := time.ParseDuration(t.String())
 
-	botReplyMessage := "Your message contains duplicate URL. Please dont flood.\n"
-	botReplyMessage += fmt.Sprintf("Last time it was posted from @%s %s ago. #novitollurl", duplicatedMsg.From.Username, timeago.FromDuration(d))
+	botReplyMessage := []string{"Your message contains duplicate URL. Please dont flood.\n", 
+			fmt.Sprintf("Last time it was posted from @%s %s ago. #novitollurl", duplicatedMsg.From.Username, timeago.FromDuration(d))}
 
+	reply := &BotForceReply{ForceReply: true, Selective: true}
+	
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
-		Text:                  botReplyMessage,
+		Text:                  strings.Join(botReplyMessage, "\n"),
 		ParseMode:             ParseModeMarkdown,
 		DisableWebPagePreview: true,
 		DisableNotification:   true,
 		ReplyToMessageId:      j.ingressBody.Message.MessageId,
-		ReplyMarkup:           &BotForceReply{ForceReply: true, Selective: true}}
+		ReplyMarkup:           reply,
+	}
 
 	return botEgressReq.EgressSendToTelegram(j.app)
 }
