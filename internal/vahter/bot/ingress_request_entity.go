@@ -180,3 +180,8 @@ type Chat struct {
 	Id         int    `json:"id"`
 	Title      string `json:"title"`
 }
+
+// https://core.telegram.org/bots/api#sticker
+type Sticker struct {
+  FileId  string `json:"file_id"`
+}

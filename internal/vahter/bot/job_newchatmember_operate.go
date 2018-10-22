@@ -11,6 +11,7 @@ const (
 )
 
 var (
+	NewComers = make(map[int]interface{})
 	chNewcomer = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 

@@ -27,5 +27,18 @@
     },    
     "authTimeout": 120,
     "kickBanTimeout": 60
+  },
+  "stickersDetection": {
+    "enabled": false,
+    "actionDelete": true,
+    "actionNotify": true,
+    "i18n": {
+      "en-us": {
+        "notificationMessage": "Stickers are forbidden."
+      },
+      "rus": {
+        "notificationMessage": "Стикеры запрещены."
+      }
+    }
   }
 }
