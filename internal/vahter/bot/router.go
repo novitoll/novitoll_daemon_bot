@@ -29,11 +29,16 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(r.Body)
-	log.Println(buf.String()) // TODO: remove
+	parsedBytes, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		msg := &RouteError{w, 400, nil, "Could not parse the request body"}
+		log.Fatalln(msg.Error())
+		return
+	}
+	log.Printf("[.] Reading %d bytes of request body: %s\n", parsedBytes, buf.String()) // TODO: remove
 
 	var br BotIngressRequest
-	err := json.Unmarshal([]byte(buf.String()), &br)
+	err = json.Unmarshal([]byte(buf.String()), &br)
 	if err != nil {
 		msg := &RouteError{w, 400, nil, "Please send a valid JSON"}
 		log.Fatalln(msg.Error())
