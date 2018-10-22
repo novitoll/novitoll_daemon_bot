@@ -15,12 +15,13 @@ type App struct {
 }
 
 func (app *App) RegisterHandlers() {
-	http.HandleFunc("/check", app.CheckMessageHandlerFunc)
+	http.HandleFunc("/process", app.ProcessMessageHandlerFunc)
+	http.HandleFunc("/flushQueue", app.FlushQueueHandlerFunc)
 
 	log.Printf("[+] Handlers for HTTP end-points are registered")
 }
 
-func (app *App) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
+func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		msg := &RouteError{w, 400, nil, "Please send a request body"}
 		log.Fatalln(msg.Error())
@@ -41,4 +42,8 @@ func (app *App) CheckMessageHandlerFunc(w http.ResponseWriter, r *http.Request) 
 
 	go br.Process(app)
     w.WriteHeader(http.StatusAccepted)
+}
+
+func (app *App) FlushQueueHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusAccepted)
 }
