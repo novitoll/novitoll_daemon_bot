@@ -12,6 +12,7 @@ const (
 
 var (
 	NewComers = make(map[int]interface{})
+	forceDeletion = make(chan bool)
 	chNewcomer = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
@@ -53,6 +54,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
+			forceDeletion <-true
 			return j.actionSendMessage(botReplyMsg.AuthOKMessage, TIME_TO_DELETE_REPLY_MSG, &BotForceReply{
 				ForceReply: false,
 				Selective: true,
@@ -63,6 +65,10 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
 		response, err := j.actionKickChatMember()
 		if err == nil {
+
+			// delete the "User joined the group" event
+			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
+
 			delete(NewComers, newComer.Id)
 			log.Printf("[!] Newcomer %d(@%s) has been kicked", newComer.Id, newComer.Username)
 		}
@@ -122,18 +128,25 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 }
 
 func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, deleteAfterTime uint8) (interface{}, error) {
+	// dirty hack to do the same function on either channel (fan-in pattern)
 	select {
+	case <-forceDeletion:
+		return j.deleteMessage(response, deleteAfterTime)
 	case <-time.After(time.Duration(deleteAfterTime) * time.Second):
-		log.Printf("[.] Deleting a reply message %d", response.MessageId)
-
-		botEgressReq := &BotEgressDeleteMessage{
-			ChatId:    response.Chat.Id,
-			MessageId: response.MessageId,
-		}
-		_, err := botEgressReq.EgressDeleteMessage(j.app)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
+		return j.deleteMessage(response, deleteAfterTime)
 	}
+}
+
+func (j *Job) deleteMessage(response *BotIngressRequestMessage, deleteAfterTime uint8) (interface{}, error) {
+	log.Printf("[.] Deleting a reply message %d", response.MessageId)
+
+	botEgressReq := &BotEgressDeleteMessage{
+		ChatId:    response.Chat.Id,
+		MessageId: response.MessageId,
+	}
+	_, err := botEgressReq.EgressDeleteMessage(j.app)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
