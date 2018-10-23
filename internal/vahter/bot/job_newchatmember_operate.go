@@ -75,6 +75,7 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
 	if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok && j.ingressBody.Message.Text == authMsg {
+		go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 		chNewcomer <- j.ingressBody.Message.From.Id
 	}
 	return true, nil
