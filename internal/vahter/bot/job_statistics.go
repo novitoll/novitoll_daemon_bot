@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -9,11 +10,10 @@ import (
 // formula 1. (Incremental average) M_n = M_(n-1) + ((A_n - M_(n-1)) / n), where M_n = total mean, n = count of records, A = the array of elements
 
 type UserMessageStats struct {
-	MsgsLength 			[]int
-	MeanMsgLength 		int
-	// MeanMsgFrequency 	int
-	MsgsCount 			int
-	LastMsgTime 		int64
+	MsgsLength 		[]int
+	MeanMsgLength 	int
+	MsgsCount 		int
+	LastMsgTime 	int64
 }
 
 var (
@@ -39,7 +39,10 @@ func JobMessageStatistics(job *Job) (interface{}, error) {
 	// 3. update the user stats map
 	UserStatistics[job.ingressBody.Message.From.Id] = prev
 
-	return nil, nil
+	// 4. show stats to log STDOUT
+	log.Printf("[.] User message stats: %v", prev)
+
+	return prev, nil
 }
 
 func getMessageLength(text string) int {

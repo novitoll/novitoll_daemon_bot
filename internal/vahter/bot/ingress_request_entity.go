@@ -183,5 +183,5 @@ type Chat struct {
 
 // https://core.telegram.org/bots/api#sticker
 type Sticker struct {
-  FileId  string `json:"file_id"`
+	FileId string `json:"file_id"`
 }

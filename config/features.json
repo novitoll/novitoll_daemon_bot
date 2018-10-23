@@ -25,7 +25,7 @@
         "authMessage": "Я - не бот"
       }
     },    
-    "authTimeout": 120,
+    "authTimeout": 60,
     "kickBanTimeout": 60
   },
   "stickersDetection": {

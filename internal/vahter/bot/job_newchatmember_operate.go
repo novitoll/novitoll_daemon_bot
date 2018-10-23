@@ -15,8 +15,6 @@ var (
 	chNewcomer = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
-// TODO: this method is too complex, make it more lightweight
-
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// for short code reference
 	newComer := j.ingressBody.Message.NewChatMember
@@ -27,6 +25,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
+	// TODO: pointers?
 	keyBtns := [][]KeyboardButton{
 		[]KeyboardButton{
 			KeyboardButton{botReplyMsg.AuthMessage},
@@ -54,7 +53,10 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
-			return j.actionSendMessage(botReplyMsg.AuthOKMessage, TIME_TO_DELETE_REPLY_MSG, &BotForceReply{ForceReply: true, Selective: true})
+			return j.actionSendMessage(botReplyMsg.AuthOKMessage, TIME_TO_DELETE_REPLY_MSG, &BotForceReply{
+				ForceReply: false,
+				Selective: true,
+			})
 		} else {
 			return true, nil
 		}
@@ -82,7 +84,7 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 	Action functions
 */
 
-func (j *Job) actionSendMessage(text string, timeoutMsgDeletion uint8, reply interface{}) (interface{}, error) {
+func (j *Job) actionSendMessage(text string, deleteAfterTime uint8, reply interface{}) (interface{}, error) {
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
 		Text:                  text,
@@ -97,8 +99,11 @@ func (j *Job) actionSendMessage(text string, timeoutMsgDeletion uint8, reply int
 		return false, err
 	}
 
-	// cleanup reply messages
-	go j.actionDeleteMessage(replyMsgBody, timeoutMsgDeletion)
+	if replyMsgBody != nil {
+		// cleanup reply messages
+		go j.actionDeleteMessage(replyMsgBody, deleteAfterTime)
+	}
+
 	return replyMsgBody, err
 }
 
@@ -115,8 +120,9 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 	return botEgressReq.EgressKickChatMember(j.app)
 }
 
-func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, timeoutMsgDeletion uint8) (interface{}, error) {
-	for range time.Tick(time.Duration(timeoutMsgDeletion) * time.Second) {
+func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, deleteAfterTime uint8) (interface{}, error) {
+	select {
+	case <-time.After(time.Duration(deleteAfterTime) * time.Second):
 		log.Printf("[.] Deleting a reply message %d", response.MessageId)
 
 		botEgressReq := &BotEgressDeleteMessage{
@@ -126,9 +132,7 @@ func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, timeoutMsg
 		_, err := botEgressReq.EgressDeleteMessage(j.app)
 		if err != nil {
 			return false, err
-		} else {
-			break // found the another way of quitting the timer
 		}
+		return true, nil
 	}
-	return true, nil
 }
