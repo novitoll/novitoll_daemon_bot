@@ -28,6 +28,9 @@
     "authTimeout": 60,
     "kickBanTimeout": 60
   },
+  "messageStatistics": {
+    "enabled": false
+  },
   "stickersDetection": {
     "enabled": false,
     "actionDelete": true,

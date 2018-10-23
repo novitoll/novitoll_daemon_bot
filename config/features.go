@@ -5,6 +5,7 @@ type FeaturesConfig struct {
 	UrlDuplication       UrlConfigOptions               `json:"urlDuplication"`
 	NewcomerQuestionnare NewcomerConfigOptions          `json:"newcomerQuestionnare"`
 	StickersDetection    StickersDetectionConfigOptions `json:"stickersDetection"`
+	MessageStatistics	 MessageStatisticsConfigOptions `json:"messageStatistics"`
 }
 
 type TargetOptions struct {
@@ -39,4 +40,8 @@ type StickersDetectionConfigOptions struct {
 	I18n         map[string]struct {
 		NotificationMessage string `json:"notificationMessage"`
 	}
+}
+
+type MessageStatisticsConfigOptions struct {
+	Enabled bool `json:"enabled"`
 }

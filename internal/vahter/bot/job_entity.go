@@ -7,5 +7,5 @@ type Job struct {
 
 func (job *Job) HasMessageContent() bool {
 	// || job.ingressBody.Message.Sticker.FileId == ""
-	return job.ingressBody.Message.Text == ""
+	return job.ingressBody.Message.Text != ""
 }
