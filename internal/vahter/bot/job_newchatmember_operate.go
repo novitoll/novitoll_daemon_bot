@@ -41,7 +41,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	NewComers[newComer.Id] = time.Now()
 
 	// sends the welcome authentication message
-	go j.actionSendMessage(welcomeMsg, &ReplyKeyboardMarkup{
+	go j.actionSendMessage(welcomeMsg, newComerConfig.AuthTimeout, &ReplyKeyboardMarkup{
 		Keyboard:        keyBtns,
 		OneTimeKeyboard: true,
 		Selective:       true,
@@ -54,7 +54,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
-			return j.actionSendMessage(botReplyMsg.AuthOKMessage, &BotForceReply{ForceReply: true, Selective: true})
+			return j.actionSendMessage(botReplyMsg.AuthOKMessage, TIME_TO_DELETE_REPLY_MSG, &BotForceReply{ForceReply: true, Selective: true})
 		} else {
 			return true, nil
 		}
@@ -82,7 +82,7 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 	Action functions
 */
 
-func (j *Job) actionSendMessage(text string, reply interface{}) (interface{}, error) {
+func (j *Job) actionSendMessage(text string, timeoutMsgDeletion uint8, reply interface{}) (interface{}, error) {
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
 		Text:                  text,
@@ -98,7 +98,7 @@ func (j *Job) actionSendMessage(text string, reply interface{}) (interface{}, er
 	}
 
 	// cleanup reply messages
-	go j.actionDeleteMessage(replyMsgBody)
+	go j.actionDeleteMessage(replyMsgBody, timeoutMsgDeletion)
 	return replyMsgBody, err
 }
 
@@ -115,8 +115,8 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 	return botEgressReq.EgressKickChatMember(j.app)
 }
 
-func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage) (interface{}, error) {
-	for range time.Tick(TIME_TO_DELETE_REPLY_MSG * time.Second) {
+func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, timeoutMsgDeletion uint8) (interface{}, error) {
+	for range time.Tick(time.Duration(timeoutMsgDeletion) * time.Second) {
 		log.Printf("[.] Deleting a reply message %d", response.MessageId)
 
 		botEgressReq := &BotEgressDeleteMessage{
