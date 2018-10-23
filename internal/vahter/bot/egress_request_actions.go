@@ -26,12 +26,12 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 		Transport: netTransport,
 	}
 	response, err := client.Do(req)
+	defer response.Body.Close()
 	if err != nil {
 		log.Fatalln("[-] Can not send message to Telegram\n", err)
 		return nil, err
 	}
 
-	var replyMsgBody BotIngressResponse
 	buf := new(bytes.Buffer)
 	parsedBytes, err2 := buf.ReadFrom(response.Body)
 	if err2 != nil {
@@ -40,19 +40,30 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 	}
 	log.Println(buf.String()) // TODO: delete
 
+	// here, for me, it's much easier to try to parse on 2 kind of structs, rather than handle the case with interface{} throughout all calls
+	// because Telegram response body values differs with the same key.
+
+	// 1. Try with the usual response body
+	var replyMsgBody BotIngressResponse
 	err = json.Unmarshal([]byte(buf.String()), &replyMsgBody)
-	defer response.Body.Close()
 	if err != nil {
-		log.Fatalf("[-] Could not Unmarshal replyMsgBody %v", replyMsgBody)
-		return nil, err
-	}
+		// 2.1 if error, then try with the another one
+		var replyMsgBody2 BotIngressResponse2
+		err = json.Unmarshal([]byte(buf.String()), &replyMsgBody2)
+		if err != nil {
+			// 2.2. if error, then return error
+			log.Fatalf("[-] Could not parse response body with none of structs")
+			return nil, err
+		}
 
-	if !replyMsgBody.Ok {
-		err = errors.New(fmt.Sprintf("ERROR - %d; %s", replyMsgBody.ErrorCode, replyMsgBody.Description))
+		if !replyMsgBody.Ok {
+			err = errors.New(fmt.Sprintf("ERROR - %d; %s", replyMsgBody.ErrorCode, replyMsgBody.Description))
+			return nil, err
+		}
 		return nil, err
+	} else {
+		return &replyMsgBody.Result, err
 	}
-
-	return &replyMsgBody.Result, err
 }
 
 // TODO: Factory? these functions are similar, difference is request body and Telegram command

@@ -139,6 +139,11 @@ type BotIngressResponse struct {
 	Description string                   `json:"description"`
 }
 
+type BotIngressResponse2 struct {
+  Ok          bool `json:"ok"`
+  Result      bool `json:"result"`
+}
+
 type BotIngressRequest struct {
 	Update_Id int `json:"update_id"`
 	Message   BotIngressRequestMessage
