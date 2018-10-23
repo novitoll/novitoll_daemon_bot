@@ -5,6 +5,7 @@ type Job struct {
 	app *App
 }
 
-var (
-	NewComers = make(map[int]interface{})
-)
+func (job *Job) HasMessageContent() bool {
+	// || job.ingressBody.Message.Sticker.FileId == ""
+	return job.ingressBody.Message.Text != ""
+}

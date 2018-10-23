@@ -139,6 +139,11 @@ type BotIngressResponse struct {
 	Description string                   `json:"description"`
 }
 
+type BotIngressResponse2 struct {
+  Ok          bool `json:"ok"`
+  Result      bool `json:"result"`
+}
+
 type BotIngressRequest struct {
 	Update_Id int `json:"update_id"`
 	Message   BotIngressRequestMessage
@@ -179,4 +184,9 @@ type Chat struct {
 	Type       string `json:"type"`
 	Id         int    `json:"id"`
 	Title      string `json:"title"`
+}
+
+// https://core.telegram.org/bots/api#sticker
+type Sticker struct {
+	FileId string `json:"file_id"`
 }

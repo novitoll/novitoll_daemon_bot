@@ -25,7 +25,23 @@
         "authMessage": "Я - не бот"
       }
     },    
-    "authTimeout": 120,
+    "authTimeout": 60,
     "kickBanTimeout": 60
+  },
+  "messageStatistics": {
+    "enabled": false
+  },
+  "stickersDetection": {
+    "enabled": false,
+    "actionDelete": true,
+    "actionNotify": true,
+    "i18n": {
+      "en-us": {
+        "notificationMessage": "Stickers are forbidden."
+      },
+      "rus": {
+        "notificationMessage": "Стикеры запрещены."
+      }
+    }
   }
 }
