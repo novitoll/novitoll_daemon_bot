@@ -141,8 +141,8 @@ type BotIngressResponse struct {
 }
 
 type BotIngressResponse2 struct {
-  Ok          bool `json:"ok"`
-  Result      bool `json:"result"`
+	Ok     bool `json:"ok"`
+	Result bool `json:"result"`
 }
 
 type BotIngressRequest struct {

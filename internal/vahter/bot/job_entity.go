@@ -3,7 +3,7 @@ package bot
 
 type Job struct {
 	ingressBody *BotIngressRequest
-	app *App
+	app         *App
 }
 
 func (job *Job) HasMessageContent() bool {

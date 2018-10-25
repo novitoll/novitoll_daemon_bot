@@ -2,27 +2,27 @@
 package bot
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
-	"time"
 	"strings"
 	"testing"
-	"io/ioutil"
-	"encoding/json"
-	"github.com/stretchr/testify/assert"
+	"time"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
-	admins = []string{"novitoll"}
-	gopath, _ = os.LookupEnv("GOPATH")
-	gopathPostfix = "src/github.com/novitoll/novitoll_daemon_bot"
+	admins          = []string{"novitoll"}
+	gopath, _       = os.LookupEnv("GOPATH")
+	gopathPostfix   = "src/github.com/novitoll/novitoll_daemon_bot"
 	testdataDirPath = "internal/vahter/bot/testdata"
 )
 
 func concatStringsWithSlash(s []string) string {
-	 return strings.Join(s[:], "/")
+	return strings.Join(s[:], "/")
 }
 
 func filepathToStruct(t *testing.T, filepath string, pData interface{}) {
@@ -62,7 +62,7 @@ func TestDifferentIngressMessageStructs(t *testing.T) {
 	for _, f := range files {
 		s := []string{testdataDirPath, f.Name()}
 		configureStructs(t, concatStringsWithSlash(s))
-	}	
+	}
 }
 
 func TestURLDuplication(t *testing.T) {

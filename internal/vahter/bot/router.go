@@ -2,17 +2,17 @@
 package bot
 
 import (
-	"log"
 	"bytes"
-	"net/http"
 	"encoding/json"
+	"log"
+	"net/http"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 )
 
 type App struct {
 	Features *cfg.FeaturesConfig
-	Lang string
+	Lang     string
 }
 
 func (app *App) RegisterHandlers() {
@@ -47,7 +47,7 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	}
 
 	go br.Process(app)
-    w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (app *App) FlushQueueHandlerFunc(w http.ResponseWriter, r *http.Request) {

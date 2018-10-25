@@ -6,10 +6,10 @@
 Requirements
 -------
 
-```
-go version 
-go1.11.1 linux/amd64
-```
+::
+        go version 
+        go1.11.1 linux/amd64
+
 
 Features
 -------
@@ -39,6 +39,7 @@ Make commands
 * ``make docker-compose-stop`` -- Stops the containers run via `make docker-compose`.
 * ``make test`` -- run unit tests.
 * ``make debug`` -- compile and run `delve` debugger.
+* ``make goimports`` -- format Go files with ``goimports`` utility in ``pwd``.
 
 Deployment remarks
 -------
