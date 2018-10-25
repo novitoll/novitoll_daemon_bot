@@ -4,15 +4,16 @@ package bot
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 
+	log "github.com/sirupsen/logrus"
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 )
 
 type App struct {
 	Features *cfg.FeaturesConfig
 	Lang     string
+	Logger 		log.*Logger
 }
 
 func (app *App) RegisterHandlers() {

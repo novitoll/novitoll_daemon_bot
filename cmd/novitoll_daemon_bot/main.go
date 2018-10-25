@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"reflect"
 
+	log "github.com/sirupsen/logrus"
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 )
@@ -17,6 +17,7 @@ import (
 var (
 	features cfg.FeaturesConfig
 	lang     string = "en-us"
+	logger 		= logrus.New()
 )
 
 func init() {
@@ -36,6 +37,17 @@ func init() {
 	}
 	if _, ok := features.NewcomerQuestionnare.I18n[lang]; !ok {
 		panic(fmt.Sprintf("Unknown language - %s", lang))
+	}
+
+	// 3. setup logger
+	logger.SetOutput(os.Stdout)
+
+	switch features.Administration {
+	case "warn":
+		logger.SetLevel(log.WarnLevel)
+		break
+	default:
+		logger.SetLevel(log.InfoLevel)
 	}
 }
 
@@ -59,7 +71,11 @@ func main() {
 	featureFields := reflect.ValueOf(&features).Elem()
 	printReflectValues(featureFields)
 
-	handler := bot.App{&features, lang}
+	handler := bot.App{
+		Features: &features,
+		Lang: 		lang,
+		Logger: 	logger
+	}
 	handler.RegisterHandlers()
 
 	log.Printf("[+] Serving TCP 8080 port..")

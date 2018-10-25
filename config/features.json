@@ -1,4 +1,7 @@
 {
+  "administration": {
+    "logLevel": "info"
+  },
   "notificationTarget": {
     "admins": ["novitoll"]
   },

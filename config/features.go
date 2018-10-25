@@ -7,6 +7,7 @@ type FeaturesConfig struct {
 	NewcomerQuestionnare NewcomerConfigOptions          `json:"newcomerQuestionnare"`
 	StickersDetection    StickersDetectionConfigOptions `json:"stickersDetection"`
 	MessageStatistics    MessageStatisticsConfigOptions `json:"messageStatistics"`
+	Administration       AdministrationConfigOptions    `json:"administration"`
 }
 
 type TargetOptions struct {
@@ -45,4 +46,8 @@ type StickersDetectionConfigOptions struct {
 
 type MessageStatisticsConfigOptions struct {
 	Enabled bool `json:"enabled"`
+}
+
+type AdministrationConfigOptions struct {
+	LogLevel string `json:"logLevel"`
 }
