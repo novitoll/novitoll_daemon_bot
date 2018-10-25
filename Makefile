@@ -25,6 +25,9 @@ docker-compose-green:
 docker-compose-stop:
 	docker-compose -f deployments/docker-compose.yml stop
 
+goimports:
+	goimports -w $(find . -type f -name '*.go' -not -path "./vendor/*")
+
 debug:
 	dlv debug --output bot.bin cmd/novitoll_daemon_bot/main.go
 

@@ -6,7 +6,7 @@ type FeaturesConfig struct {
 	UrlDuplication       UrlConfigOptions               `json:"urlDuplication"`
 	NewcomerQuestionnare NewcomerConfigOptions          `json:"newcomerQuestionnare"`
 	StickersDetection    StickersDetectionConfigOptions `json:"stickersDetection"`
-	MessageStatistics	 MessageStatisticsConfigOptions `json:"messageStatistics"`
+	MessageStatistics    MessageStatisticsConfigOptions `json:"messageStatistics"`
 }
 
 type TargetOptions struct {

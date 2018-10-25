@@ -12,9 +12,9 @@ const (
 )
 
 var (
-	NewComers = make(map[int]interface{})
+	NewComers     = make(map[int]interface{})
 	forceDeletion = make(chan bool)
-	chNewcomer = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
+	chNewcomer    = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
@@ -55,10 +55,10 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		log.Printf("[+] Newcomer %d has been authenticated", dootId)
 
 		if newComerConfig.ActionNotify {
-			forceDeletion <-true
+			forceDeletion <- true
 			return j.actionSendMessage(botReplyMsg.AuthOKMessage, TIME_TO_DELETE_REPLY_MSG, &BotForceReply{
 				ForceReply: false,
-				Selective: true,
+				Selective:  true,
 			})
 		} else {
 			return true, nil

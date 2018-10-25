@@ -2,9 +2,10 @@
 package redis_client
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"runtime"
+
 	"github.com/go-redis/redis"
 )
 
@@ -28,11 +29,11 @@ func init() {
 
 func GetRedisConnection() *redis.Client {
 	client := redis.NewClient(&redis.Options{
-		Addr:		fmt.Sprintf("%s:%s", host, port),
-		Password:	"", // no password set
-		DB:		0,  // use default DB
-		MaxRetries:	3,
-		PoolSize:	runtime.NumCPU() * 10, // TODO: need to calculate more carefully with ulimit and need to have a Pool of connections
+		Addr:       fmt.Sprintf("%s:%s", host, port),
+		Password:   "", // no password set
+		DB:         0,  // use default DB
+		MaxRetries: 3,
+		PoolSize:   runtime.NumCPU() * 10, // TODO: need to calculate more carefully with ulimit and need to have a Pool of connections
 	})
 	return client
 }

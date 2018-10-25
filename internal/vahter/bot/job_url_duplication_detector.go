@@ -2,16 +2,16 @@
 package bot
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"time"
-	"strings"
-	"encoding/json"
-	"mvdan.cc/xurls"
-	"github.com/justincampbell/timeago"
 	netUrl "net/url"
+	"strings"
+	"time"
 
+	"github.com/justincampbell/timeago"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	"mvdan.cc/xurls"
 )
 
 func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
@@ -75,11 +75,11 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
 	d, _ := time.ParseDuration(t.String())
 
-	botReplyMessage := []string{"Your message contains duplicate URL. Please dont flood.\n", 
-			fmt.Sprintf("Last time it was posted from @%s %s ago. #novitollurl", duplicatedMsg.From.Username, timeago.FromDuration(d))}
+	botReplyMessage := []string{"Your message contains duplicate URL. Please dont flood.\n",
+		fmt.Sprintf("Last time it was posted from @%s %s ago. #novitollurl", duplicatedMsg.From.Username, timeago.FromDuration(d))}
 
 	reply := &BotForceReply{ForceReply: true, Selective: true}
-	
+
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
 		Text:                  strings.Join(botReplyMessage, "\n"),

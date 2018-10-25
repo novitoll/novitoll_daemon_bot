@@ -2,21 +2,21 @@
 package main
 
 import (
-	"os"
-	"log"
-	"fmt"
-	"reflect"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"reflect"
 
-	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
+	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 )
 
 var (
 	features cfg.FeaturesConfig
-	lang string = "en-us"
+	lang     string = "en-us"
 )
 
 func init() {
@@ -42,8 +42,8 @@ func init() {
 func printReflectValues(s reflect.Value) {
 	typeOfT := s.Type()
 	for i := 0; i < s.NumField(); i++ {
-	    f := s.Field(i)
-	    fmt.Printf("-- %s %s = %v\n", typeOfT.Field(i).Name, f.Type(), f.Interface())
+		f := s.Field(i)
+		fmt.Printf("-- %s %s = %v\n", typeOfT.Field(i).Name, f.Type(), f.Interface())
 
 		if f.Kind().String() == "struct" {
 			x1 := reflect.ValueOf(f.Interface())
