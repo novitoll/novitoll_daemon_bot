@@ -6,7 +6,6 @@
 Requirements
 -------
 
-::
         go version 
         go1.11.1 linux/amd64
 
@@ -24,6 +23,8 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 	* kindly reply with a notification
 	* can be configured to auto-delete the message with the sticker
 * flood detection (In progress)
+	* copy-paste attack protection (hash message into the hashmap per user message and clear it in N-time.)
+	* flood detection.
 * ad detection (TBD)
 * nude, pornography detection in image (TBD)
 * batch scanning of users' avatars, and posting images' for steganography analysis (+ VirusTotal?) (TBD)
