@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/justincampbell/timeago"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	"github.com/sirupsen/logrus"
 	"mvdan.cc/xurls"
 )
 

@@ -10,14 +10,14 @@ import (
 	"reflect"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	"github.com/sirupsen/logrus"
 	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
+	"github.com/sirupsen/logrus"
 )
 
 var (
 	features cfg.FeaturesConfig
-	lang	string = "en-us"
-	logger	= logrus.New()
+	lang     string = "en-us"
+	logger          = logrus.New()
 )
 
 func init() {
@@ -80,8 +80,8 @@ func main() {
 
 	handler := bot.App{
 		Features: &features,
-		Lang:	lang,
-		Logger:	logger,
+		Lang:     lang,
+		Logger:   logger,
 	}
 	handler.RegisterHandlers()
 

@@ -36,7 +36,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
 	j.app.Logger.WithFields(logrus.Fields{
-		"id": newComer.Id,
+		"id":       newComer.Id,
 		"username": newComer.Username,
 	}).Warn("New member has been detected")
 
@@ -76,7 +76,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			delete(NewComers, newComer.Id)
 
 			j.app.Logger.WithFields(logrus.Fields{
-				"id": newComer.Id,
+				"id":       newComer.Id,
 				"username": newComer.Username,
 			}).Warn("Newcomer has been kicked")
 		}
@@ -126,9 +126,9 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 	t := time.Now().Add(time.Duration(j.app.Features.NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
 
 	j.app.Logger.WithFields(logrus.Fields{
-		"id": j.ingressBody.Message.NewChatMember.Id,
+		"id":       j.ingressBody.Message.NewChatMember.Id,
 		"username": j.ingressBody.Message.NewChatMember.Username,
-		"until": t,
+		"until":    t,
 	}).Warn("Kicking a newcomer")
 
 	botEgressReq := &BotEgressKickChatMember{

@@ -2,8 +2,8 @@
 package bot
 
 import (
-	"sync"
 	"fmt"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 )
@@ -47,9 +47,9 @@ func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error)
 
 func (ingressBody *BotIngressRequest) Process(app *App) {
 	app.Logger.WithFields(logrus.Fields{
-		"userId": ingressBody.Message.From.Id,
-		"username": ingressBody.Message.From.Username,
-		"chat": ingressBody.Message.Chat.Username,
+		"userId":    ingressBody.Message.From.Id,
+		"username":  ingressBody.Message.From.Username,
+		"chat":      ingressBody.Message.Chat.Username,
 		"messageId": ingressBody.Message.MessageId,
 	}).Info("Process: Running.")
 
@@ -68,6 +68,6 @@ func (ingressBody *BotIngressRequest) Process(app *App) {
 
 	app.Logger.WithFields(logrus.Fields{
 		"completed": len(results),
-		"errors": len(errors),
+		"errors":    len(errors),
 	}).Info("Process: Completed")
 }

@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
+	"github.com/sirupsen/logrus"
 )
 
 type App struct {
 	Features *cfg.FeaturesConfig
 	Lang     string
-	Logger  *logrus.Logger
+	Logger   *logrus.Logger
 }
 
 func (app *App) RegisterHandlers() {
