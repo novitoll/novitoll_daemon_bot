@@ -3,12 +3,9 @@ package bot
 
 import (
 	"fmt"
-	"log"
 	"time"
-)
 
-const (
-	TIME_TO_DELETE_REPLY_MSG = 10
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -38,7 +35,11 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
-	log.Printf("[.] New member %d(@%s) has been detected", newComer.Id, newComer.Username)
+	j.app.Logger.WithFields(logrus.Fields{
+		"id": newComer.Id,
+		"username": newComer.Username,
+	}).Warn("New member has been detected")
+
 	NewComers[newComer.Id] = time.Now()
 
 	// sends the welcome authentication message
@@ -52,7 +53,9 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	select {
 	case dootId := <-chNewcomer:
 		delete(NewComers, dootId)
-		log.Printf("[+] Newcomer %d has been authenticated", dootId)
+		j.app.Logger.WithFields(logrus.Fields{
+			"id": dootId,
+		}).Info("Newcomer has been authenticated")
 
 		if newComerConfig.ActionNotify {
 			forceDeletion <- true
@@ -71,7 +74,11 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 
 			delete(NewComers, newComer.Id)
-			log.Printf("[!] Newcomer %d(@%s) has been kicked", newComer.Id, newComer.Username)
+
+			j.app.Logger.WithFields(logrus.Fields{
+				"id": newComer.Id,
+				"username": newComer.Username,
+			}).Warn("Newcomer has been kicked")
 		}
 		return response, err
 	}
@@ -118,7 +125,11 @@ func (j *Job) actionSendMessage(text string, deleteAfterTime uint8, reply interf
 func (j *Job) actionKickChatMember() (interface{}, error) {
 	t := time.Now().Add(time.Duration(j.app.Features.NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
 
-	log.Printf("[.] Kicking a newcomer %d(@%s) until %d", j.ingressBody.Message.NewChatMember.Id, j.ingressBody.Message.NewChatMember.Username, t)
+	j.app.Logger.WithFields(logrus.Fields{
+		"id": j.ingressBody.Message.NewChatMember.Id,
+		"username": j.ingressBody.Message.NewChatMember.Username,
+		"until": t,
+	}).Warn("Kicking a newcomer")
 
 	botEgressReq := &BotEgressKickChatMember{
 		ChatId:    j.ingressBody.Message.Chat.Id,
@@ -132,22 +143,8 @@ func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, deleteAfte
 	// dirty hack to do the same function on either channel (fan-in pattern)
 	select {
 	case <-forceDeletion:
-		return j.deleteMessage(response, deleteAfterTime)
+		return j.DeleteMessage(response)
 	case <-time.After(time.Duration(deleteAfterTime) * time.Second):
-		return j.deleteMessage(response, deleteAfterTime)
+		return j.DeleteMessage(response)
 	}
-}
-
-func (j *Job) deleteMessage(response *BotIngressRequestMessage, deleteAfterTime uint8) (interface{}, error) {
-	log.Printf("[.] Deleting a reply message %d", response.MessageId)
-
-	botEgressReq := &BotEgressDeleteMessage{
-		ChatId:    response.Chat.Id,
-		MessageId: response.MessageId,
-	}
-	_, err := botEgressReq.EgressDeleteMessage(j.app)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
 }

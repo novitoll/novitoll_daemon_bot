@@ -2,13 +2,10 @@
 package bot
 
 import (
-	"log"
 	"sync"
-)
+	"fmt"
 
-var (
-	// total jobs count as long as the Go binary is running
-	completedProcessJobCount = 0
+	"github.com/sirupsen/logrus"
 )
 
 type ProcessJobFn func(job *Job) (interface{}, error)
@@ -49,7 +46,12 @@ func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error)
 }
 
 func (ingressBody *BotIngressRequest) Process(app *App) {
-	log.Printf("[.] Process: Running. Message from -- Username: %s, Chat: %s, Message_Id: %d", ingressBody.Message.From.Username, ingressBody.Message.Chat.Username, ingressBody.Message.MessageId)
+	app.Logger.WithFields(logrus.Fields{
+		"userId": ingressBody.Message.From.Id,
+		"username": ingressBody.Message.From.Username,
+		"chat": ingressBody.Message.Chat.Username,
+		"messageId": ingressBody.Message.MessageId,
+	}).Info("Process: Running.")
 
 	job := &Job{ingressBody, app}
 
@@ -60,11 +62,12 @@ func (ingressBody *BotIngressRequest) Process(app *App) {
 		JobMessageStatistics,
 	})
 
-	completedProcessJobCount += 1
-
 	for _, e := range errors {
-		log.Fatalf("[-] %v", e)
+		app.Logger.Fatal(fmt.Sprintf("%v", e))
 	}
 
-	log.Printf("[+] %d. Process: Completed. Success/Failed=%d/%d", completedProcessJobCount, len(results), len(errors))
+	app.Logger.WithFields(logrus.Fields{
+		"completed": len(results),
+		"errors": len(errors),
+	}).Info("Process: Completed")
 }
