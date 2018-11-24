@@ -7,7 +7,7 @@ import (
 	netUrl "net/url"
 	"strings"
 	"time"
-	
+
 	"github.com/sirupsen/logrus"
 	"github.com/justincampbell/timeago"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
@@ -19,7 +19,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
-	urls := xurls.Relaxed.FindAllString(j.ingressBody.Message.Text, -1)
+	urls := xurls.Relaxed().FindAllString(j.ingressBody.Message.Text, -1)
 	if len(urls) == 0 {
 		return false, nil
 	}
@@ -46,7 +46,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 			j.app.Logger.WithFields(logrus.Fields{
 				"url": url,
 			}).Warn("This message contains the duplicate URL")
-			
+
 			var duplicatedMsg BotIngressRequestMessage
 			json.Unmarshal([]byte(jsonStr), &duplicatedMsg)
 			_, err := j.actionOnURLDuplicate(&duplicatedMsg)
