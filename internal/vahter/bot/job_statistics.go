@@ -89,7 +89,20 @@ func JobMessageStatistics(job *Job) (interface{}, error) {
 			ReplyToMessageId:      job.ingressBody.Message.MessageId,
 			ReplyMarkup:           &BotForceReply{ForceReply: false, Selective: true},
 		}
-		return botEgressReq.EgressSendToTelegram(job.app)
+		replyMsgBody, err := botEgressReq.EgressSendToTelegram(job.app)
+		if err != nil {
+			return false, err
+		}
+
+		if replyMsgBody != nil {
+			// cleanup reply messages
+			go func() {
+				select {
+				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
+					job.DeleteMessage(replyMsgBody)
+				}
+			}()
+		}
 	}
 
 	if stats.SinceLastMsg > FLOOD_TIME_INTERVAL {
