@@ -69,6 +69,6 @@ GNU GPL 2.0
 Demo
 -------
 
-.. image:: docs/ad-detection-groups.png
+.. image:: docs/ad-detection-t-groups.png
 
 .. image:: docs/url-duplication-detection.png
