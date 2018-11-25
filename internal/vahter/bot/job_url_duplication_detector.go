@@ -102,7 +102,7 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 		// cleanup reply messages
 		go func() {
 			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG + 10) * time.Second):
 				go j.DeleteMessage(replyMsgBody)
 			}
 		}()
