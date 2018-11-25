@@ -61,6 +61,7 @@ func (ingressBody *BotIngressRequest) Process(app *App) {
 		JobUrlDuplicationDetector,
 		JobMessageStatistics,
 		JobAdDetector,
+		JobStickersDetector,
 	})
 
 	for _, e := range errors {

@@ -19,9 +19,9 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 	* kindly reply with a notification
 * newcomer questionnaire in bot's IM to prevent newcomers' shadow mode and post-action
 	* greet a newcomer and kindly ask for the feedback upon the group joining in order to authenticate, otherwise user will be kicked for the certain time.
-* stickers detection and post-action (TBD)
-	* kindly reply with a notification
-	* can be configured to auto-delete the message with the sticker
+* stickers detection and post-action
+	* auto-delete the message with the sticker
+	* kindly reply with a notification and auto-delete the reply
 * flood detection (In progress)
 	* copy-paste attack protection (hash message into the hashmap per user message and clear it in N-time.)
 	* flood detection.

@@ -12,8 +12,6 @@ type FeaturesConfig struct {
 
 type NewcomerConfigOptions struct {
 	Enabled        bool  `json:"enabled"`
-	ActionKick     bool  `json:"actionKick"`
-	ActionBan      bool  `json:"actionBan"`
 	ActionNotify   bool  `json:"actionNotify"`
 	AuthTimeout    uint8 `json:"authTimeout"`
 	KickBanTimeout uint8 `json:"kickBanTimeout"`
@@ -36,10 +34,8 @@ type UrlConfigOptions struct {
 
 type StickersDetectionConfigOptions struct {
 	Enabled      bool `json:"enabled"`
-	ActionDelete bool `json:"actionDelete"`
-	ActionNotify bool `json:"actionNotify"`
 	I18n         map[string]struct {
-		NotificationMessage string `json:"notificationMessage"`
+		WarnMessage string `json:"warnMessage"`
 	}
 }
 

@@ -160,6 +160,7 @@ type BotIngressRequestMessage struct {
 	NewChatMembers     []User `json:"new_chat_members"`
 	NewChatMember      User   `json:"new_chat_member"`
 	NewChatParticipant User   `json:"new_chat_participant"`
+  Sticker             Sticker `json:"sticker"`
 }
 
 // https://core.telegram.org/bots/api#user

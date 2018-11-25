@@ -19,8 +19,6 @@
   },
   "newcomerQuestionnare": {
     "enabled": true,
-    "actionKick": true,
-    "actionBan": false,
     "actionNotify": true,
     "i18n": {
       "en-us": {
@@ -42,14 +40,12 @@
   },
   "stickersDetection": {
     "enabled": false,
-    "actionDelete": true,
-    "actionNotify": true,
     "i18n": {
       "en-us": {
-        "notificationMessage": "Stickers are forbidden."
+        "warnMessage": "Stickers are forbidden."
       },
       "rus": {
-        "notificationMessage": "Стикеры запрещены."
+        "warnMessage": "Стикеры запрещены."
       }
     }
   },
