@@ -79,7 +79,7 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 	d, _ := time.ParseDuration(t.String())
 
 	botReplyMessage := fmt.Sprintf(j.app.Features.UrlDuplication.I18n[j.app.Lang].WarnMessage,
-	 duplicatedMsg.From.Username, timeago.FromDuration(d))
+		duplicatedMsg.From.Username, timeago.FromDuration(d))
 
 	reply := &BotForceReply{ForceReply: true, Selective: true}
 
@@ -102,7 +102,7 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 		// cleanup reply messages
 		go func() {
 			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG + 10) * time.Second):
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
 				go j.DeleteMessage(replyMsgBody)
 			}
 		}()
