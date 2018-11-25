@@ -6,6 +6,7 @@ import (
 	"fmt"
 	netUrl "net/url"
 	"time"
+	"strings"
 
 	"github.com/justincampbell/timeago"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
@@ -28,6 +29,10 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 	for i, url := range urls {
 		j.app.Logger.Info(fmt.Sprintf("Checking %d/%d URL - %s", i+1, len(urls), url))
+
+		if strings.Contains(url, "t.me/") {  // this should be controlled in JobAdDetector
+			continue
+		}
 
 		if j.app.Features.UrlDuplication.IgnoreHostnames {
 			u, err := netUrl.ParseRequestURI(url)
