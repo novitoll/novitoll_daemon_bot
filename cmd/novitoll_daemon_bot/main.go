@@ -5,25 +5,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"reflect"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
+	"github.com/sirupsen/logrus"
 )
 
 var (
 	features cfg.FeaturesConfig
 	lang     string = "en-us"
+	logger          = logrus.New()
 )
 
 func init() {
 	// 1. load features configuration
 	fileJson, err := os.Open("config/features.json")
 	if err != nil {
-		log.Fatalln("[-] Can not open features JSON\n", err)
+		logger.WithFields(logrus.Fields{"err": err}).Fatal("[-] Can not open features JSON")
 	}
 	defer fileJson.Close()
 
@@ -35,8 +36,26 @@ func init() {
 		lang = l
 	}
 	if _, ok := features.NewcomerQuestionnare.I18n[lang]; !ok {
-		panic(fmt.Sprintf("Unknown language - %s", lang))
+		msg := "Unknown language"
+		logger.WithFields(logrus.Fields{"lang": lang}).Fatal(msg)
+		panic(msg)
 	}
+
+	// 3. setup logger
+	logger.SetOutput(os.Stdout)
+
+	switch features.Administration.LogLevel {
+	case "warn":
+		logger.SetLevel(logrus.WarnLevel)
+		break
+	default:
+		logger.SetLevel(logrus.InfoLevel)
+	}
+
+	logger.SetFormatter(&logrus.TextFormatter{
+		DisableColors: false,
+		FullTimestamp: true,
+	})
 }
 
 func printReflectValues(s reflect.Value) {
@@ -54,14 +73,18 @@ func printReflectValues(s reflect.Value) {
 }
 
 func main() {
-	log.Printf("[+] Features config is loaded. Bot features:\n")
+	logger.Info("[+] Features config is loaded. Bot features:\n")
 
 	featureFields := reflect.ValueOf(&features).Elem()
 	printReflectValues(featureFields)
 
-	handler := bot.App{&features, lang}
+	handler := bot.App{
+		Features: &features,
+		Lang:     lang,
+		Logger:   logger,
+	}
 	handler.RegisterHandlers()
 
-	log.Printf("[+] Serving TCP 8080 port..")
+	logger.Info("[+] Serving TCP 8080 port..")
 	http.ListenAndServe(":8080", nil)
 }

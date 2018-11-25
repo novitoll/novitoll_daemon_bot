@@ -1,4 +1,7 @@
 {
+  "administration": {
+    "logLevel": "info"
+  },
   "notificationTarget": {
     "admins": ["novitoll"]
   },
@@ -6,7 +9,15 @@
     "enabled": true,
     "ignoreHostnames": true,
     "actionNotify": true,
-    "relevanceTimeout": 86400
+    "relevanceTimeout": 86400,
+    "i18n": {
+      "en-us": {
+        "warnMessage": "Your message contains duplicate URL. Last time it was posted from @%s %s ago."
+      },
+      "rus": {
+        "warnMessage": "Ваше сообщение содержит дупликат URL-а (баян). Последний раз его постил @%s %s назад"
+      }
+    }
   },
   "newcomerQuestionnare": {
     "enabled": true,

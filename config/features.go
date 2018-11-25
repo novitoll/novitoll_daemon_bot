@@ -7,6 +7,7 @@ type FeaturesConfig struct {
 	NewcomerQuestionnare NewcomerConfigOptions          `json:"newcomerQuestionnare"`
 	StickersDetection    StickersDetectionConfigOptions `json:"stickersDetection"`
 	MessageStatistics    MessageStatisticsConfigOptions `json:"messageStatistics"`
+	Administration       AdministrationConfigOptions    `json:"administration"`
 }
 
 type TargetOptions struct {
@@ -32,6 +33,9 @@ type UrlConfigOptions struct {
 	IgnoreHostnames  bool `json:"ignoreHostnames"`
 	ActionNotify     bool `json:"actionNotify"`
 	RelevanceTimeout int  `json:"relevanceTimeout"`
+	I18n             map[string]struct {
+		WarnMessage string `json:"warnMessage"`
+	} `json:"i18n"`
 }
 
 type StickersDetectionConfigOptions struct {
@@ -45,4 +49,8 @@ type StickersDetectionConfigOptions struct {
 
 type MessageStatisticsConfigOptions struct {
 	Enabled bool `json:"enabled"`
+}
+
+type AdministrationConfigOptions struct {
+	LogLevel string `json:"logLevel"`
 }

@@ -11,6 +11,7 @@ import (
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,7 +70,7 @@ func TestURLDuplication(t *testing.T) {
 	s := []string{testdataDirPath, "ingress_reqbody-url-1.json"}
 	pFeatures, pBotRequest := configureStructs(t, concatStringsWithSlash(s))
 
-	app := App{pFeatures, "en-us"}
+	app := App{pFeatures, "en-us", logrus.New()}
 	pBotRequest.Process(&app)
 
 	client := redisClient.GetRedisConnection()

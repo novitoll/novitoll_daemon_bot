@@ -5,6 +5,7 @@ configure:
 	go get -u mvdan.cc/xurls github.com/go-redis/redis
 	go get -u github.com/stretchr/testify/assert
 	go get -u github.com/justincampbell/timeago
+	go get -u github.com/sirupsen/logrus
 
 build:
 	go build -o bot.bin cmd/novitoll_daemon_bot/main.go
@@ -26,7 +27,7 @@ docker-compose-stop:
 	docker-compose -f deployments/docker-compose.yml stop
 
 goimports:
-	goimports -w $(find . -type f -name '*.go' -not -path "./vendor/*")
+	goimports -w `find . -type f -name '*.go' -not -path "./vendor/*"`
 
 debug:
 	dlv debug --output bot.bin cmd/novitoll_daemon_bot/main.go

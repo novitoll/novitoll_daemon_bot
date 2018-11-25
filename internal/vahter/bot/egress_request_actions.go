@@ -6,13 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
-func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
+func sendHTTP(req *http.Request, app *App) (*BotIngressRequestMessage, error) {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
 			Timeout: 5 * time.Second,
@@ -20,7 +21,7 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 		TLSHandshakeTimeout: 5 * time.Second,
 	}
 
-	log.Println("[.] POST HTTP egress to Telegram")
+	app.Logger.Info("POST HTTP egress to Telegram")
 
 	client := &http.Client{
 		Timeout:   time.Second * 10,
@@ -29,17 +30,17 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 	response, err := client.Do(req)
 	defer response.Body.Close()
 	if err != nil {
-		log.Fatalln("[-] Can not send message to Telegram\n", err)
+		app.Logger.WithFields(logrus.Fields{"err": err}).Fatal("Can not send message to Telegram")
 		return nil, err
 	}
 
 	buf := new(bytes.Buffer)
 	parsedBytes, err2 := buf.ReadFrom(response.Body)
 	if err2 != nil {
-		log.Fatalf("[-] Failed in Telegram response with %d bytes", parsedBytes)
+		app.Logger.WithFields(logrus.Fields{"parsedBytes": parsedBytes}).Fatal("Failed in Telegram response")
 		return nil, err2
 	}
-	log.Println(buf.String()) // TODO: delete
+	app.Logger.Info(buf.String()) // TODO: delete
 
 	// here, for me, it's much easier to try to parse on 2 kind of structs, rather than handle the case with interface{} throughout all calls
 	// because Telegram response body values differs with the same key.
@@ -53,7 +54,7 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 		err = json.Unmarshal([]byte(buf.String()), &replyMsgBody2)
 		if err != nil {
 			// 2.2. if error, then return error
-			log.Fatalf("[-] Could not parse response body with none of structs")
+			app.Logger.Fatal("Could not parse response body with none of structs")
 			return nil, err
 		}
 
@@ -67,14 +68,12 @@ func sendHTTP(req *http.Request) (*BotIngressRequestMessage, error) {
 	}
 }
 
-// TODO: Factory? these functions are similar, difference is request body and Telegram command
-
 func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (*BotIngressRequestMessage, error) {
 	jsonValue, _ := json.Marshal(reqBody)
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "sendMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
-	return sendHTTP(req)
+	return sendHTTP(req, app)
 }
 
 func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (*BotIngressRequestMessage, error) {
@@ -82,7 +81,7 @@ func (reqBody *BotEgressKickChatMember) EgressKickChatMember(app *App) (*BotIngr
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "kickChatMember")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
-	return sendHTTP(req)
+	return sendHTTP(req, app)
 }
 
 func (reqBody *BotEgressDeleteMessage) EgressDeleteMessage(app *App) (*BotIngressRequestMessage, error) {
@@ -90,5 +89,21 @@ func (reqBody *BotEgressDeleteMessage) EgressDeleteMessage(app *App) (*BotIngres
 	url := fmt.Sprintf(TELEGRAM_URL, TELEGRAM_TOKEN, "deleteMessage")
 	req, _ := http.NewRequest(POST, url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
-	return sendHTTP(req)
+	return sendHTTP(req, app)
+}
+
+func (j *Job) DeleteMessage(response *BotIngressRequestMessage) (interface{}, error) {
+	j.app.Logger.WithFields(logrus.Fields{
+		"id": response.MessageId,
+	}).Info("Deleting a reply message")
+
+	botEgressReq := &BotEgressDeleteMessage{
+		ChatId:    response.Chat.Id,
+		MessageId: response.MessageId,
+	}
+	_, err := botEgressReq.EgressDeleteMessage(j.app)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

@@ -4,13 +4,12 @@ package bot
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	netUrl "net/url"
-	"strings"
 	"time"
 
 	"github.com/justincampbell/timeago"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	"github.com/sirupsen/logrus"
 	"mvdan.cc/xurls"
 )
 
@@ -28,12 +27,11 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	defer redisConn.Close()
 
 	for i, url := range urls {
-		log.Printf("[.] Checking %d/%d URL - %s", i+1, len(urls), url)
+		j.app.Logger.Info(fmt.Sprintf("Checking %d/%d URL - %s", i+1, len(urls), url))
 
 		if j.app.Features.UrlDuplication.IgnoreHostnames {
 			u, err := netUrl.ParseRequestURI(url)
 			if err != nil || u.Path == "" {
-				log.Printf("[.] Skipping a hostname URL")
 				continue
 			}
 		}
@@ -44,7 +42,10 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		jsonStr, _ := redisConn.Get(redisKey).Result()
 
 		if jsonStr != "" {
-			log.Printf("[!] This message contains the duplicate URL %s", url)
+			j.app.Logger.WithFields(logrus.Fields{
+				"url": url,
+			}).Warn("This message contains the duplicate URL")
+
 			var duplicatedMsg BotIngressRequestMessage
 			json.Unmarshal([]byte(jsonStr), &duplicatedMsg)
 			_, err := j.actionOnURLDuplicate(&duplicatedMsg)
@@ -54,13 +55,15 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		} else {
 			fromDataBytes, err := json.Marshal(j.ingressBody.Message)
 			if err != nil {
-				log.Fatalf("[-] Can not marshal BotIngressRequest.Message from Redis") // should not be the case here
+				j.app.Logger.Fatal("Can not marshal BotIngressRequest.Message from Redis") // should not be the case here
 				return false, err
 			}
 
 			err2 := redisConn.Set(redisKey, fromDataBytes, time.Duration(j.app.Features.UrlDuplication.RelevanceTimeout)*time.Second).Err()
 			if err2 != nil {
-				log.Fatalln("[-] Can not put the message to Redis\n", err2)
+				j.app.Logger.WithFields(logrus.Fields{
+					"err": err,
+				}).Fatal("[-] Can not put the message to Redis")
 				return false, err
 			}
 		}
@@ -70,19 +73,19 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 }
 
 func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (interface{}, error) {
-	log.Printf("[.] POST HTTP request on duplicate detection")
+	j.app.Logger.Info("POST HTTP request on duplicate detection")
 
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
 	d, _ := time.ParseDuration(t.String())
 
-	botReplyMessage := []string{"Your message contains duplicate URL. Please dont flood.\n",
-		fmt.Sprintf("Last time it was posted from @%s %s ago. #novitollurl", duplicatedMsg.From.Username, timeago.FromDuration(d))}
+	botReplyMessage := fmt.Sprintf(j.app.Features.UrlDuplication.I18n[j.app.Lang].WarnMessage,
+		duplicatedMsg.From.Username, timeago.FromDuration(d))
 
-	reply := &BotForceReply{ForceReply: true, Selective: true}
+	reply := &BotForceReply{ForceReply: false, Selective: true}
 
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
-		Text:                  strings.Join(botReplyMessage, "\n"),
+		Text:                  botReplyMessage,
 		ParseMode:             ParseModeMarkdown,
 		DisableWebPagePreview: true,
 		DisableNotification:   true,
@@ -90,5 +93,20 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 		ReplyMarkup:           reply,
 	}
 
-	return botEgressReq.EgressSendToTelegram(j.app)
+	replyMsgBody, err := botEgressReq.EgressSendToTelegram(j.app)
+	if err != nil {
+		return false, err
+	}
+
+	if replyMsgBody != nil {
+		// cleanup reply messages
+		go func() {
+			select {
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
+				go j.DeleteMessage(replyMsgBody)
+			}
+		}()
+	}
+
+	return replyMsgBody, err
 }
