@@ -39,10 +39,10 @@
     "enabled": true,
     "i18n": {
       "en-us": {
-        "warnMessage": "Please dont flood. For last %d seconds you posted %d messages with %d avg. word length."
+        "warnMessage": "Please dont flood. For last %d seconds you posted %d messages."
       },
       "rus": {
-        "warnMessage": "Не флудите. За последние %d секунд вы написали %d сообщений со сред. %d кол-вом слов."
+        "warnMessage": "Не флудите. За последние %d секунд вы написали %d сообщений."
       }
     }
   },
