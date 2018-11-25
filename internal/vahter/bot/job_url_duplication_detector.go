@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	netUrl "net/url"
-	"strings"
 	"time"
 
 	"github.com/justincampbell/timeago"
@@ -79,14 +78,14 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
 	d, _ := time.ParseDuration(t.String())
 
-	botReplyMessage := []string{"Your message contains duplicate URL. Please dont flood.\n",
-		fmt.Sprintf("Last time it was posted from @%s %s ago. #novitollurl", duplicatedMsg.From.Username, timeago.FromDuration(d))}
+	botReplyMessage := fmt.Sprintf(j.app.Features.UrlDuplication.I18n[j.app.Lang].WarnMessage,
+	 duplicatedMsg.From.Username, timeago.FromDuration(d))
 
 	reply := &BotForceReply{ForceReply: true, Selective: true}
 
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
-		Text:                  strings.Join(botReplyMessage, "\n"),
+		Text:                  botReplyMessage,
 		ParseMode:             ParseModeMarkdown,
 		DisableWebPagePreview: true,
 		DisableNotification:   true,

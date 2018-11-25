@@ -33,6 +33,9 @@ type UrlConfigOptions struct {
 	IgnoreHostnames  bool `json:"ignoreHostnames"`
 	ActionNotify     bool `json:"actionNotify"`
 	RelevanceTimeout int  `json:"relevanceTimeout"`
+	I18n           map[string]struct {
+		WarnMessage string `json:"warnMessage"`
+	} `json:"i18n"`
 }
 
 type StickersDetectionConfigOptions struct {
