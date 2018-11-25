@@ -42,7 +42,7 @@
         "warnMessage": "Please dont flood. For last %d seconds you posted %d messages with %d avg. word length."
       },
       "rus": {
-        "warnMessage": "Не флудите. За последние %d секунд вы написали %d сообщений с %d сред. кол-вом слов."
+        "warnMessage": "Не флудите. За последние %d секунд вы написали %d сообщений со сред. %d кол-вом слов."
       }
     }
   },
