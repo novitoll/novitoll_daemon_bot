@@ -22,9 +22,8 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 * stickers detection and post-action
 	* auto-delete the message with the sticker
 	* kindly reply with a notification and auto-delete the reply
-* flood detection (In progress)
-	* copy-paste attack protection (hash message into the hashmap per user message and clear it in N-time.)
-	* flood detection.
+* flood detection
+	* detects the limit of 3 messages within 10 seconds per user
 * ad detection
 	* Other Telegram groups ads. Delete message if user is not in admin list.
 * nude, pornography detection in image (TBD)
