@@ -154,12 +154,13 @@ type BotIngressRequestMessage struct {
 	From               User
 	Text               string `json:"text"`
 	Entities           []Message
-	Date               int64  `json:"date"` // time.Unix()
-	MessageId          int    `json:"message_id"`
-	Chat               Chat   `json:"chat"`
-	NewChatMembers     []User `json:"new_chat_members"`
-	NewChatMember      User   `json:"new_chat_member"`
-	NewChatParticipant User   `json:"new_chat_participant"`
+	Date               int64   `json:"date"` // time.Unix()
+	MessageId          int     `json:"message_id"`
+	Chat               Chat    `json:"chat"`
+	NewChatMembers     []User  `json:"new_chat_members"`
+	NewChatMember      User    `json:"new_chat_member"`
+	NewChatParticipant User    `json:"new_chat_participant"`
+	Sticker            Sticker `json:"sticker"`
 }
 
 // https://core.telegram.org/bots/api#user
