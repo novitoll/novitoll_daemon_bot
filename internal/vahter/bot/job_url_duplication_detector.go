@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	netUrl "net/url"
+	"strings"
 	"time"
 
 	"github.com/justincampbell/timeago"
@@ -28,6 +29,10 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 	for i, url := range urls {
 		j.app.Logger.Info(fmt.Sprintf("Checking %d/%d URL - %s", i+1, len(urls), url))
+
+		if strings.Contains(url, "t.me/") { // this should be controlled in JobAdDetector
+			continue
+		}
 
 		if j.app.Features.UrlDuplication.IgnoreHostnames {
 			u, err := netUrl.ParseRequestURI(url)
