@@ -19,8 +19,6 @@ func JobStickersDetector(job *Job) (interface{}, error) {
 
 	text := job.app.Features.StickersDetection.I18n[job.app.Lang].WarnMessage
 
-	go job.DeleteMessage(&job.ingressBody.Message)
-
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                job.ingressBody.Message.Chat.Id,
 		Text:                  text,
@@ -42,9 +40,11 @@ func JobStickersDetector(job *Job) (interface{}, error) {
 	if replyMsgBody != nil {
 		// cleanup reply messages
 		go func() {
+			job.DeleteMessage(&job.ingressBody.Message)
+
 			select {
 			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
-				go job.DeleteMessage(replyMsgBody)
+				job.DeleteMessage(replyMsgBody)
 			}
 		}()
 	}

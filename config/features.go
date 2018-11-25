@@ -33,8 +33,8 @@ type UrlConfigOptions struct {
 }
 
 type StickersDetectionConfigOptions struct {
-	Enabled      bool `json:"enabled"`
-	I18n         map[string]struct {
+	Enabled bool `json:"enabled"`
+	I18n    map[string]struct {
 		WarnMessage string `json:"warnMessage"`
 	}
 }
