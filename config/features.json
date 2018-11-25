@@ -22,12 +22,12 @@
     "actionNotify": true,
     "i18n": {
       "en-us": {
-        "welcomeMessage": "Ping? Please answere here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
+        "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
         "authMessage": "I am not a bot"
       },
       "rus": {
-        "welcomeMessage": "Пинг? Ответьте в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
+        "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
         "authMessage": "Я - не бот"
       }
@@ -36,7 +36,15 @@
     "kickBanTimeout": 60
   },
   "messageStatistics": {
-    "enabled": false
+    "enabled": true,
+    "i18n": {
+      "en-us": {
+        "warnMessage": "Tsss! Dont flood. For last %d seconds you posted %d messages."
+      },
+      "rus": {
+        "warnMessage": "Тссс! Не флудите. За последние %d секунд вы написали %d сообщений."
+      }
+    }
   },
   "stickersDetection": {
     "enabled": false,
