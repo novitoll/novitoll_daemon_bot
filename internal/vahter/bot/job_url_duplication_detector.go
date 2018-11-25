@@ -81,7 +81,7 @@ func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (int
 	botReplyMessage := fmt.Sprintf(j.app.Features.UrlDuplication.I18n[j.app.Lang].WarnMessage,
 		duplicatedMsg.From.Username, timeago.FromDuration(d))
 
-	reply := &BotForceReply{ForceReply: true, Selective: true}
+	reply := &BotForceReply{ForceReply: false, Selective: true}
 
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
