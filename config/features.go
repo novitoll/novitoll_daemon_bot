@@ -2,16 +2,12 @@
 package config
 
 type FeaturesConfig struct {
-	NotificationTarget   TargetOptions                  `json:"notificationTarget"`
 	UrlDuplication       UrlConfigOptions               `json:"urlDuplication"`
 	NewcomerQuestionnare NewcomerConfigOptions          `json:"newcomerQuestionnare"`
 	StickersDetection    StickersDetectionConfigOptions `json:"stickersDetection"`
 	MessageStatistics    MessageStatisticsConfigOptions `json:"messageStatistics"`
 	Administration       AdministrationConfigOptions    `json:"administration"`
-}
-
-type TargetOptions struct {
-	Admins []string `json:"admins"`
+	AdDetection          AdDetectionConfigOptions       `json:"adDetection"`
 }
 
 type NewcomerConfigOptions struct {
@@ -52,5 +48,13 @@ type MessageStatisticsConfigOptions struct {
 }
 
 type AdministrationConfigOptions struct {
-	LogLevel string `json:"logLevel"`
+	LogLevel string   `json:"logLevel"`
+	Admins   []string `json:"admins"`
+}
+
+type AdDetectionConfigOptions struct {
+	Enabled bool `json:"enabled"`
+	I18n    map[string]struct {
+		WarnMessage string `json:"warnMessage"`
+	} `json:"i18n"`
 }

@@ -45,7 +45,7 @@ func configureStructs(t *testing.T, reqBodyFilepath string) (*cfg.FeaturesConfig
 	// FeaturesConfig init
 	var features cfg.FeaturesConfig
 	filepathToStruct(t, "config/features.json", &features)
-	assert.Equal(t, features.NotificationTarget.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
+	assert.Equal(t, features.Administration.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
 
 	// BotIngressRequest init
 	var ingressBody BotIngressRequest
