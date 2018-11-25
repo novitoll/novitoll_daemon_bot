@@ -25,7 +25,8 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 * flood detection (In progress)
 	* copy-paste attack protection (hash message into the hashmap per user message and clear it in N-time.)
 	* flood detection.
-* ad detection (TBD)
+* ad detection
+	* Other Telegram groups ads. Delete message if user is not in admin list.
 * nude, pornography detection in image (TBD)
 * batch scanning of users' avatars, and posting images' for steganography analysis (+ VirusTotal?) (TBD)
 

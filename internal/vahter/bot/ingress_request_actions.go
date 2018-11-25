@@ -60,6 +60,7 @@ func (ingressBody *BotIngressRequest) Process(app *App) {
 		JobNewChatMemberWaiter,
 		JobUrlDuplicationDetector,
 		JobMessageStatistics,
+		JobAdDetector,
 	})
 
 	for _, e := range errors {

@@ -1,8 +1,6 @@
 {
   "administration": {
-    "logLevel": "info"
-  },
-  "notificationTarget": {
+    "logLevel": "info",
     "admins": ["novitoll"]
   },
   "urlDuplication": {
@@ -52,6 +50,17 @@
       },
       "rus": {
         "notificationMessage": "Стикеры запрещены."
+      }
+    }
+  },
+  "adDetection": {
+    "enabled": true,
+    "i18n": {
+      "en-us": {
+        "warnMessage": "Ads for other Telegram groups are forbidden. Please ask admins to post your message.\nCC: %s"
+      },
+      "rus": {
+        "warnMessage": "Реклама других Телеграм групп запрещена. Попросите у админов запостить ваше сообщение.\nCC: %s"
       }
     }
   }
