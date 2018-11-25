@@ -57,11 +57,15 @@ Follow these steps on the running Telegram bot client instance.
 
 3. Execute Bash script ``deployments/webhook.sh <TELEGRAM_BOT_TOKEN> setWebhook?url=https://<hostname>/process`` -- will set webhook back to usual ``/process``
 
-Flow
--------
-
-.. image:: docs/flow.jpg
 
 License
 -------
 GNU GPL 2.0
+
+
+Demo
+-------
+
+.. image:: docs/ad-detection-groups.png
+
+.. image:: docs/url-duplication-detection.png
