@@ -41,6 +41,9 @@ type StickersDetectionConfigOptions struct {
 
 type MessageStatisticsConfigOptions struct {
 	Enabled bool `json:"enabled"`
+	I18n    map[string]struct {
+		WarnMessage string `json:"warnMessage"`
+	} `json:"i18n"`
 }
 
 type AdministrationConfigOptions struct {

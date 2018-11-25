@@ -36,7 +36,15 @@
     "kickBanTimeout": 60
   },
   "messageStatistics": {
-    "enabled": false
+    "enabled": true,
+    "i18n": {
+      "en-us": {
+        "warnMessage": "Please dont flood. For last %d seconds you posted %d messages with %d avg. word length."
+      },
+      "rus": {
+        "warnMessage": "Не флудите. За последние %d секунд вы написали %d сообщений с %d сред. кол-вом слов."
+      }
+    }
   },
   "stickersDetection": {
     "enabled": false,

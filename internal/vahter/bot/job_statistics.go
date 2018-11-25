@@ -2,10 +2,12 @@
 package bot
 
 import (
-	"log"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -33,13 +35,25 @@ func (s *UserMessageStats) Reset() {
 	p.Set(reflect.Zero(p.Type()))
 }
 
-func (s *UserMessageStats) ControlFlood(isFlood chan bool) {
+func (s *UserMessageStats) ControlFlood(isFlood chan bool, job *Job) {
 	select {
 	case <-isFlood:
-		// TODO: reply notification
-		log.Println("[!] User is flooding")
+		text := fmt.Sprintf(job.app.Features.MessageStatistics.I18n[job.app.Lang].WarnMessage,
+			FLOOD_TIME_INTERVAL, FLOOD_MAX_ALLOWED_MSGS, s.MeanMsgLength)
+
+		botEgressReq := &BotEgressSendMessage{
+			ChatId:                job.ingressBody.Message.Chat.Id,
+			Text:                  text,
+			ParseMode:             ParseModeMarkdown,
+			DisableWebPagePreview: true,
+			DisableNotification:   true,
+			ReplyToMessageId:      job.ingressBody.Message.MessageId,
+			ReplyMarkup:           &BotForceReply{ForceReply: false, Selective: true},
+		}
+		botEgressReq.EgressSendToTelegram(job.app)
+
 	case <-time.After(time.Duration(FLOOD_TIME_INTERVAL) * time.Second):
-		log.Println("[!] Resetting user stats")
+		job.app.Logger.Warn("Resetting user stats")
 		s.Reset()
 	}
 }
@@ -74,16 +88,17 @@ func JobMessageStatistics(job *Job) (interface{}, error) {
 	// 3. update the user stats map
 	UserStatistics[job.ingressBody.Message.From.Id] = stats
 
-	// 4. show stats to log STDOUT
-	log.Printf("[.] User mean messages length %d", stats.MeanMsgLength)
-
-	// 5.
+	// 4.
 	isFlood := make(chan bool, 1)
-	go stats.ControlFlood(isFlood)
+	go stats.ControlFlood(isFlood, job)
 
-	// 6. Detect if user has been flooding for last FLOOD_TIME_INTERVAL seconds
+	// 5. Detect if user has been flooding for last FLOOD_TIME_INTERVAL seconds
 	// add here the condition with the MeanMsgLength within FLOOD_TIME_INTERVAL
 	if len(stats.MsgsLength) > FLOOD_MAX_ALLOWED_MSGS {
+		job.app.Logger.WithFields(logrus.Fields{
+			"userId": job.ingressBody.Message.From.Id,
+		}).Warn("User is flooding")
+
 		isFlood <- true
 	}
 
