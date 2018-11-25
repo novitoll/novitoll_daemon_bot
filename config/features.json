@@ -1,7 +1,7 @@
 {
   "administration": {
     "logLevel": "info",
-    "admins": ["novitoll"]
+    "admins": ["@novitoll"]
   },
   "urlDuplication": {
     "enabled": true,

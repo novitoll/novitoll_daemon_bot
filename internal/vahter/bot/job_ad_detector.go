@@ -15,11 +15,19 @@ func JobAdDetector(job *Job) (interface{}, error) {
 
 	// detection of Telegram groups
 	if strings.Contains(job.ingressBody.Message.Text, "t.me/") {
+		admins := job.app.Features.Administration.Admins
+
+		for _, a := range admins {
+			if fmt.Sprintf("@%s", job.ingressBody.Message.From.Username) == a {
+				return nil, nil
+			}
+		}
+
 		job.app.Logger.WithFields(logrus.Fields{
 			"userId": job.ingressBody.Message.From.Id,
 		}).Warn("Ad detected: Telegram group")
 
-		adminsToNotify := strings.Join(job.app.Features.Administration.Admins, ", ")
+		adminsToNotify := strings.Join(admins, ", ")
 		text := fmt.Sprintf(job.app.Features.AdDetection.I18n[job.app.Lang].WarnMessage, adminsToNotify)
 
 		botEgressReq := &BotEgressSendMessage{
