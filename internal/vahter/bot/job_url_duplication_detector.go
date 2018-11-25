@@ -28,11 +28,11 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	defer redisConn.Close()
 
 	for i, url := range urls {
-		j.app.Logger.Info(fmt.Sprintf("Checking %d/%d URL - %s", i+1, len(urls), url))
-
 		if strings.Contains(url, "t.me/") { // this should be controlled in JobAdDetector
 			continue
 		}
+
+		j.app.Logger.Info(fmt.Sprintf("Checking %d/%d URL - %s", i+1, len(urls), url))
 
 		if j.app.Features.UrlDuplication.IgnoreHostnames {
 			u, err := netUrl.ParseRequestURI(url)
@@ -74,7 +74,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		}
 	}
 
-	return true, nil
+	return nil, nil
 }
 
 func (j *Job) actionOnURLDuplicate(duplicatedMsg *BotIngressRequestMessage) (interface{}, error) {

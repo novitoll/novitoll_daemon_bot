@@ -40,10 +40,9 @@ func JobStickersDetector(job *Job) (interface{}, error) {
 	if replyMsgBody != nil {
 		// cleanup reply messages
 		go func() {
-			job.DeleteMessage(&job.ingressBody.Message)
-
 			select {
 			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
+				job.DeleteMessage(&job.ingressBody.Message)
 				job.DeleteMessage(replyMsgBody)
 			}
 		}()
