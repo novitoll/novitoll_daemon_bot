@@ -75,6 +75,8 @@ func JobMessageStatistics(job *Job) (interface{}, error) {
 			"MeanAllMsgsLength": stats.MeanAllMsgsLength,
 		}).Warn("Resetting user stats")
 
+		stats.FloodMsgsLength = []int{}
+
 		text := fmt.Sprintf(job.app.Features.MessageStatistics.I18n[job.app.Lang].WarnMessage,
 			FLOOD_TIME_INTERVAL, FLOOD_MAX_ALLOWED_MSGS)
 
