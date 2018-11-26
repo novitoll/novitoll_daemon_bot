@@ -49,6 +49,9 @@ type MessageStatisticsConfigOptions struct {
 type AdministrationConfigOptions struct {
 	LogLevel string   `json:"logLevel"`
 	Admins   []string `json:"admins"`
+	I18n     map[string]struct {
+		TrollReply []string `json:"trollReply"`
+	} `json:"i18n"`
 }
 
 type AdDetectionConfigOptions struct {
