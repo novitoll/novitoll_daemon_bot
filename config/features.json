@@ -1,7 +1,16 @@
 {
   "administration": {
     "logLevel": "info",
-    "admins": ["@novitoll"]
+    "admins": ["@novitoll"],
+    "i18n": {
+        "en-us": {
+          "trollReply": ["Ha-ha. U r so funny. (No)", "Wannabe Kevin Hart", "Say that to your girl, bro. Or wait, you dont have one.", "Tsss! You said the key word. They are coming."]
+        },
+        "rus": {
+          "trollReply": ["А ты смешной, съем тебя последним", "О, смотрите. Нурлан Сабуров нашел двойника", "Скажи это своей девушке, ой сорри, у тебя ее нет", "Тссс! Ты произнес кодовое слово. За тобой выехали."]
+        }
+      }
+    }
   },
   "urlDuplication": {
     "enabled": true,
