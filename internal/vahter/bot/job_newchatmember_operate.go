@@ -101,7 +101,7 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 		} else {
 			trollReplies := j.app.Features.Administration.I18n[j.app.Lang].TrollReply
 			text := trollReplies[rand.Intn(len(trollReplies))]
-			return j.actionSendMessage(text, TIME_TO_DELETE_REPLY_MSG, &BotForceReply{
+			return j.actionSendMessage(text, TIME_TO_DELETE_REPLY_MSG+20, &BotForceReply{
 				ForceReply: false,
 				Selective:  true,
 			})
