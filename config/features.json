@@ -4,10 +4,10 @@
     "admins": ["@novitoll"],
     "i18n": {
         "en-us": {
-          "trollReply": ["Ha-ha. U r so funny. (No)", "Wannabe Kevin Hart", "Say that to your girl, bro. Or wait, you dont have one.", "Tsss! You said the key word. They are coming."]
+          "trollReply": ["You are not bot. And You are not hot.", "Is it cached? F5! F5!", "Ha-ha. U r so funny. (No)", "Wannabe Kevin Hart", "Say that to your girl, bro. Or wait, you dont have one.", "Tsss! You said the key word. They are coming."]
         },
         "rus": {
-          "trollReply": ["А ты смешной, съем тебя последним", "О, смотрите. Нурлан Сабуров нашел двойника", "Скажи это своей девушке, ой сорри, у тебя ее нет", "Тссс! Ты произнес кодовое слово. За тобой выехали."]
+          "trollReply": ["Вот! Новый по-во-рот! И ю-зер ре-вет! Что он - не бот!", "Да, ты - бот, наоборот", "Это закэшированно? F5! F5", "А ты смешной, съем тебя последним", "О, смотрите. Нурлан Сабуров нашел двойника", "Скажи это своей девушке, ой сорри, у тебя ее нет", "Тссс! Ты произнес кодовое слово. За тобой выехали."]
         }
     }
   },

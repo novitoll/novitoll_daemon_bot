@@ -4,6 +4,7 @@ package bot
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -93,7 +94,7 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 	authMsg := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang].AuthMessage
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
-	if j.ingressBody.Message.Text == authMsg {
+	if strings.ToLower(j.ingressBody.Message.Text) == strings.ToLower(authMsg) {
 		if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok {
 			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 			chNewcomer <- j.ingressBody.Message.From.Id
