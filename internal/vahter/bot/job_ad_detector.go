@@ -15,7 +15,7 @@ func JobAdDetector(job *Job) (interface{}, error) {
 	}
 
 	// detection of Telegram groups
-	if strings.Contains(job.ingressBody.Message.Text, "t.me/") {
+	if strings.Contains(job.ingressBody.Message.Text, "t.me/") || strings.Contains(job.ingressBody.Message.Text, "joinchat") {
 		admins := job.app.Features.Administration.Admins
 
 		for _, a := range admins {
@@ -53,8 +53,8 @@ func JobAdDetector(job *Job) (interface{}, error) {
 			go func() {
 				select {
 				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
-					job.DeleteMessage(&job.ingressBody.Message)
-					job.DeleteMessage(replyMsgBody)
+					go job.DeleteMessage(&job.ingressBody.Message)
+					go job.DeleteMessage(replyMsgBody)
 				}
 			}()
 		}
