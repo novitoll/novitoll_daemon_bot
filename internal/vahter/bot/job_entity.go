@@ -7,7 +7,9 @@ type Job struct {
 }
 
 func (job *Job) HasMessageContent() bool {
-	return job.ingressBody.Message.Text != "" || job.ingressBody.Message.Sticker.FileId != ""
+	return job.ingressBody.Message.Text != "" ||
+		job.ingressBody.Message.Sticker.FileId != "" ||
+		job.ingressBody.Message.Caption != ""
 }
 
 const (

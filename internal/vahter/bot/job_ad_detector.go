@@ -9,13 +9,33 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	AD_WORDS = []string{"t.me/", "joinchat"}
+)
+
+func isAd(msg *BotIngressRequestMessage) bool {
+	var isMsgAd bool = false
+	contexts := []string{msg.Text, msg.Caption}
+	for _, s := range contexts {
+		if isMsgAd {
+			break
+		}
+		for _, ad := range AD_WORDS {
+			if strings.Contains(s, ad) {
+				isMsgAd = true
+			}
+		}
+	}
+	return isMsgAd
+}
+
 func JobAdDetector(job *Job) (interface{}, error) {
 	if !job.app.Features.AdDetection.Enabled || !job.HasMessageContent() {
 		return nil, nil
 	}
 
 	// detection of Telegram groups
-	if strings.Contains(job.ingressBody.Message.Text, "t.me/") || strings.Contains(job.ingressBody.Message.Text, "joinchat") {
+	if isAd(job.ingressBody.Message) {
 		admins := job.app.Features.Administration.Admins
 
 		for _, a := range admins {
