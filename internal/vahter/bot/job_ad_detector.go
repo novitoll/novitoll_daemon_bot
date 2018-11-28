@@ -35,7 +35,7 @@ func JobAdDetector(job *Job) (interface{}, error) {
 	}
 
 	// detection of Telegram groups
-	if isAd(job.ingressBody.Message) {
+	if isAd(&job.ingressBody.Message) {
 		admins := job.app.Features.Administration.Admins
 
 		for _, a := range admins {
