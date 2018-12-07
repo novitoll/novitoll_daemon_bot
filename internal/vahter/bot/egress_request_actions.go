@@ -28,11 +28,11 @@ func sendHTTP(req *http.Request, app *App) (*BotIngressRequestMessage, error) {
 		Transport: netTransport,
 	}
 	response, err := client.Do(req)
-	defer response.Body.Close()
 	if err != nil {
 		app.Logger.WithFields(logrus.Fields{"err": err}).Fatal("Can not send message to Telegram")
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	buf := new(bytes.Buffer)
 	parsedBytes, err2 := buf.ReadFrom(response.Body)
