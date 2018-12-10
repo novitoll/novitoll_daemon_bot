@@ -13,12 +13,13 @@ type FeaturesConfig struct {
 type NewcomerConfigOptions struct {
 	Enabled        bool  `json:"enabled"`
 	ActionNotify   bool  `json:"actionNotify"`
-	AuthTimeout    uint8 `json:"authTimeout"`
-	KickBanTimeout uint8 `json:"kickBanTimeout"`
+	AuthTimeout    int `json:"authTimeout"`
+	KickBanTimeout int `json:"kickBanTimeout"`
 	I18n           map[string]struct {
 		WelcomeMessage string `json:"welcomeMessage"`
 		AuthOKMessage  string `json:"authOKMessage"`
 		AuthMessage    string `json:"authMessage"`
+		StatsMessage 	string `json:"statsMessage"`
 	} `json:"i18n"`
 }
 

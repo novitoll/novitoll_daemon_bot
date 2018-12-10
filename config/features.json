@@ -32,12 +32,14 @@
       "en-us": {
         "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
-        "authMessage": "I am not a bot"
+        "authMessage": "I am not a bot",
+        "statsMessage": "For last %d seconds %d users were kicked."
       },
       "rus": {
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
-        "authMessage": "Я - не бот"
+        "authMessage": "Я - не бот",
+        "statsMessage": "За последние %d секунд %d юзеров было кикнуто."
       }
     },    
     "authTimeout": 60,

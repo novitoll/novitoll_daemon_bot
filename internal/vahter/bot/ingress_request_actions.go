@@ -57,7 +57,7 @@ func (ingressBody *BotIngressRequest) Process(app *App) {
 
 	results, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		JobNewChatMemberDetector,
-		JobNewChatMemberWaiter,
+		JobNewChatMemberAuth,
 		JobUrlDuplicationDetector,
 		JobMessageStatistics,
 		JobAdDetector,

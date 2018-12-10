@@ -12,12 +12,14 @@ import (
 )
 
 var (
+	KickedNewcomers = []int{}
 	forceDeletion = make(chan bool)
 	chNewcomer    = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
 const (
-	TWO_DAYS_IN_SEC = 172800
+	REDIS_NEWCOMER_TTL = 172800  // 2 days in sec
+	NEWCOMERS_COUNT_PERIOD = 180
 )
 
 func init() {
@@ -50,7 +52,8 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		"username": newComer.Username,
 	}).Warn("New member has been detected")
 
-	err := redisClient.SetRedisObj(string(newComer.Id), time.Now(), TWO_DAYS_IN_SEC)
+	// record the newcomer
+	err := redisClient.SetRedisObj(string(newComer.Id), time.Now(), REDIS_NEWCOMER_TTL)
 	if err != nil  {
 		return nil, err
 	}
@@ -84,6 +87,10 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			return true, nil
 		}
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
+		// init the newcomers' count within N seconds
+		KickedNewcomers = append(KickedNewcomers, newComer.Id)
+		go j.actionCountKickedNewComers()
+
 		response, err2 := j.actionKickChatMember()
 		if err2 == nil {
 			// delete the "User joined the group" event
@@ -103,7 +110,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	}
 }
 
-func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
+func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	authMsg := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang].AuthMessage
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
@@ -132,7 +139,28 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 	Action functions
 */
 
-func (j *Job) actionSendMessage(text string, deleteAfterTime uint8, reply interface{}) (interface{}, error) {
+func (j *Job) actionCountKickedNewComers() (interface{}, error) {
+	select {
+	case <-time.After(time.Duration(NEWCOMERS_COUNT_PERIOD) * time.Second):
+		text := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang].StatsMessage,
+		 NEWCOMERS_COUNT_PERIOD, len(KickedNewcomers))
+		
+		botEgressReq := &BotEgressSendMessage{
+			ChatId:                j.ingressBody.Message.Chat.Id,
+			Text:                  text,
+			ParseMode:             ParseModeMarkdown,
+			DisableWebPagePreview: true,
+			DisableNotification:   true,
+			ReplyMarkup:           nil,
+		}
+
+		KickedNewcomers = []int{}
+
+		return botEgressReq.EgressSendToTelegram(j.app)
+	}
+}
+
+func (j *Job) actionSendMessage(text string, deleteAfterTime int, reply interface{}) (interface{}, error) {
 	botEgressReq := &BotEgressSendMessage{
 		ChatId:                j.ingressBody.Message.Chat.Id,
 		Text:                  text,
@@ -172,7 +200,7 @@ func (j *Job) actionKickChatMember() (interface{}, error) {
 	return botEgressReq.EgressKickChatMember(j.app)
 }
 
-func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, deleteAfterTime uint8) (interface{}, error) {
+func (j *Job) actionDeleteMessage(response *BotIngressRequestMessage, deleteAfterTime int) (interface{}, error) {
 	// dirty hack to do the same function on either channel (fan-in pattern)
 	select {
 	case <-forceDeletion:

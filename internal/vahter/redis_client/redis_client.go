@@ -49,7 +49,7 @@ func GetRedisObj(redisKey string) (interface{}, error) {
 	return jsonStr, nil
 }
 
-func SetRedisObj(redisKey string, data interface{}, ttl uint8) error {
+func SetRedisObj(redisKey string, data interface{}, ttl int) error {
 	redisConn := GetRedisConnection()
 	defer redisConn.Close()
 	err := redisConn.Set(string(redisKey), data, time.Duration(ttl)*time.Second).Err()
