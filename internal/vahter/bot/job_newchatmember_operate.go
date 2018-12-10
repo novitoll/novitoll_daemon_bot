@@ -151,7 +151,6 @@ func (j *Job) actionCountKickedNewComers() (interface{}, error) {
 			ParseMode:             ParseModeMarkdown,
 			DisableWebPagePreview: true,
 			DisableNotification:   true,
-			ReplyMarkup:           nil,
 		}
 
 		KickedNewcomers = []int{}
