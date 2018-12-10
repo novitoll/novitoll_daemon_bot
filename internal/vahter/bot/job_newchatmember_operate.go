@@ -8,12 +8,16 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 )
 
 var (
-	NewComers     = make(map[int]interface{})
 	forceDeletion = make(chan bool)
 	chNewcomer    = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
+)
+
+const (
+	TWO_DAYS_IN_SEC = 172800
 )
 
 func init() {
@@ -46,7 +50,10 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		"username": newComer.Username,
 	}).Warn("New member has been detected")
 
-	NewComers[newComer.Id] = time.Now()
+	err := redisClient.SetRedisObj(string(newComer.Id), time.Now(), TWO_DAYS_IN_SEC)
+	if err != nil  {
+		return nil, err
+	}
 
 	// sends the welcome authentication message
 	go j.actionSendMessage(welcomeMsg, newComerConfig.AuthTimeout, &ReplyKeyboardMarkup{
@@ -58,7 +65,11 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// blocks the current Job goroutine until either of these 2 channels receive the value
 	select {
 	case dootId := <-chNewcomer:
-		delete(NewComers, dootId)
+		err = redisClient.DeleteRedisObj(string(dootId))
+		if err != nil {
+			return nil, err
+		}
+
 		j.app.Logger.WithFields(logrus.Fields{
 			"id": dootId,
 		}).Info("Newcomer has been authenticated")
@@ -73,20 +84,22 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			return true, nil
 		}
 	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
-		response, err := j.actionKickChatMember()
-		if err == nil {
-
+		response, err2 := j.actionKickChatMember()
+		if err2 == nil {
 			// delete the "User joined the group" event
 			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 
-			delete(NewComers, newComer.Id)
+			err = redisClient.DeleteRedisObj(string(newComer.Id))
+			if err != nil {
+				return nil, err
+			}
 
 			j.app.Logger.WithFields(logrus.Fields{
 				"id":       newComer.Id,
 				"username": newComer.Username,
 			}).Warn("Newcomer has been kicked")
 		}
-		return response, err
+		return response, err2
 	}
 }
 
@@ -95,7 +108,12 @@ func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
 	if strings.ToLower(j.ingressBody.Message.Text) == strings.ToLower(authMsg) {
-		if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok {
+		newcomer, err := redisClient.GetRedisObj(string(j.ingressBody.Message.From.Id))
+		if err != nil {
+			return nil, err
+		}
+		
+		if newcomer != nil {			
 			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 			chNewcomer <- j.ingressBody.Message.From.Id
 		} else {

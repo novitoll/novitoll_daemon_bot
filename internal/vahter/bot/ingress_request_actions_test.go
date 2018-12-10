@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
@@ -16,7 +15,7 @@ import (
 )
 
 var (
-	admins          = []string{"novitoll"}
+	admins          = []string{"@novitoll"}
 	gopath, _       = os.LookupEnv("GOPATH")
 	gopathPostfix   = "src/github.com/novitoll/novitoll_daemon_bot"
 	testdataDirPath = "internal/vahter/bot/testdata"
@@ -85,15 +84,4 @@ func TestTelegramResponseBodyStruct(t *testing.T) {
 	s := []string{testdataDirPath, "ingress_responsebody-1.json"}
 	_, pTelegramResponse := configureStructs(t, concatStringsWithSlash(s))
 	assert.NotNilf(t, pTelegramResponse, "[-] Telegram response body should not be empty but valid")
-}
-
-func TestNewComer(t *testing.T) {
-	reqBodyFilepath := "internal/vahter/bot/testdata/ingress_reqbody-newchatmember-1.json"
-	_, pBotRequest := configureStructs(t, reqBodyFilepath)
-
-	timer := time.NewTimer(11 * time.Second)
-	go func() {
-		<-timer.C
-		assert.Contains(t, NewComers, pBotRequest.Message.From.Id, "[-] Should be NewComers map")
-	}()
 }
