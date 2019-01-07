@@ -69,7 +69,7 @@ func TestURLDuplication(t *testing.T) {
 	s := []string{testdataDirPath, "ingress_reqbody-url-1.json"}
 	pFeatures, pBotRequest := configureStructs(t, concatStringsWithSlash(s))
 
-	app := App{pFeatures, "en-us", logrus.New()}
+	app := App{pFeatures, "en-us", logrus.New(), make(map[int]interface{})}
 	pBotRequest.Process(&app)
 
 	client := redisClient.GetRedisConnection()

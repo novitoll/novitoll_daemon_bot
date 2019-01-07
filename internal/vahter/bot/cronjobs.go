@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 package bot
 
 import (
@@ -19,11 +20,12 @@ var (
 	PrevKick int
 )
 
-func (app *App) StartCronJobs() {
-	job := &Job{nil, app}
+func (ingressBody *BotIngressRequest) StartCronJobsForChat(app *App) {
+	job := &Job{ingressBody, app}
 
 	results, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		CronJobNewcomersCount,
+		CronJobUserMessageStats,
 	})
 
 	for _, e := range errors {
@@ -33,7 +35,7 @@ func (app *App) StartCronJobs() {
 	app.Logger.WithFields(logrus.Fields{
 		"completed": len(results),
 		"errors":    len(errors),
-	}).Info("StartCronJobs: Completed")
+	}).Info("StartCronJobsForChat: Completed")
 }
 
 func CronJobUserMessageStats(job *Job) (interface{}, error) {

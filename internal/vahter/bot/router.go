@@ -2,6 +2,7 @@
 package bot
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -14,6 +15,7 @@ type App struct {
 	Features *cfg.FeaturesConfig
 	Lang     string
 	Logger   *logrus.Logger
+	ChatIds	 map[int]interface{}
 }
 
 func (app *App) RegisterHandlers() {
@@ -21,14 +23,6 @@ func (app *App) RegisterHandlers() {
 	http.HandleFunc("/flushQueue", app.FlushQueueHandlerFunc)
 
 	app.Logger.Info("[+] Handlers for HTTP end-points are registered")
-}
-
-func (app *App) RegisterCronJobs() {
-	go func() {
-		app.StartCronJobs()
-	}()
-
-	app.Logger.Info("[+] Cronjobs are scheduled")
 }
 
 func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +50,14 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	}
 
 	go br.Process(app)
+
+	// we cant run crons unless we know chat ID
+	if _, ok := app.ChatIds[br.Message.Chat.Id]; !ok {
+		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled", br.Message.Chat.Id))
+		app.ChatIds = append(app.ChatIds, br.Message.Chat.Id)
+		go br.StartCronJobsForChat(app)
+	}
+
 	w.WriteHeader(http.StatusAccepted)
 }
 
