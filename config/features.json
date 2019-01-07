@@ -5,7 +5,7 @@
     "i18n": {
         "en-us": {
           "trollReply": ["You are not bot. And You are not hot.", "Is it cached? F5! F5!", "Ha-ha. U r so funny. (No)", "Wannabe Kevin Hart", "Tsss! You said the key word. They are coming."],
-          "cronJobNewcomersReport": "Weekly report. New users - %d(%s), kicked - %d(%s).",
+          "cronJobNewcomersReport": "Weekly report. New users - %s, kicked - %s.",
           "cronJobUserMsgReport": "Weekly report. Top %d active users: %s"
         },
         "rus": {

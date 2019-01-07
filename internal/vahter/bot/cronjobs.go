@@ -40,8 +40,8 @@ func (ingressBody *BotIngressRequest) StartCronJobsForChat(app *App) {
 
 func CronJobUserMessageStats(job *Job) (interface{}, error) {
 	select {
-	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY) * time.Second):
-		var topKactiveUsers uint8 = 5
+	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY + 5) * time.Second):
+		var topKactiveUsers int = 5
 		var report []string
 
 		replyTextTpl := job.app.Features.Administration.I18n[job.app.Lang].CronJobUserMsgReport // for short reference
@@ -56,6 +56,9 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 			return stats[i].AllMsgsCount > stats[i].AllMsgsCount // descending
 		})
 		// next we select top-K of this sorted slice and do cronjob work
+		if len(stats) < topKactiveUsers {
+			topKactiveUsers = len(stats)
+		}
 		for _, userStat := range stats[:topKactiveUsers] {
 			report = append(report,
 				fmt.Sprintf("User - %s. Total: %d msgs, Avg. msgs length: %d",
@@ -63,10 +66,12 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 		}
 
 		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ".\n"))
+		replyText = strings.Replace(replyText, "_", "\u005F", -1)
 		resp, err := sendMessage(job, replyText)
 
 		// reset maps
-		utils.Destruct(&UserStatistics)
+		UserStatistics = make(map[int]*UserMessageStats)
+		delete(ChatIds, job.ingressBody.Message.Chat.Id)
 
 		return resp, err
 	}
@@ -75,12 +80,24 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 func CronJobNewcomersCount(job *Job) (interface{}, error) {
 	select {
 	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY) * time.Second):
+		var authR, kickR string
 		replyTextTpl := job.app.Features.Administration.I18n[job.app.Lang].CronJobNewcomersReport // for short reference
 
 		authDiff := utils.CountDiffInPercent(PrevAuth, len(NewComersAuthVerified))
 		kickDiff := utils.CountDiffInPercent(PrevKick, len(NewComersKicked))
+		if authDiff != "0%" {
+			authR = fmt.Sprintf("%d(%s)", len(NewComersAuthVerified), authDiff)
+		} else {
+			authR = fmt.Sprintf("%d", len(NewComersAuthVerified))
+		}
 
-		replyText := fmt.Sprintf(replyTextTpl, len(NewComersAuthVerified), authDiff, len(NewComersKicked), kickDiff)
+		if kickDiff != "0%" {
+			kickR = fmt.Sprintf("%d(%s)", len(NewComersKicked), kickDiff)
+		} else {
+			kickR = fmt.Sprintf("%d", len(NewComersKicked))
+		}
+
+		replyText := fmt.Sprintf(replyTextTpl, authR, kickR)
 
 		resp, err := sendMessage(job, replyText)
 

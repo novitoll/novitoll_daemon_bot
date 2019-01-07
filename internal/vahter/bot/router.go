@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	ChatIds make[int]int
+	ChatIds = make(map[int]time.Time)
 )
 
 type App struct {
