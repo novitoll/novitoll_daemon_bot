@@ -24,10 +24,10 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 	* kindly reply with a notification and auto-delete the reply
 * flood detection
 	* detects the limit of 3 messages within 10 seconds per user
-	* detects the long-long text copy-paste (TBD)
+	* detects the long-long text copy-paste
 * weekly chat statistics
-	* weekly report generation of newcomers (TBD)
-	* weekly report generation of active users messages' stats (TBD)
+	* weekly report generation of newcomers
+	* weekly report generation of active users messages' stats
 * ad detection
 	* Other Telegram groups ads. Delete message if user is not in admin list.
 * nude, pornography detection in image (TBD)
