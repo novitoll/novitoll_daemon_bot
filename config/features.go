@@ -42,7 +42,8 @@ type StickersDetectionConfigOptions struct {
 type MessageStatisticsConfigOptions struct {
 	Enabled bool `json:"enabled"`
 	I18n    map[string]struct {
-		WarnMessage string `json:"warnMessage"`
+		WarnMessageTooFreq string `json:"warnMessageTooFreq"`
+		WarnMessageTooLong string `json:"warnMessageTooLong"`
 	} `json:"i18n"`
 }
 
@@ -50,7 +51,9 @@ type AdministrationConfigOptions struct {
 	LogLevel string   `json:"logLevel"`
 	Admins   []string `json:"admins"`
 	I18n     map[string]struct {
-		TrollReply []string `json:"trollReply"`
+		TrollReply             []string `json:"trollReply"`
+		CronJobNewcomersReport string   `json:"cronJobNewcomersReport"`
+		CronJobUserMsgReport   string   `json:"cronJobUserMsgReport"`
 	} `json:"i18n"`
 }
 

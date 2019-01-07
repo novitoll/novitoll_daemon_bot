@@ -4,10 +4,16 @@ package bot
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	ChatIds = make(map[int]time.Time)
 )
 
 type App struct {
@@ -48,6 +54,14 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	}
 
 	go br.Process(app)
+
+	// we cant run crons unless we know chat ID
+	if _, ok := ChatIds[br.Message.Chat.Id]; !ok {
+		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled", br.Message.Chat.Id))
+		ChatIds[br.Message.Chat.Id] = time.Now()
+		go br.StartCronJobsForChat(app)
+	}
+
 	w.WriteHeader(http.StatusAccepted)
 }
 

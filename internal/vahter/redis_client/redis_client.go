@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -36,4 +37,34 @@ func GetRedisConnection() *redis.Client {
 		PoolSize:   runtime.NumCPU() * 10, // TODO: need to calculate more carefully with ulimit and need to have a Pool of connections
 	})
 	return client
+}
+
+func GetRedisObj(redisKey string) (interface{}, error) {
+	redisConn := GetRedisConnection()
+	defer redisConn.Close()
+	jsonStr, err := redisConn.Get(string(redisKey)).Result()
+	if err != nil {
+		return nil, err
+	}
+	return jsonStr, nil
+}
+
+func SetRedisObj(redisKey string, data interface{}, ttl int) error {
+	redisConn := GetRedisConnection()
+	defer redisConn.Close()
+	err := redisConn.Set(string(redisKey), data, time.Duration(ttl)*time.Second).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteRedisObj(redisKeys ...string) error {
+	redisConn := GetRedisConnection()
+	defer redisConn.Close()
+	_, err := redisConn.Del(redisKeys...).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
