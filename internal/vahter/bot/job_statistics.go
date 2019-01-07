@@ -30,8 +30,8 @@ type UserMessageStats struct {
 	LastMsgTime       int64
 	SinceLastMsg      int
 	MeanAllMsgsLength int
-	Dates 			  []int64
-	Username 		  string
+	Dates             []int64
+	Username          string
 }
 
 func JobMessageStatistics(job *Job) (interface{}, error) {
@@ -52,7 +52,7 @@ func JobMessageStatistics(job *Job) (interface{}, error) {
 			LastMsgTime:       t0,
 			SinceLastMsg:      0,
 			MeanAllMsgsLength: 0,
-			Username: job.ingressBody.Message.From.Username,
+			Username:          job.ingressBody.Message.From.Username,
 		}
 	} else {
 		// 2.2 update the user stats

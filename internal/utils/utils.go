@@ -23,6 +23,6 @@ func CountDiffInPercent(a, b int) string {
 }
 
 func Destruct(v interface{}) {
-    p := reflect.ValueOf(v).Elem()
-    p.Set(reflect.Zero(p.Type()))
+	p := reflect.ValueOf(v).Elem()
+	p.Set(reflect.Zero(p.Type()))
 }

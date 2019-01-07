@@ -53,13 +53,13 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 			stats = append(stats, v)
 		}
 		sort.Slice(stats, func(i, j int) bool {
-			return stats[i].AllMsgsCount > stats[i].AllMsgsCount  // descending
+			return stats[i].AllMsgsCount > stats[i].AllMsgsCount // descending
 		})
 		// next we select top-K of this sorted slice and do cronjob work
 		for _, userStat := range stats[:topKactiveUsers] {
-			report = append(report, 
+			report = append(report,
 				fmt.Sprintf("User - %s. Total: %d msgs, Avg. msgs length: %d",
-				 userStat.Username, userStat.AllMsgsCount, userStat.MeanAllMsgsLength))
+					userStat.Username, userStat.AllMsgsCount, userStat.MeanAllMsgsLength))
 		}
 
 		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ".\n"))
