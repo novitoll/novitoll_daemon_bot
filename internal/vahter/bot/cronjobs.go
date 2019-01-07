@@ -40,7 +40,16 @@ func CronJobNewcomersCount(job *Job) (interface{}, error) {
 			ReplyMarkup:           &BotForceReply{ForceReply: false, Selective: true},
 		}
 		// notify user about the flood limit
-		return botEgressReq.EgressSendToTelegram(job.app)
+		resp, err := botEgressReq.EgressSendToTelegram(job.app)
+		if err != nil {
+			return nil, err
+		}
+
+		// reset maps
+		NewComersAuthVerified = make(map[int]interface{})
+		NewComersKicked = make(map[int]interface{})
+
+		return resp, err
 	}
 }
 
