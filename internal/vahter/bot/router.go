@@ -24,7 +24,9 @@ func (app *App) RegisterHandlers() {
 }
 
 func (app *App) RegisterCronJobs() {
-	app.StartCronJobs()
+	go func() {
+		app.StartCronJobs()
+	}()
 
 	app.Logger.Info("[+] Cronjobs are scheduled")
 }
