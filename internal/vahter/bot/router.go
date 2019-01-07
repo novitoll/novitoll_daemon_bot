@@ -12,11 +12,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	ChatIds make[int]int
+)
+
 type App struct {
 	Features *cfg.FeaturesConfig
 	Lang     string
 	Logger   *logrus.Logger
-	ChatIds  map[int]interface{}
 }
 
 func (app *App) RegisterHandlers() {
@@ -53,9 +56,9 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	go br.Process(app)
 
 	// we cant run crons unless we know chat ID
-	if _, ok := app.ChatIds[br.Message.Chat.Id]; !ok {
+	if _, ok := ChatIds[br.Message.Chat.Id]; !ok {
 		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled", br.Message.Chat.Id))
-		app.ChatIds[br.Message.Chat.Id] = time.Now()
+		ChatIds[br.Message.Chat.Id] = time.Now()
 		go br.StartCronJobsForChat(app)
 	}
 
