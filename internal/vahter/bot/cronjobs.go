@@ -61,12 +61,12 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 		}
 		for _, userStat := range stats[:topKactiveUsers] {
 			report = append(report,
-				fmt.Sprintf("User - %s. Total: %d msgs, Avg. msgs length: %d",
+				fmt.Sprintf("\n[.] User - *%s*, Total: %d msgs, Avg. msgs length: %d",
 					userStat.Username, userStat.AllMsgsCount, userStat.MeanAllMsgsLength))
 		}
 
-		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ".\n"))
-		replyText = strings.Replace(replyText, "_", "\u005F", -1)
+		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ". "))
+		replyText = strings.Replace(replyText, "_", "<underscore>", -1)
 		resp, err := sendMessage(job, replyText)
 
 		// reset maps
@@ -81,20 +81,24 @@ func CronJobNewcomersCount(job *Job) (interface{}, error) {
 	select {
 	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY) * time.Second):
 		var authR, kickR string
+		var authN int = len(NewComersAuthVerified)
+		var kickN int = len(NewComersKicked)
+
 		replyTextTpl := job.app.Features.Administration.I18n[job.app.Lang].CronJobNewcomersReport // for short reference
 
-		authDiff := utils.CountDiffInPercent(PrevAuth, len(NewComersAuthVerified))
-		kickDiff := utils.CountDiffInPercent(PrevKick, len(NewComersKicked))
-		if authDiff != "0%" {
-			authR = fmt.Sprintf("%d(%s)", len(NewComersAuthVerified), authDiff)
+		authDiff := utils.CountDiffInPercent(PrevAuth, authN)
+		kickDiff := utils.CountDiffInPercent(PrevKick, kickN)
+		
+		if authN > 0 {
+			authR = fmt.Sprintf("%d(%s)", authN, authDiff)
 		} else {
-			authR = fmt.Sprintf("%d", len(NewComersAuthVerified))
+			authR = fmt.Sprintf("%d", authN)
 		}
 
-		if kickDiff != "0%" {
-			kickR = fmt.Sprintf("%d(%s)", len(NewComersKicked), kickDiff)
+		if kickN > 0 {
+			kickR = fmt.Sprintf("%d(%s)", kickN, kickDiff)
 		} else {
-			kickR = fmt.Sprintf("%d", len(NewComersKicked))
+			kickR = fmt.Sprintf("%d", kickN)
 		}
 
 		replyText := fmt.Sprintf(replyTextTpl, authR, kickR)
@@ -105,8 +109,8 @@ func CronJobNewcomersCount(job *Job) (interface{}, error) {
 		NewComersAuthVerified = make(map[int]interface{})
 		NewComersKicked = make(map[int]interface{})
 		// update global counters
-		PrevAuth = len(NewComersAuthVerified)
-		PrevKick = len(NewComersKicked)
+		PrevAuth = authN
+		PrevKick = kickN
 
 		return resp, err
 	}
@@ -119,7 +123,7 @@ func sendMessage(job *Job, replyText string) (interface{}, error) {
 		ParseMode:             ParseModeMarkdown,
 		DisableWebPagePreview: true,
 		DisableNotification:   true,
-		ReplyToMessageId:      job.ingressBody.Message.MessageId,
+		ReplyToMessageId:      0,
 		ReplyMarkup:           &BotForceReply{ForceReply: false, Selective: true},
 	}
 	// notify user about the flood limit
