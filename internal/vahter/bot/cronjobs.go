@@ -61,11 +61,11 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 		}
 		for _, userStat := range stats[:topKactiveUsers] {
 			report = append(report,
-				fmt.Sprintf("\n[.] User - *%s*, Total: %d msgs, Avg. msgs length: %d",
+				fmt.Sprintf("\nUser - *%s*, total: %d msgs, avg. msgs length: %d word",
 					userStat.Username, userStat.AllMsgsCount, userStat.MeanAllMsgsLength))
 		}
 
-		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ". "))
+		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ""))
 		replyText = strings.Replace(replyText, "_", "<underscore>", -1)
 		resp, err := sendMessage(job, replyText)
 
