@@ -19,7 +19,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
-	urls := xurls.Relaxed.FindAllString(j.ingressBody.Message.Text, -1)
+	urls := xurls.Relaxed().FindAllString(j.ingressBody.Message.Text, -1)
 	if len(urls) == 0 {
 		return false, nil
 	}
