@@ -11,9 +11,11 @@ import (
 )
 
 var (
-	NewComers     = make(map[int]interface{})
-	forceDeletion = make(chan bool)
-	chNewcomer    = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
+	NewComersAuthPending  = make(map[int]interface{})
+	NewComersAuthVerified = make(map[int]interface{})
+	NewComersKicked       = make(map[int]interface{})
+	forceDeletion         = make(chan bool)
+	chNewcomer            = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
 func init() {
@@ -30,14 +32,15 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
-	// TODO: pointers?
+	// init vars
 	keyBtns := [][]KeyboardButton{
 		[]KeyboardButton{
 			KeyboardButton{botReplyMsg.AuthMessage},
 		},
 	}
-
 	welcomeMsg := fmt.Sprintf(botReplyMsg.WelcomeMessage, newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
+	t0 := time.Now()
+	NewComersAuthPending[newComer.Id] = t0
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
@@ -45,8 +48,6 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		"id":       newComer.Id,
 		"username": newComer.Username,
 	}).Warn("New member has been detected")
-
-	NewComers[newComer.Id] = time.Now()
 
 	// sends the welcome authentication message
 	go j.actionSendMessage(welcomeMsg, newComerConfig.AuthTimeout, &ReplyKeyboardMarkup{
@@ -58,7 +59,9 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// blocks the current Job goroutine until either of these 2 channels receive the value
 	select {
 	case dootId := <-chNewcomer:
-		delete(NewComers, dootId)
+		delete(NewComersAuthPending, dootId)
+		NewComersAuthVerified[dootId] = t0
+
 		j.app.Logger.WithFields(logrus.Fields{
 			"id": dootId,
 		}).Info("Newcomer has been authenticated")
@@ -79,7 +82,8 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			// delete the "User joined the group" event
 			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 
-			delete(NewComers, newComer.Id)
+			delete(NewComersAuthPending, newComer.Id)
+			NewComersKicked[newComer.Id] = t0
 
 			j.app.Logger.WithFields(logrus.Fields{
 				"id":       newComer.Id,
@@ -90,12 +94,12 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	}
 }
 
-func JobNewChatMemberWaiter(j *Job) (interface{}, error) {
+func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	authMsg := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang].AuthMessage
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
 	if strings.ToLower(j.ingressBody.Message.Text) == strings.ToLower(authMsg) {
-		if _, ok := NewComers[j.ingressBody.Message.From.Id]; ok {
+		if _, ok := NewComersAuthPending[j.ingressBody.Message.From.Id]; ok {
 			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 			chNewcomer <- j.ingressBody.Message.From.Id
 		} else {

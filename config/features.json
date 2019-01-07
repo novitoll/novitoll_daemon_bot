@@ -4,10 +4,12 @@
     "admins": ["@novitoll"],
     "i18n": {
         "en-us": {
-          "trollReply": ["You are not bot. And You are not hot.", "Is it cached? F5! F5!", "Ha-ha. U r so funny. (No)", "Wannabe Kevin Hart", "Tsss! You said the key word. They are coming."]
+          "trollReply": ["You are not bot. And You are not hot.", "Is it cached? F5! F5!", "Ha-ha. U r so funny. (No)", "Wannabe Kevin Hart", "Tsss! You said the key word. They are coming."],
+          "cronJobNewcomersReport": "Weekly report. New users - %d(%s), kicked - %d(%s)."
         },
         "rus": {
-          "trollReply": ["Вот! Новый по-во-рот! И ю-зер ре-вет! Что он - не бот!", "Да, ты - бот, наоборот", "Это закэшированно? F5! F5",  "Тссс! Ты произнес кодовое слово. За тобой выехали."]
+          "trollReply": ["Вот! Новый по-во-рот! И ю-зер ре-вет! Что он - не бот!", "Да, ты - бот, наоборот", "Это закэшированно? F5! F5",  "Тссс! Ты произнес кодовое слово. За тобой выехали."],
+          "cronJobNewcomersReport": "Отчет за неделю. Новых юзеров - %d(%s), кикнуто - %d(%s)."
         }
     }
   },
@@ -47,10 +49,12 @@
     "enabled": true,
     "i18n": {
       "en-us": {
-        "warnMessage": "Tsss! Dont flood. For last %d seconds you posted %d messages."
+        "warnMessageTooFreq": "Tsss! Dont flood. For last %d seconds you posted %d messages.",
+        "warnMessageTooLong": "Tsss! Dont flood. Your message is too long (>%d). No pun intended."
       },
       "rus": {
-        "warnMessage": "Тссс! Не флудите. За последние %d секунд вы написали %d сообщений."
+        "warnMessageTooFreq": "Тссс! Не флудите. За последние %d секунд вы написали %d сообщений.",
+        "warnMessageTooLong": "Тссс! Не флудите. Ваше сообщение слишком длинное (>%d). Без шуток."
       }
     }
   },

@@ -84,6 +84,7 @@ func main() {
 		Logger:   logger,
 	}
 	handler.RegisterHandlers()
+	handler.RegisterCronJobs()
 
 	logger.Info("[+] Serving TCP 8080 port..")
 	http.ListenAndServe(":8080", nil)

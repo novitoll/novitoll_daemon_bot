@@ -23,6 +23,12 @@ func (app *App) RegisterHandlers() {
 	app.Logger.Info("[+] Handlers for HTTP end-points are registered")
 }
 
+func (app *App) RegisterCronJobs() {
+	app.StartCronJobs()
+
+	app.Logger.Info("[+] Cronjobs are scheduled")
+}
+
 func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		msg := &RouteError{w, 400, nil, "Please send a request body"}
