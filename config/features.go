@@ -53,6 +53,7 @@ type AdministrationConfigOptions struct {
 	I18n     map[string]struct {
 		TrollReply             []string `json:"trollReply"`
 		CronJobNewcomersReport string   `json:"cronJobNewcomersReport"`
+		CronJobUserMsgReport string   `json:"cronJobUserMsgReport"`
 	} `json:"i18n"`
 }
 

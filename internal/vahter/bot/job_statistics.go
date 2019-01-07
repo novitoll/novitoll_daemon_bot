@@ -30,6 +30,8 @@ type UserMessageStats struct {
 	LastMsgTime       int64
 	SinceLastMsg      int
 	MeanAllMsgsLength int
+	Dates 			  []int64
+	Username 		  string
 }
 
 func JobMessageStatistics(job *Job) (interface{}, error) {
@@ -50,9 +52,11 @@ func JobMessageStatistics(job *Job) (interface{}, error) {
 			LastMsgTime:       t0,
 			SinceLastMsg:      0,
 			MeanAllMsgsLength: 0,
+			Username: job.ingressBody.Message.From.Username,
 		}
 	} else {
 		// 2.2 update the user stats
+		stats.Dates = append(stats.Dates, job.ingressBody.Message.Date)
 		stats.FloodMsgsLength = append(stats.FloodMsgsLength, wordsCount)
 		stats.AllMsgsCount += 1
 		stats.MeanAllMsgsLength += ((wordsCount - stats.MeanAllMsgsLength) / stats.AllMsgsCount) // Ref:formula 1.
@@ -93,6 +97,10 @@ func floodDetection(job *Job, stats *UserMessageStats) error {
 	if allWordsCount := utils.SumSliceInt(stats.FloodMsgsLength); allWordsCount >= FLOOD_MAX_ALLOWED_WORDS {
 		isFlood = true
 		replyText = append(replyText, fmt.Sprintf(replyTextTpl.WarnMessageTooLong, FLOOD_MAX_ALLOWED_WORDS))
+
+		// notify admins
+		adminsToNotify := strings.Join(job.app.Features.Administration.Admins, ", ")
+		replyText = append(replyText, fmt.Sprintf(". CC: %s", adminsToNotify))
 	}
 
 	if isFlood {
