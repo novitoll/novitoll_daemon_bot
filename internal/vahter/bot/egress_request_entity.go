@@ -78,3 +78,8 @@ type BotEgressDeleteMessage struct {
 	ChatId    int `json:"chat_id"`
 	MessageId int `json:"message_id"`
 }
+
+// https://core.telegram.org/bots/api#getchatadministrators
+type BotEgressGetAdmins struct {
+	ChatId    int `json:"chat_id"`
+}

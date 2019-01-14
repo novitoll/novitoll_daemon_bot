@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type RouteError struct {
+type AppError struct {
 	w       http.ResponseWriter
 	code    int
 	err     error
 	message string
 }
 
-func (re *RouteError) Error() string {
+func (re *AppError) Error() string {
 	var msg string
 
 	switch re.code {

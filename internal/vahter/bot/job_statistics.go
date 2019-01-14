@@ -16,12 +16,6 @@ const (
 	FLOOD_MAX_ALLOWED_WORDS = 500
 )
 
-var (
-	// Map to store user message statistics.
-	// Data in the map is cleaned up when the CronJob executes (every last second of 7th day)
-	UserStatistics = make(map[int]*UserMessageStats)
-)
-
 // formula 1. (Incremental average) M_n = M_(n-1) + ((A_n - M_(n-1)) / n), where M_n = total mean, n = count of records, A = the array of elements
 
 type UserMessageStats struct {
@@ -99,8 +93,13 @@ func floodDetection(job *Job, stats *UserMessageStats) error {
 		replyText = append(replyText, fmt.Sprintf(replyTextTpl.WarnMessageTooLong, FLOOD_MAX_ALLOWED_WORDS))
 
 		// notify admins
-		adminsToNotify := strings.Join(job.app.Features.Administration.Admins, ", ")
-		replyText = append(replyText, fmt.Sprintf(". CC: %s", adminsToNotify))
+		var admins []string
+
+		for _, a := range job.app.ChatAdmins[job.ingressBody.Message.Chat.Id] {
+			admins = append(admins, fmt.Sprintf("@%s", a))
+		}
+
+		replyText = append(replyText, fmt.Sprintf(". CC: %s", strings.Join(admins, ", ")))
 	}
 
 	if isFlood {

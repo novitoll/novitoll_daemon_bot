@@ -19,6 +19,7 @@ type NewcomerConfigOptions struct {
 		WelcomeMessage string `json:"welcomeMessage"`
 		AuthOKMessage  string `json:"authOKMessage"`
 		AuthMessage    string `json:"authMessage"`
+		AuthMessageCached string `json:"authMessageCached"`
 	} `json:"i18n"`
 }
 
@@ -49,9 +50,7 @@ type MessageStatisticsConfigOptions struct {
 
 type AdministrationConfigOptions struct {
 	LogLevel string   `json:"logLevel"`
-	Admins   []string `json:"admins"`
 	I18n     map[string]struct {
-		TrollReply             []string `json:"trollReply"`
 		CronJobNewcomersReport string   `json:"cronJobNewcomersReport"`
 		CronJobUserMsgReport   string   `json:"cronJobUserMsgReport"`
 	} `json:"i18n"`

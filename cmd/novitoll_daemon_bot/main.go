@@ -82,6 +82,7 @@ func main() {
 		Features: &features,
 		Lang:     lang,
 		Logger:   logger,
+		ChatAdmins: make(map[int][]string{}),
 	}
 	handler.RegisterHandlers()
 

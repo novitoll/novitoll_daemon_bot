@@ -20,6 +20,7 @@ type App struct {
 	Features *cfg.FeaturesConfig
 	Lang     string
 	Logger   *logrus.Logger
+	ChatAdmins map[int][]string
 }
 
 func (app *App) RegisterHandlers() {
@@ -31,7 +32,7 @@ func (app *App) RegisterHandlers() {
 
 func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
-		msg := &RouteError{w, 400, nil, "Please send a request body"}
+		msg := &AppError{w, 400, nil, "Please send a request body"}
 		app.Logger.Fatal(msg.Error())
 		return
 	}
@@ -39,7 +40,7 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	buf := new(bytes.Buffer)
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		msg := &RouteError{w, 400, nil, "Could not parse the request body"}
+		msg := &AppError{w, 400, nil, "Could not parse the request body"}
 		app.Logger.Fatal(msg.Error())
 		return
 	}
@@ -48,7 +49,7 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	var br BotIngressRequest
 	err = json.Unmarshal([]byte(buf.String()), &br)
 	if err != nil {
-		msg := &RouteError{w, 400, nil, "Please send a valid JSON"}
+		msg := &AppError{w, 400, nil, "Please send a valid JSON"}
 		app.Logger.Fatal(msg.Error())
 		return
 	}
@@ -59,7 +60,7 @@ func (app *App) ProcessMessageHandlerFunc(w http.ResponseWriter, r *http.Request
 	if _, ok := ChatIds[br.Message.Chat.Id]; !ok {
 		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled", br.Message.Chat.Id))
 		ChatIds[br.Message.Chat.Id] = time.Now()
-		go br.StartCronJobsForChat(app)
+		go br.CronJobsStartForChat(app)
 	}
 
 	w.WriteHeader(http.StatusAccepted)
