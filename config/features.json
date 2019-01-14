@@ -1,15 +1,12 @@
 {
   "administration": {
     "logLevel": "info",
-    "admins": ["@novitoll"],
     "i18n": {
         "en-us": {
-          "trollReply": ["You are not bot. And You are not hot.", "Is it cached? F5! F5!", "Ha-ha. U r so funny. (No)", "Wannabe Kevin Hart", "Tsss! You said the key word. They are coming."],
           "cronJobNewcomersReport": "Weekly report. New users - %s, kicked - %s.",
           "cronJobUserMsgReport": "Weekly report. Top %d active users: %s"
         },
         "rus": {
-          "trollReply": ["Вот! Новый по-во-рот! И ю-зер ре-вет! Что он - не бот!", "Да, ты - бот, наоборот", "Это закэшированно? F5! F5",  "Тссс! Ты произнес кодовое слово. За тобой выехали."],
           "cronJobNewcomersReport": "Отчет за неделю по юзерам. Новых юзеров - %s, кикнуто - %s.",
           "cronJobUserMsgReport": "Отчет за неделю по сообщениям. Tоп %d активных юзеров: %s"
         }
@@ -36,12 +33,14 @@
       "en-us": {
         "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
-        "authMessage": "I am not a bot"
+        "authMessage": "I am not a bot",
+        "authMessageCached": "Yes, you are not bot. Seems you have cached message."
       },
       "rus": {
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
-        "authMessage": "Я - не бот"
+        "authMessage": "Я - не бот",
+        "authMessageCached": "Да, вы - не бот. Видимо, это кэш."
       }
     },    
     "authTimeout": 60,

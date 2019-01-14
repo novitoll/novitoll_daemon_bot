@@ -3,7 +3,6 @@ package bot
 
 import (
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -11,16 +10,9 @@ import (
 )
 
 var (
-	NewComersAuthPending  = make(map[int]interface{})
-	NewComersAuthVerified = make(map[int]interface{})
-	NewComersKicked       = make(map[int]interface{})
-	forceDeletion         = make(chan bool)
-	chNewcomer            = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
+	forceDeletion = make(chan bool)
+	chNewcomer    = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
-
-func init() {
-	rand.Seed(time.Now().Unix())
-}
 
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// for short code reference
@@ -28,7 +20,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	newComerConfig := j.app.Features.NewcomerQuestionnare
 	botReplyMsg := newComerConfig.I18n[j.app.Lang]
 
-	if !newComerConfig.Enabled || newComer.Id == 0 || newComer.Username == "@novitoll_daemon_bot" {
+	if !newComerConfig.Enabled || newComer.Id == 0 || newComer.Username == TELEGRAM_BOT_USERNAME {
 		return false, nil
 	}
 
@@ -95,20 +87,25 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 }
 
 func JobNewChatMemberAuth(j *Job) (interface{}, error) {
-	authMsg := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang].AuthMessage
+	i18n := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang]
 
 	// will check every message if its from a newcomer to whitelist the doot, writing to the global unbuffered channel
-	if strings.ToLower(j.ingressBody.Message.Text) == strings.ToLower(authMsg) {
+	if strings.ToLower(j.ingressBody.Message.Text) == strings.ToLower(i18n.AuthMessage) {
 		if _, ok := NewComersAuthPending[j.ingressBody.Message.From.Id]; ok {
 			go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 			chNewcomer <- j.ingressBody.Message.From.Id
 		} else {
-			trollReplies := j.app.Features.Administration.I18n[j.app.Lang].TrollReply
-			text := trollReplies[rand.Intn(len(trollReplies))]
-			return j.actionSendMessage(text, TIME_TO_DELETE_REPLY_MSG+20, &BotForceReply{
+			// answer if the user has cached message (seems, a bug for desktop users)
+			_, err := j.actionSendMessage(i18n.AuthMessageCached, TIME_TO_DELETE_REPLY_MSG+10, &BotForceReply{
 				ForceReply: false,
 				Selective:  true,
 			})
+			// delete user's message
+			select {
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
+				go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
+			}
+			return nil, err
 		}
 	}
 	return true, nil

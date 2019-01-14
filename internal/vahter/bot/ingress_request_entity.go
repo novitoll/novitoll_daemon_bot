@@ -140,6 +140,13 @@ type BotIngressResponse struct {
 	Description string                   `json:"description"`
 }
 
+type BotIngressResponseMult struct {
+	Ok          bool                        `json:"ok"`
+	Result      []*BotIngressRequestMessage `json:"result"`
+	ErrorCode   int                         `json:"error_code"`
+	Description string                      `json:"description"`
+}
+
 type BotIngressResponse2 struct {
 	Ok     bool `json:"ok"`
 	Result bool `json:"result"`

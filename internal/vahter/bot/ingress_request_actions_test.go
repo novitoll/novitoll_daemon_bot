@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	admins          = []string{"@novitoll"}
 	gopath, _       = os.LookupEnv("GOPATH")
 	gopathPostfix   = "src/github.com/novitoll/novitoll_daemon_bot"
 	testdataDirPath = "internal/vahter/bot/testdata"
@@ -44,7 +43,7 @@ func configureStructs(t *testing.T, reqBodyFilepath string) (*cfg.FeaturesConfig
 	// FeaturesConfig init
 	var features cfg.FeaturesConfig
 	filepathToStruct(t, "config/features.json", &features)
-	assert.Equal(t, features.Administration.Admins, admins, "[-] Should be equal FeaturesConfig struct features.Admins field")
+	assert.Equal(t, features.Administration.LogLevel, "info", "[-] Should be equal FeaturesConfig struct features.LogLevel field")
 
 	// BotIngressRequest init
 	var ingressBody BotIngressRequest
@@ -69,7 +68,12 @@ func TestURLDuplication(t *testing.T) {
 	s := []string{testdataDirPath, "ingress_reqbody-url-1.json"}
 	pFeatures, pBotRequest := configureStructs(t, concatStringsWithSlash(s))
 
-	app := App{pFeatures, "en-us", logrus.New(), make(map[int]interface{})}
+	app := App{
+		Features:   pFeatures,
+		Lang:       "en-us",
+		Logger:     logrus.New(),
+		ChatAdmins: make(map[int][]string),
+	}
 	pBotRequest.Process(&app)
 
 	client := redisClient.GetRedisConnection()

@@ -20,27 +20,58 @@ var (
 	PrevKick int
 )
 
-func (ingressBody *BotIngressRequest) StartCronJobsForChat(app *App) {
+func (ingressBody *BotIngressRequest) CronJobsStartForChat(app *App) {
 	job := &Job{ingressBody, app}
 
-	results, errors := FanOutProcessJobs(job, []ProcessJobFn{
+	_, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		CronJobNewcomersCount,
 		CronJobUserMessageStats,
+		CronJobGetChatAdmins,
 	})
 
 	for _, e := range errors {
 		app.Logger.Fatal(fmt.Sprintf("%v", e))
 	}
+}
 
-	app.Logger.WithFields(logrus.Fields{
-		"completed": len(results),
-		"errors":    len(errors),
-	}).Info("StartCronJobsForChat: Completed")
+func CronJobGetChatAdmins(job *Job) (interface{}, error) {
+	// updates every week on each first ingress request
+	var admins []string
+	chatId := job.ingressBody.Message.Chat.Id
+
+	adminsReq := &BotEgressGetAdmins{
+		ChatId: chatId,
+	}
+	resp, err := adminsReq.EgressGetAdmins(job.app)
+	if err != nil {
+		return resp, err
+	}
+	if len(resp) < 1 {
+		job.app.Logger.Warn(fmt.Sprintf("No admins found for chatId: %d", chatId))
+		admins = append(admins, fmt.Sprintf("@%s", BDFL))
+	} else {
+		for _, br := range resp {
+			if br.From.Username == TELEGRAM_BOT_USERNAME {
+				continue
+			}
+			admins = append(admins, fmt.Sprintf("@%s", br.From.Username))
+		}
+	}
+
+	// update the slice of admins
+	job.app.ChatAdmins[chatId] = admins
+
+	job.app.Logger.WithFields(logrus.Fields{
+		"chatId": chatId,
+		"admins": len(admins),
+	}).Info("CronJobGetChatAdmins: Completed")
+
+	return nil, nil
 }
 
 func CronJobUserMessageStats(job *Job) (interface{}, error) {
 	select {
-	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY + 5) * time.Second):
+	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY+5) * time.Second):
 		var topKactiveUsers int = 5
 		var report []string
 
@@ -66,7 +97,6 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 		}
 
 		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ""))
-		replyText = strings.Replace(replyText, "_", "<underscore>", -1)
 		resp, err := sendMessage(job, replyText)
 
 		// reset maps
@@ -88,7 +118,7 @@ func CronJobNewcomersCount(job *Job) (interface{}, error) {
 
 		authDiff := utils.CountDiffInPercent(PrevAuth, authN)
 		kickDiff := utils.CountDiffInPercent(PrevKick, kickN)
-		
+
 		if authN > 0 {
 			authR = fmt.Sprintf("%d(%s)", authN, authDiff)
 		} else {

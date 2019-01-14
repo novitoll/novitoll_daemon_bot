@@ -11,7 +11,3 @@ func (job *Job) HasMessageContent() bool {
 		job.ingressBody.Message.Sticker.FileId != "" ||
 		job.ingressBody.Message.Caption != ""
 }
-
-const (
-	TIME_TO_DELETE_REPLY_MSG = 10
-)
