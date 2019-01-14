@@ -33,8 +33,6 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 * nude, pornography detection in image (TBD)
 * batch scanning of users' avatars, and posting images' for steganography analysis (+ VirusTotal?) (TBD)
 
-Add admins in features.json with Telegram @username.
-
 Make commands
 -------
 * ``make configure`` -- configure `dep` GoLang package and install deps.
