@@ -17,9 +17,9 @@ var (
 )
 
 type App struct {
-	Features *cfg.FeaturesConfig
-	Lang     string
-	Logger   *logrus.Logger
+	Features   *cfg.FeaturesConfig
+	Lang       string
+	Logger     *logrus.Logger
 	ChatAdmins map[int][]string
 }
 

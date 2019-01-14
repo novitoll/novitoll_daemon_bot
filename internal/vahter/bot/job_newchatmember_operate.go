@@ -11,7 +11,7 @@ import (
 
 var (
 	forceDeletion = make(chan bool)
-	chNewcomer = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
+	chNewcomer    = make(chan int) // unbuffered chhanel to wait for the certain time for the newcomer's response
 )
 
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
@@ -96,13 +96,13 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 			chNewcomer <- j.ingressBody.Message.From.Id
 		} else {
 			// answer if the user has cached message (seems, a bug for desktop users)
-			_, err := j.actionSendMessage(i18n.AuthMessageCached, TIME_TO_DELETE_REPLY_MSG + 10, &BotForceReply{
+			_, err := j.actionSendMessage(i18n.AuthMessageCached, TIME_TO_DELETE_REPLY_MSG+10, &BotForceReply{
 				ForceReply: false,
 				Selective:  true,
 			})
 			// delete user's message
 			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG + 10) * time.Second):
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
 				go j.actionDeleteMessage(&j.ingressBody.Message, TIME_TO_DELETE_REPLY_MSG)
 			}
 			return nil, err

@@ -141,10 +141,10 @@ type BotIngressResponse struct {
 }
 
 type BotIngressResponseMult struct {
-  Ok          bool                     `json:"ok"`
-  Result      []*BotIngressRequestMessage `json:"result"`
-  ErrorCode   int                      `json:"error_code"`
-  Description string                   `json:"description"`
+	Ok          bool                        `json:"ok"`
+	Result      []*BotIngressRequestMessage `json:"result"`
+	ErrorCode   int                         `json:"error_code"`
+	Description string                      `json:"description"`
 }
 
 type BotIngressResponse2 struct {
@@ -158,7 +158,7 @@ type BotIngressRequest struct {
 }
 
 type BotIngressRequestMessage struct {
-	From               User
+	From               User   `json:"user"`
 	Text               string `json:"text"`
 	Entities           []Message
 	Date               int64   `json:"date"` // time.Unix()

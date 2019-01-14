@@ -69,9 +69,9 @@ func TestURLDuplication(t *testing.T) {
 	pFeatures, pBotRequest := configureStructs(t, concatStringsWithSlash(s))
 
 	app := App{
-		Features: pFeatures,
-		Lang:     "en-us",
-		Logger:   logrus.New(),
+		Features:   pFeatures,
+		Lang:       "en-us",
+		Logger:     logrus.New(),
 		ChatAdmins: make(map[int][]string),
 	}
 	pBotRequest.Process(&app)

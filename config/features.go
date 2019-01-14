@@ -16,9 +16,9 @@ type NewcomerConfigOptions struct {
 	AuthTimeout    uint8 `json:"authTimeout"`
 	KickBanTimeout uint8 `json:"kickBanTimeout"`
 	I18n           map[string]struct {
-		WelcomeMessage string `json:"welcomeMessage"`
-		AuthOKMessage  string `json:"authOKMessage"`
-		AuthMessage    string `json:"authMessage"`
+		WelcomeMessage    string `json:"welcomeMessage"`
+		AuthOKMessage     string `json:"authOKMessage"`
+		AuthMessage       string `json:"authMessage"`
 		AuthMessageCached string `json:"authMessageCached"`
 	} `json:"i18n"`
 }
@@ -49,10 +49,10 @@ type MessageStatisticsConfigOptions struct {
 }
 
 type AdministrationConfigOptions struct {
-	LogLevel string   `json:"logLevel"`
+	LogLevel string `json:"logLevel"`
 	I18n     map[string]struct {
-		CronJobNewcomersReport string   `json:"cronJobNewcomersReport"`
-		CronJobUserMsgReport   string   `json:"cronJobUserMsgReport"`
+		CronJobNewcomersReport string `json:"cronJobNewcomersReport"`
+		CronJobUserMsgReport   string `json:"cronJobUserMsgReport"`
 	} `json:"i18n"`
 }
 

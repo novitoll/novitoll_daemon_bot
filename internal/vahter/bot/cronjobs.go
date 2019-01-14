@@ -48,10 +48,14 @@ func CronJobGetChatAdmins(job *Job) (interface{}, error) {
 	}
 	if len(resp) < 1 {
 		job.app.Logger.Warn(fmt.Sprintf("No admins found for chatId: %d", chatId))
-		admins = append(admins, BDFL)
+		admins = append(admins, fmt.Sprintf("@%s", BDFL))
 	} else {
 		for _, br := range resp {
-			admins = append(admins, br.From.Username)
+			if br.From.Username == TELEGRAM_BOT_USERNAME {
+				continue
+			}
+			admin := strings.Replace(br.From.Username, "_", "\\_", -1)
+			admins = append(admins, fmt.Sprintf("@%s", admin))
 		}
 	}
 
@@ -68,7 +72,7 @@ func CronJobGetChatAdmins(job *Job) (interface{}, error) {
 
 func CronJobUserMessageStats(job *Job) (interface{}, error) {
 	select {
-	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY + 5) * time.Second):
+	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY+5) * time.Second):
 		var topKactiveUsers int = 5
 		var report []string
 
@@ -116,7 +120,7 @@ func CronJobNewcomersCount(job *Job) (interface{}, error) {
 
 		authDiff := utils.CountDiffInPercent(PrevAuth, authN)
 		kickDiff := utils.CountDiffInPercent(PrevKick, kickN)
-		
+
 		if authN > 0 {
 			authR = fmt.Sprintf("%d(%s)", authN, authDiff)
 		} else {
