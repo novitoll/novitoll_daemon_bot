@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -85,6 +86,7 @@ func (app *App) EgressRequest(reqBody interface{}, method string) (*BotIngressRe
 }
 
 func (reqBody *BotEgressSendMessage) EgressSendToTelegram(app *App) (*BotIngressRequestMessage, error) {
+	reqBody.Text = strings.Replace(reqBody.Text, "_", "\\_", -1) // Telegram parses underscore as the markdown
 	return app.EgressRequest(reqBody, "sendMessage")
 }
 
@@ -107,7 +109,11 @@ func (reqBody *BotEgressGetAdmins) EgressGetAdmins(app *App) ([]*BotIngressReque
 	}
 
 	var replyMsgBody BotIngressResponseMult
-	err = json.Unmarshal([]byte(buf.String()), &replyMsgBody)
+	var replyMsgBodyStr string
+
+	replyMsgBodyStr = strings.Replace(buf.String(), "{\"user", "{\"from", -1) // dirty hack because Telegram response keys are different, geez
+
+	err = json.Unmarshal([]byte(replyMsgBodyStr), &replyMsgBody)
 	if err != nil {
 		return nil, err
 	}

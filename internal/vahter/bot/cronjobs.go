@@ -54,8 +54,7 @@ func CronJobGetChatAdmins(job *Job) (interface{}, error) {
 			if br.From.Username == TELEGRAM_BOT_USERNAME {
 				continue
 			}
-			admin := strings.Replace(br.From.Username, "_", "\\_", -1)
-			admins = append(admins, fmt.Sprintf("@%s", admin))
+			admins = append(admins, fmt.Sprintf("@%s", br.From.Username))
 		}
 	}
 
@@ -98,7 +97,6 @@ func CronJobUserMessageStats(job *Job) (interface{}, error) {
 		}
 
 		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ""))
-		replyText = strings.Replace(replyText, "_", "\\_", -1)
 		resp, err := sendMessage(job, replyText)
 
 		// reset maps

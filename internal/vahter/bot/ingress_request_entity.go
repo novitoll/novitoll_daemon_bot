@@ -158,7 +158,7 @@ type BotIngressRequest struct {
 }
 
 type BotIngressRequestMessage struct {
-	From               User   `json:"user"`
+	From               User
 	Text               string `json:"text"`
 	Entities           []Message
 	Date               int64   `json:"date"` // time.Unix()

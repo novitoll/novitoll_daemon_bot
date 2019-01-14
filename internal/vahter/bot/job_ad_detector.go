@@ -39,7 +39,7 @@ func JobAdDetector(job *Job) (interface{}, error) {
 		admins := job.app.ChatAdmins[job.ingressBody.Message.Chat.Id]
 
 		for _, a := range admins {
-			if job.ingressBody.Message.From.Username == a {
+			if fmt.Sprintf("@%s", job.ingressBody.Message.From.Username) == a {
 				return nil, nil
 			}
 		}
