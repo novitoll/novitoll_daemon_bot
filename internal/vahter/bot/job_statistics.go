@@ -14,9 +14,12 @@ const (
 	FLOOD_TIME_INTERVAL     = 10
 	FLOOD_MAX_ALLOWED_MSGS  = 3
 	FLOOD_MAX_ALLOWED_WORDS = 500
+	CONT_MSGS_ALLOWED       = 20
+	CONT_USER_MSG_ALLOWED   = 3
 )
 
-// formula 1. (Incremental average) M_n = M_(n-1) + ((A_n - M_(n-1)) / n), where M_n = total mean, n = count of records, A = the array of elements
+// formula 1. (Incremental average) M_n = M_(n-1) + ((A_n - M_(n-1)) / n),
+// where M_n = total mean, n = count of records, A = the array of elements
 
 type UserMessageStats struct {
 	FloodMsgsLength   []int
@@ -28,112 +31,108 @@ type UserMessageStats struct {
 	Username          string
 }
 
-func JobMessageStatistics(job *Job) (interface{}, error) {
-	if !job.app.Features.MessageStatistics.Enabled || !job.HasMessageContent() {
+func JobMsgStats(j *Job) (interface{}, error) {
+	if !j.app.Features.MsgStats.Enabled || !j.HasMessageContent() {
 		return nil, nil
 	}
 
-	// 1. get the stats. stats
-	stats := UserStatistics[job.ingressBody.Message.From.Id]
-	wordsCount := len(strings.Fields(job.ingressBody.Message.Text))
+	// 1. get the s. s
+	s := UserStatistics[j.req.Message.From.Id]
+	W := len(strings.Fields(j.req.Message.Text))
 	t0 := time.Now().Unix()
 
-	if stats == nil {
-		// 2.1 init the user stats
-		stats = &UserMessageStats{
-			FloodMsgsLength:   []int{wordsCount},
+	if s == nil {
+		// 2.1 init the user s
+		s = &UserMessageStats{
+			FloodMsgsLength:   []int{W},
 			AllMsgsCount:      0,
 			LastMsgTime:       t0,
 			SinceLastMsg:      0,
 			MeanAllMsgsLength: 0,
-			Username:          job.ingressBody.Message.From.Username,
+			Username:          j.req.Message.From.Username,
 		}
 	} else {
-		// 2.2 update the user stats
-		stats.Dates = append(stats.Dates, job.ingressBody.Message.Date)
-		stats.FloodMsgsLength = append(stats.FloodMsgsLength, wordsCount)
-		stats.AllMsgsCount += 1
-		stats.MeanAllMsgsLength += ((wordsCount - stats.MeanAllMsgsLength) / stats.AllMsgsCount) // Ref:formula 1.
-		stats.SinceLastMsg = int(time.Since(time.Unix(stats.LastMsgTime, 0)).Seconds())
-		stats.LastMsgTime = t0
+		// 2.2 update the user s
+		s.Dates = append(s.Dates, j.req.Message.Date)
+		s.FloodMsgsLength = append(s.FloodMsgsLength, W)
+		s.AllMsgsCount += 1
+
+		// Ref:formula 1.
+		s.MeanAllMsgsLength += ((W - s.MeanAllMsgsLength) / s.AllMsgsCount)
+
+		s.SinceLastMsg = int(time.Since(time.Unix(s.LastMsgTime, 0)).Seconds())
+		s.LastMsgTime = t0
 	}
 
 	// 3. Detect if user has been flooding for last TIME_INTERVAL seconds
 	// add here the condition with the MeanMsgLength within TIME_INTERVAL
-	err := floodDetection(job, stats)
+	err := floodDetection(j, s)
 
-	return stats, err
+	return s, err
 }
 
-func floodDetection(job *Job, stats *UserMessageStats) error {
+func floodDetection(j *Job, s *UserMessageStats) error {
 	var isFlood bool
 	var replyText []string
-	replyTextTpl := job.app.Features.MessageStatistics.I18n[job.app.Lang] // for short reference
 
-	if stats.SinceLastMsg <= FLOOD_TIME_INTERVAL && len(stats.FloodMsgsLength) >= FLOOD_MAX_ALLOWED_MSGS {
-		job.app.Logger.WithFields(logrus.Fields{
-			"userId": job.ingressBody.Message.From.Id,
+	// for short reference
+	template := j.app.Features.MsgStats.I18n[j.app.Lang]
+
+	if s.SinceLastMsg <= FLOOD_TIME_INTERVAL &&
+		len(s.FloodMsgsLength) >= FLOOD_MAX_ALLOWED_MSGS {
+
+		j.app.Logger.WithFields(logrus.Fields{
+			"userId": j.req.Message.From.Id,
 		}).Warn("User is flooding")
 
-		job.app.Logger.WithFields(logrus.Fields{
-			"AllMsgsCount":      stats.AllMsgsCount,
-			"LastMsgTime":       stats.LastMsgTime,
-			"SinceLastMsg":      stats.SinceLastMsg,
-			"MeanAllMsgsLength": stats.MeanAllMsgsLength,
-		}).Warn("Resetting user stats")
-
-		stats.FloodMsgsLength = []int{}
+		s.FloodMsgsLength = []int{}
 		isFlood = true
-		replyText = append(replyText, fmt.Sprintf(replyTextTpl.WarnMessageTooFreq,
+		replyText = append(replyText, fmt.Sprintf(template.WarnMessageTooFreq,
 			FLOOD_TIME_INTERVAL, FLOOD_MAX_ALLOWED_MSGS))
 	}
 
-	if allWordsCount := utils.SumSliceInt(stats.FloodMsgsLength); allWordsCount >= FLOOD_MAX_ALLOWED_WORDS {
+	if allWordsCount := utils.SumSliceInt(s.FloodMsgsLength); allWordsCount >= FLOOD_MAX_ALLOWED_WORDS {
+
 		isFlood = true
-		replyText = append(replyText, fmt.Sprintf(replyTextTpl.WarnMessageTooLong, FLOOD_MAX_ALLOWED_WORDS))
+		replyText = append(replyText, fmt.Sprintf(template.WarnMessageTooLong,
+			FLOOD_MAX_ALLOWED_WORDS))
 
 		// notify admins
 		var admins []string
 
-		for _, a := range job.app.ChatAdmins[job.ingressBody.Message.Chat.Id] {
+		for _, a := range j.app.ChatAdmins[j.req.Message.Chat.Id] {
 			admins = append(admins, fmt.Sprintf("@%s", a))
 		}
-
-		replyText = append(replyText, fmt.Sprintf(". CC: %s", strings.Join(admins, ", ")))
+		replyText = append(replyText, fmt.Sprintf(". CC: %s",
+			strings.Join(admins, ", ")))
 	}
 
 	if isFlood {
-		botEgressReq := &BotEgressSendMessage{
-			ChatId:                job.ingressBody.Message.Chat.Id,
-			Text:                  strings.Join(replyText, ". "),
-			ParseMode:             ParseModeMarkdown,
-			DisableWebPagePreview: true,
-			DisableNotification:   true,
-			ReplyToMessageId:      job.ingressBody.Message.MessageId,
-			ReplyMarkup:           &BotForceReply{ForceReply: false, Selective: true},
-		}
 		// notify user about the flood limit
-		replyMsgBody, err := botEgressReq.EgressSendToTelegram(job.app)
+		txt := strings.Join(replyText, ". ")
+
+		reply, err := j.SendMessage(txt, j.req.Message.MessageId)
 		if err != nil {
 			return err
 		}
 
-		if replyMsgBody != nil {
+		if reply != nil {
 			// cleanup reply messages
 			go func() {
 				select {
-				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
-					job.DeleteMessage(replyMsgBody)
+				case <-time.After(time.Duration(
+					TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
+					j.DeleteMessage(reply)
 				}
 			}()
 		}
 	}
 
-	if stats.SinceLastMsg > FLOOD_TIME_INTERVAL {
-		stats.FloodMsgsLength = []int{}
+	if s.SinceLastMsg > FLOOD_TIME_INTERVAL {
+		s.FloodMsgsLength = []int{}
 	}
 
-	// 4. update the user stats map
-	UserStatistics[job.ingressBody.Message.From.Id] = stats
+	// 4. update the user s map
+	UserStatistics[j.req.Message.From.Id] = s
 	return nil
 }

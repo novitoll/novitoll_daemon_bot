@@ -13,7 +13,7 @@ var (
 	AD_WORDS = []string{"t.me/", "joinchat"}
 )
 
-func isAd(msg *BotIngressRequestMessage) bool {
+func isAd(msg *BotInReqMsg) bool {
 	var isMsgAd bool = false
 	contexts := []string{msg.Text, msg.Caption}
 	for _, s := range contexts {
@@ -29,41 +29,43 @@ func isAd(msg *BotIngressRequestMessage) bool {
 	return isMsgAd
 }
 
-func JobAdDetector(job *Job) (interface{}, error) {
-	if !job.app.Features.AdDetection.Enabled || !job.HasMessageContent() {
+func JobAdDetector(j *Job) (interface{}, error) {
+	if !j.app.Features.AdDetection.Enabled ||
+		!j.HasMessageContent() {
 		return nil, nil
 	}
 
 	// detection of Telegram groups
-	if isAd(&job.ingressBody.Message) {
-		admins := job.app.ChatAdmins[job.ingressBody.Message.Chat.Id]
+	if isAd(&j.req.Message) {
+		admins := j.app.ChatAdmins[j.req.Message.Chat.Id]
 
 		for _, a := range admins {
-			if fmt.Sprintf("@%s", job.ingressBody.Message.From.Username) == a {
+			if fmt.Sprintf("@%s", j.req.Message.
+				From.Username) == a {
 				return nil, nil
 			}
 		}
 
-		job.app.Logger.WithFields(logrus.Fields{
-			"userId": job.ingressBody.Message.From.Id,
+		j.app.Logger.WithFields(logrus.Fields{
+			"userId": j.req.Message.From.Id,
 		}).Warn("Ad detected: Telegram group")
 
 		adminsToNotify := strings.Join(admins, ", ")
-		text := fmt.Sprintf(job.app.Features.AdDetection.I18n[job.app.Lang].WarnMessage, adminsToNotify)
 
-		botEgressReq := &BotEgressSendMessage{
-			ChatId:                job.ingressBody.Message.Chat.Id,
-			Text:                  text,
-			ParseMode:             ParseModeMarkdown,
-			DisableWebPagePreview: true,
-			DisableNotification:   true,
-			ReplyToMessageId:      job.ingressBody.Message.MessageId,
+		text := fmt.Sprintf(j.app.Features.AdDetection.
+			I18n[j.app.Lang].WarnMessage, adminsToNotify)
+
+		req := &BotSendMsg{
+			ChatId:           j.req.Message.Chat.Id,
+			Text:             text,
+			ParseMode:        ParseModeMarkdown,
+			ReplyToMessageId: j.req.Message.MessageId,
 			ReplyMarkup: &BotForceReply{
 				ForceReply: false,
 				Selective:  true,
 			},
 		}
-		replyMsgBody, err := botEgressReq.EgressSendToTelegram(job.app)
+		replyMsgBody, err := req.SendMsg(j.app)
 		if err != nil {
 			return false, err
 		}
@@ -72,9 +74,11 @@ func JobAdDetector(job *Job) (interface{}, error) {
 			// cleanup reply messages
 			go func() {
 				select {
-				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
-					go job.DeleteMessage(&job.ingressBody.Message)
-					go job.DeleteMessage(replyMsgBody)
+				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+
+					10) * time.Second):
+
+					go j.DeleteMessage(&j.req.Message)
+					go j.DeleteMessage(replyMsgBody)
 				}
 			}()
 		}

@@ -3,8 +3,18 @@ package utils
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
+	"time"
 )
+
+var (
+	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+)
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func SumSliceInt(n []int) int {
 	s := 0
@@ -25,4 +35,27 @@ func CountDiffInPercent(a, b int) string {
 func Destruct(v interface{}) {
 	p := reflect.ValueOf(v).Elem()
 	p.Set(reflect.Zero(p.Type()))
+}
+
+func PrintReflectValues(s reflect.Value) {
+	typeOfT := s.Type()
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		fmt.Printf("-- %s %s = %v\n",
+			typeOfT.Field(i).Name, f.Type(), f.Interface())
+
+		if f.Kind().String() == "struct" {
+			x1 := reflect.ValueOf(f.Interface())
+			PrintReflectValues(x1)
+			fmt.Printf("\n")
+		}
+	}
+}
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }

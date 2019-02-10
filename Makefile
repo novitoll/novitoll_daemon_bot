@@ -8,7 +8,7 @@ configure:
 	go get -u github.com/sirupsen/logrus
 
 build:
-	go build -o bot.bin cmd/novitoll_daemon_bot/main.go
+	go build -o bot.bin -ldflags="-s -w" cmd/novitoll_daemon_bot/main.go
 
 run:
 	@make build

@@ -3,45 +3,52 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"reflect"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
+	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 	"github.com/sirupsen/logrus"
 )
 
+// Global variables of "main" pkg
 var (
-	features cfg.FeaturesConfig
+	features cfg.FeaturesCfg
 	lang     string = "en-us"
 	logger          = logrus.New()
 )
 
+// Initializes FeaturesCfg and do following configuration:
+// 1. load features configuration
+// 2. setup application i18n
+// 3. setup logger
 func init() {
-	// 1. load features configuration
+	// 1.
 	fileJson, err := os.Open("config/features.json")
 	if err != nil {
-		logger.WithFields(logrus.Fields{"err": err}).Fatal("[-] Can not open features JSON")
+		logger.WithFields(logrus.Fields{"err": err}).
+			Fatal("[-] Can not open features JSON")
 	}
 	defer fileJson.Close()
 
 	featuresJsonBytes, _ := ioutil.ReadAll(fileJson)
 	json.Unmarshal(featuresJsonBytes, &features)
 
-	// 2. setup application i18n
+	// 2.
 	if l, ok := os.LookupEnv("APP_LANG"); ok {
 		lang = l
 	}
+
 	if _, ok := features.NewcomerQuestionnare.I18n[lang]; !ok {
 		msg := "Unknown language"
 		logger.WithFields(logrus.Fields{"lang": lang}).Fatal(msg)
 		panic(msg)
 	}
 
-	// 3. setup logger
+	// 3.
 	logger.SetOutput(os.Stdout)
 
 	switch features.Administration.LogLevel {
@@ -58,33 +65,24 @@ func init() {
 	})
 }
 
-func printReflectValues(s reflect.Value) {
-	typeOfT := s.Type()
-	for i := 0; i < s.NumField(); i++ {
-		f := s.Field(i)
-		fmt.Printf("-- %s %s = %v\n", typeOfT.Field(i).Name, f.Type(), f.Interface())
-
-		if f.Kind().String() == "struct" {
-			x1 := reflect.ValueOf(f.Interface())
-			printReflectValues(x1)
-			fmt.Printf("\n")
-		}
-	}
-}
-
+// Starts HTTP server based on "net/http" pkg on TCP/8080 constant port.
+// Prints to STDOUT configuration from features.json.
+// Creates the only App{} struct which will be used along the way, and
+// while struct fields remain constant, Apps->ChatAdmins field will be
+// changed per each cron job (see cronjobs.go)
 func main() {
 	logger.Info("[+] Features config is loaded. Bot features:\n")
 
 	featureFields := reflect.ValueOf(&features).Elem()
-	printReflectValues(featureFields)
+	utils.PrintReflectValues(featureFields)
 
-	handler := bot.App{
+	app := bot.App{
 		Features:   &features,
 		Lang:       lang,
 		Logger:     logger,
 		ChatAdmins: make(map[int][]string),
 	}
-	handler.RegisterHandlers()
+	app.RegisterHandlers()
 
 	logger.Info("[+] Serving TCP 8080 port..")
 	http.ListenAndServe(":8080", nil)
