@@ -92,7 +92,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 	if user.(string) != "" {
 		// new users can not post URLs until 7 days
-		n := int((EVERY_LAST_SEC_7TH_DAY + 1) / (3600 * 24))
+		n := int(NEWCOMER_URL_POST_DELAY / 60)
 		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
 			I18n[j.app.Lang].AuthMessageURLPost, n)
 

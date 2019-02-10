@@ -5,7 +5,10 @@ const (
 	BDFL                     = "novitoll"
 	TELEGRAM_BOT_USERNAME    = "novitoll_daemon_bot"
 	TIME_TO_DELETE_REPLY_MSG = 10
-	EVERY_LAST_SEC_7TH_DAY   = 604799
+	// 7 days - 1 sec
+	EVERY_LAST_SEC_7TH_DAY = 604799
+	// 15 min
+	NEWCOMER_URL_POST_DELAY = 900
 )
 
 var (

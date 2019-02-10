@@ -23,7 +23,7 @@ func (req *BotInReq) Process(app *App) {
 		JobUrlDuplicationDetector,
 		JobMsgStats,
 		JobAdDetector,
-		JobStickersDetector,
+		JobSentimentDetector,
 		JobLeftParticipantDetector,
 	})
 

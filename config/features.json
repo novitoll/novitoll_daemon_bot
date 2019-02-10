@@ -36,7 +36,7 @@
         "authMessage": "I am not a bot",
         "authPasswd": "Password",
         "authMessageCached": "Yes, you are not bot. But you use desktop client and seems, you have cached message.",
-        "authMessageURLPost": "New users are not allowed to post URLs until first %d days."
+        "authMessageURLPost": "New users are not allowed to post URLs until first %d mins."
       },
       "rus": {
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
@@ -44,7 +44,7 @@
         "authMessage": "Я - не бот",
         "authPasswd": "Пароль",
         "authMessageCached": "Да, вы - не бот. Но вы используете десктоп клиент, и видимо, это кэш.",
-        "authMessageURLPost": "Новые юзера не могут постить ссылки в течении первых %d дней."
+        "authMessageURLPost": "Новые юзера не могут постить ссылки в течении первых %d мин."
       }
     },    
     "authTimeout": 60,
@@ -65,14 +65,15 @@
       }
     }
   },
-  "stickersDetection": {
+  "sentimentDetection": {
     "enabled": false,
+    "deleteMessage": false,
     "i18n": {
       "en-us": {
-        "warnMessage": "Stickers are forbidden."
+        "warnMessage": "No need for showing your emotions."
       },
       "rus": {
-        "warnMessage": "Стикеры запрещены."
+        "warnMessage": "Без сентиментальности. Эмоции не нужны."
       }
     }
   },
