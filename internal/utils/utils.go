@@ -26,3 +26,18 @@ func Destruct(v interface{}) {
 	p := reflect.ValueOf(v).Elem()
 	p.Set(reflect.Zero(p.Type()))
 }
+
+func PrintReflectValues(s reflect.Value) {
+	typeOfT := s.Type()
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		fmt.Printf("-- %s %s = %v\n",
+			typeOfT.Field(i).Name, f.Type(), f.Interface())
+
+		if f.Kind().String() == "struct" {
+			x1 := reflect.ValueOf(f.Interface())
+			PrintReflectValues(x1)
+			fmt.Printf("\n")
+		}
+	}
+}

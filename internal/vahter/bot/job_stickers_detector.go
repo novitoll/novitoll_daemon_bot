@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0
-
 package bot
 
 import (
@@ -8,45 +7,33 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func JobStickersDetector(job *Job) (interface{}, error) {
-	if !job.app.Features.StickersDetection.Enabled || !job.HasMessageContent() || job.ingressBody.Message.Sticker.FileId == "" {
+func JobStickersDetector(j *Job) (interface{}, error) {
+	if !j.app.Features.StickersDetection.Enabled ||
+		!j.HasMessageContent() || j.req.Message.Sticker.FileId == "" {
 		return nil, nil
 	}
 
-	job.app.Logger.WithFields(logrus.Fields{
-		"userId": job.ingressBody.Message.From.Id,
+	j.app.Logger.WithFields(logrus.Fields{
+		"userId": j.req.Message.From.Id,
 	}).Warn("Sticker detected")
 
-	text := job.app.Features.StickersDetection.I18n[job.app.Lang].WarnMessage
+	text := j.app.Features.StickersDetection.I18n[j.app.Lang].WarnMessage
 
-	botEgressReq := &BotEgressSendMessage{
-		ChatId:                job.ingressBody.Message.Chat.Id,
-		Text:                  text,
-		ParseMode:             ParseModeMarkdown,
-		DisableWebPagePreview: true,
-		DisableNotification:   true,
-		ReplyToMessageId:      job.ingressBody.Message.MessageId,
-		ReplyMarkup: &BotForceReply{
-			ForceReply: false,
-			Selective:  true,
-		},
-	}
-
-	replyMsgBody, err := botEgressReq.EgressSendToTelegram(job.app)
+	reply, err := j.SendMessage(text, j.req.Message.MessageId)
 	if err != nil {
 		return false, err
 	}
 
-	if replyMsgBody != nil {
+	if reply != nil {
 		// cleanup reply messages
 		go func() {
 			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
-				go job.DeleteMessage(&job.ingressBody.Message)
-				go job.DeleteMessage(replyMsgBody)
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG + 10) * time.Second):
+				go j.DeleteMessage(&j.req.Message)
+				go j.DeleteMessage(reply)
 			}
 		}()
 	}
 
-	return replyMsgBody, err
+	return reply, err
 }

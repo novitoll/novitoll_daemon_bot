@@ -7,21 +7,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (ingressBody *BotIngressRequest) Process(app *App) {
+func (req *BotInReq) Process(app *App) {
 	app.Logger.WithFields(logrus.Fields{
-		"userId":    ingressBody.Message.From.Id,
-		"username":  ingressBody.Message.From.Username,
-		"chat":      ingressBody.Message.Chat.Username,
-		"messageId": ingressBody.Message.MessageId,
+		"userId":    req.Message.From.Id,
+		"username":  req.Message.From.Username,
+		"chat":      req.Message.Chat.Username,
+		"messageId": req.Message.MessageId,
 	}).Info("Process: Running.")
 
-	job := &Job{ingressBody, app}
+	job := &Job{req, app}
 
 	results, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		JobNewChatMemberDetector,
 		JobNewChatMemberAuth,
 		JobUrlDuplicationDetector,
-		JobMessageStatistics,
+		JobMsgStats,
 		JobAdDetector,
 		JobStickersDetector,
 	})

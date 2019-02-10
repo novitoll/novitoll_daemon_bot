@@ -31,10 +31,12 @@ func init() {
 func GetRedisConnection() *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:       fmt.Sprintf("%s:%s", host, port),
-		Password:   "", // no password set
-		DB:         0,  // use default DB
+		// no password set
+		Password:   "",
+		// use default DB
+		DB:         0,
 		MaxRetries: 3,
-		PoolSize:   runtime.NumCPU() * 10, // TODO: need to calculate more carefully with ulimit and need to have a Pool of connections
+		PoolSize:   runtime.NumCPU() * 10,
 	})
 	return client
 }
@@ -52,7 +54,8 @@ func GetRedisObj(redisKey string) (interface{}, error) {
 func SetRedisObj(redisKey string, data interface{}, ttl int) error {
 	redisConn := GetRedisConnection()
 	defer redisConn.Close()
-	err := redisConn.Set(string(redisKey), data, time.Duration(ttl)*time.Second).Err()
+	err := redisConn.Set(string(redisKey), data,
+		time.Duration(ttl) * time.Second).Err()
 	if err != nil {
 		return err
 	}

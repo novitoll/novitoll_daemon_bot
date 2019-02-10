@@ -39,17 +39,17 @@ func filepathToStruct(t *testing.T, filepath string, pData interface{}) {
 	assert.Nil(t, err, "[-] Should be valid features config JSON to decode")
 }
 
-func configureStructs(t *testing.T, reqBodyFilepath string) (*cfg.FeaturesConfig, *BotIngressRequest) {
-	// FeaturesConfig init
-	var features cfg.FeaturesConfig
+func configureStructs(t *testing.T, reqBodyFilepath string) (*cfg.FeaturesCfg, *BotInReq) {
+	// FeaturesCfg init
+	var features cfg.FeaturesCfg
 	filepathToStruct(t, "config/features.json", &features)
-	assert.Equal(t, features.Administration.LogLevel, "info", "[-] Should be equal FeaturesConfig struct features.LogLevel field")
+	assert.Equal(t, features.Administration.LogLevel, "info", "[-] Should be equal FeaturesCfg struct features.LogLevel field")
 
-	// BotIngressRequest init
-	var ingressBody BotIngressRequest
-	filepathToStruct(t, reqBodyFilepath, &ingressBody)
+	// BotInReq init
+	var req BotInReq
+	filepathToStruct(t, reqBodyFilepath, &req)
 
-	return &features, &ingressBody
+	return &features, &req
 }
 
 func TestDifferentIngressMessageStructs(t *testing.T) {

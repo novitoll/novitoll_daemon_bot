@@ -38,12 +38,10 @@ func init() {
 }
 
 // https://core.telegram.org/bots/api#sendmessage
-type BotEgressSendMessage struct {
+type BotSendMsg struct {
 	ChatId                int         `json:"chat_id"`
 	Text                  string      `json:"text"`
 	ParseMode             string      `json:"parse_mode"`
-	DisableWebPagePreview bool        `json:"disable_web_page_preview"`
-	DisableNotification   bool        `json:"disable_notification"`
 	ReplyToMessageId      int         `json:"reply_to_message_id"`
 	ReplyMarkup           interface{} `json:"reply_markup"`
 }
@@ -56,30 +54,30 @@ type BotForceReply struct {
 
 // https://core.telegram.org/bots/api#replykeyboardmarkup
 type ReplyKeyboardMarkup struct {
-	Keyboard        [][]KeyboardButton `json:"keyboard"`
+	Keyboard        [][]KeyboardBtn `json:"keyboard"`
 	OneTimeKeyboard bool               `json:"one_time_keyboard"`
 	Selective       bool               `json:"selective"`
 }
 
 // https://core.telegram.org/bots/api#keyboardbutton
-type KeyboardButton struct {
+type KeyboardBtn struct {
 	Text string `json:"text"`
 }
 
 // https://core.telegram.org/bots/api#kickchatmember
-type BotEgressKickChatMember struct {
+type BotKickChatMember struct {
 	ChatId    int   `json:"chat_id"`
 	UserId    int   `json:"user_id"`
 	UntilDate int64 `json:"until_date"`
 }
 
 // https://core.telegram.org/bots/api#deletemessage
-type BotEgressDeleteMessage struct {
+type BotDeleteMsg struct {
 	ChatId    int `json:"chat_id"`
 	MessageId int `json:"message_id"`
 }
 
 // https://core.telegram.org/bots/api#getchatadministrators
-type BotEgressGetAdmins struct {
+type BotGetAdmins struct {
 	ChatId int `json:"chat_id"`
 }

@@ -5,8 +5,8 @@
 
 Requirements
 -------
+		$ go version
 
-        go version 
         go1.11.1 linux/amd64
 
 
@@ -19,12 +19,14 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 	* kindly reply with a notification
 * newcomer questionnaire in bot's IM to prevent newcomers' shadow mode and post-action
 	* greet a newcomer and kindly ask for the feedback upon the group joining in order to authenticate, otherwise user will be kicked for the certain time.
+	* restricts the user to post links after group join until N days (TBD)
 * stickers detection and post-action
 	* auto-delete the message with the sticker
 	* kindly reply with a notification and auto-delete the reply
 * flood detection
 	* detects the limit of 3 messages within 10 seconds per user
 	* detects the long-long text copy-paste
+	* detects if in chat group, last 16 messages are posted between 2 users (dialogue), regardless proportion (TBD)
 * weekly chat statistics
 	* weekly report generation of newcomers
 	* weekly report generation of active users messages' stats
@@ -32,6 +34,7 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 	* Other Telegram groups ads. Delete message if user is not in admin list.
 * nude, pornography detection in image (TBD)
 * batch scanning of users' avatars, and posting images' for steganography analysis (+ VirusTotal?) (TBD)
+* job post validation (TBD)
 
 Make commands
 -------
@@ -67,9 +70,7 @@ License
 GNU GPL 2.0
 
 
-Demo
+Webhook flow
 -------
 
-.. image:: docs/ad-detection-t-groups.png
-
-.. image:: docs/url-duplication-detection.png
+.. image:: docs/flow.jpg

@@ -34,13 +34,13 @@
         "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
         "authMessage": "I am not a bot",
-        "authMessageCached": "Yes, you are not bot. Seems you have cached message."
+        "authMessageCached": "Yes, you are not bot. But you use desktop client and seems, you have cached message."
       },
       "rus": {
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
         "authMessage": "Я - не бот",
-        "authMessageCached": "Да, вы - не бот. Видимо, это кэш."
+        "authMessageCached": "Да, вы - не бот. Но вы используете десктоп клиент, и видимо, это кэш."
       }
     },    
     "authTimeout": 60,

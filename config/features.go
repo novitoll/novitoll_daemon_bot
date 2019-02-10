@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 package config
 
-type FeaturesConfig struct {
-	UrlDuplication       UrlConfigOptions               `json:"urlDuplication"`
-	NewcomerQuestionnare NewcomerConfigOptions          `json:"newcomerQuestionnare"`
-	StickersDetection    StickersDetectionConfigOptions `json:"stickersDetection"`
-	MessageStatistics    MessageStatisticsConfigOptions `json:"messageStatistics"`
-	Administration       AdministrationConfigOptions    `json:"administration"`
-	AdDetection          AdDetectionConfigOptions       `json:"adDetection"`
+type FeaturesCfg struct {
+	UrlDuplication       UrlConfigOpt               `json:"urlDuplication"`
+	NewcomerQuestionnare NewcomerConfigOpt          `json:"newcomerQuestionnare"`
+	StickersDetection    StickersDetectionConfigOpt `json:"stickersDetection"`
+	MsgStats    MsgStatsConfigOpt `json:"messageStatistics"`
+	Administration       AdministrationConfigOpt    `json:"administration"`
+	AdDetection          AdDetectionConfigOpt       `json:"adDetection"`
 }
 
-type NewcomerConfigOptions struct {
+type NewcomerConfigOpt struct {
 	Enabled        bool  `json:"enabled"`
 	ActionNotify   bool  `json:"actionNotify"`
 	AuthTimeout    uint8 `json:"authTimeout"`
@@ -23,7 +23,7 @@ type NewcomerConfigOptions struct {
 	} `json:"i18n"`
 }
 
-type UrlConfigOptions struct {
+type UrlConfigOpt struct {
 	Enabled          bool `json:"enabled"`
 	IgnoreHostnames  bool `json:"ignoreHostnames"`
 	ActionNotify     bool `json:"actionNotify"`
@@ -33,14 +33,14 @@ type UrlConfigOptions struct {
 	} `json:"i18n"`
 }
 
-type StickersDetectionConfigOptions struct {
+type StickersDetectionConfigOpt struct {
 	Enabled bool `json:"enabled"`
 	I18n    map[string]struct {
 		WarnMessage string `json:"warnMessage"`
 	}
 }
 
-type MessageStatisticsConfigOptions struct {
+type MsgStatsConfigOpt struct {
 	Enabled bool `json:"enabled"`
 	I18n    map[string]struct {
 		WarnMessageTooFreq string `json:"warnMessageTooFreq"`
@@ -48,7 +48,7 @@ type MessageStatisticsConfigOptions struct {
 	} `json:"i18n"`
 }
 
-type AdministrationConfigOptions struct {
+type AdministrationConfigOpt struct {
 	LogLevel string `json:"logLevel"`
 	I18n     map[string]struct {
 		CronJobNewcomersReport string `json:"cronJobNewcomersReport"`
@@ -56,7 +56,7 @@ type AdministrationConfigOptions struct {
 	} `json:"i18n"`
 }
 
-type AdDetectionConfigOptions struct {
+type AdDetectionConfigOpt struct {
 	Enabled bool `json:"enabled"`
 	I18n    map[string]struct {
 		WarnMessage string `json:"warnMessage"`

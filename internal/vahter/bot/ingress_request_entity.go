@@ -133,31 +133,31 @@ package bot
 }
 */
 
-type BotIngressResponse struct {
+type BotInResp struct {
 	Ok          bool                     `json:"ok"`
-	Result      BotIngressRequestMessage `json:"result"`
+	Result      BotInReqMsg `json:"result"`
 	ErrorCode   int                      `json:"error_code"`
 	Description string                   `json:"description"`
 }
 
-type BotIngressResponseMult struct {
+type BotInRespMult struct {
 	Ok          bool                        `json:"ok"`
-	Result      []*BotIngressRequestMessage `json:"result"`
+	Result      []*BotInReqMsg `json:"result"`
 	ErrorCode   int                         `json:"error_code"`
 	Description string                      `json:"description"`
 }
 
-type BotIngressResponse2 struct {
+type BotInResp2 struct {
 	Ok     bool `json:"ok"`
 	Result bool `json:"result"`
 }
 
-type BotIngressRequest struct {
+type BotInReq struct {
 	Update_Id int `json:"update_id"`
-	Message   BotIngressRequestMessage
+	Message   BotInReqMsg
 }
 
-type BotIngressRequestMessage struct {
+type BotInReqMsg struct {
 	From               User
 	Text               string `json:"text"`
 	Entities           []Message

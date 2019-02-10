@@ -8,11 +8,8 @@ import (
 	"time"
 
 	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
+	// redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	EVERY_LAST_SEC_7TH_DAY = 604799
 )
 
 var (
@@ -20,13 +17,17 @@ var (
 	PrevKick int
 )
 
-func (ingressBody *BotIngressRequest) CronJobsStartForChat(app *App) {
-	job := &Job{ingressBody, app}
+const (
+	EVERY_LAST_SEC_7TH_DAY = 604799
+)
 
-	_, errors := FanOutProcessJobs(job, []ProcessJobFn{
-		CronJobNewcomersCount,
-		CronJobUserMessageStats,
-		CronJobGetChatAdmins,
+func (req *BotInReq) CronSchedule(app *App) {
+	j := &Job{req, app}
+
+	_, errors := FanOutProcessJobs(j, []ProcessJobFn{
+		CronUserStats,
+		// CronChatMsgStats, BUG: fix
+		CronGetChatAdmins,
 	})
 
 	for _, e := range errors {
@@ -34,87 +35,109 @@ func (ingressBody *BotIngressRequest) CronJobsStartForChat(app *App) {
 	}
 }
 
-func CronJobGetChatAdmins(job *Job) (interface{}, error) {
+func CronGetChatAdmins(j *Job) (interface{}, error) {
 	// updates every week on each first ingress request
 	var admins []string
-	chatId := job.ingressBody.Message.Chat.Id
+	chatId := j.req.Message.Chat.Id
 
-	adminsReq := &BotEgressGetAdmins{
+	adminsReq := &BotGetAdmins{
 		ChatId: chatId,
 	}
-	resp, err := adminsReq.EgressGetAdmins(job.app)
+
+	resp, err := adminsReq.GetAdmins(j.app)
+	
 	if err != nil {
 		return resp, err
 	}
+
 	if len(resp) < 1 {
-		job.app.Logger.Warn(fmt.Sprintf("No admins found for chatId: %d", chatId))
+		j.app.Logger.Warn(fmt.Sprintf("No admins found " +
+			"for chatId: %d", chatId))
 		admins = append(admins, fmt.Sprintf("@%s", BDFL))
 	} else {
 		for _, br := range resp {
 			if br.From.Username == TELEGRAM_BOT_USERNAME {
 				continue
 			}
-			admins = append(admins, fmt.Sprintf("@%s", br.From.Username))
+			admins = append(admins, fmt.Sprintf("@%s",
+				br.From.Username))
 		}
 	}
 
 	// update the slice of admins
-	job.app.ChatAdmins[chatId] = admins
+	j.app.ChatAdmins[chatId] = admins
 
-	job.app.Logger.WithFields(logrus.Fields{
+	j.app.Logger.WithFields(logrus.Fields{
 		"chatId": chatId,
 		"admins": len(admins),
-	}).Info("CronJobGetChatAdmins: Completed")
+	}).Info("CronGetChatAdmins: Completed")
 
 	return nil, nil
 }
 
-func CronJobUserMessageStats(job *Job) (interface{}, error) {
+func CronChatMsgStats(j *Job) (interface{}, error) {
 	select {
-	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY+5) * time.Second):
+	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY + 5) *
+		time.Second):
+
 		var topKactiveUsers int = 5
 		var report []string
 
-		replyTextTpl := job.app.Features.Administration.I18n[job.app.Lang].CronJobUserMsgReport // for short reference
+		// for short reference
+		replyTextTpl := j.app.Features.Administration.
+			I18n[j.app.Lang].CronJobUserMsgReport
 
 		// we have map of userId:stats
-		// we need to put to the ordered slice and sort it by some stats field
+		// we need to put to the ordered slice and sort it by 
+		// some stats field
 		stats := []*UserMessageStats{}
 		for _, v := range UserStatistics {
 			stats = append(stats, v)
 		}
+
 		sort.Slice(stats, func(i, j int) bool {
-			return stats[i].AllMsgsCount > stats[i].AllMsgsCount // descending
+			// descending sort
+			return stats[i].AllMsgsCount > stats[i].AllMsgsCount
 		})
-		// next we select top-K of this sorted slice and do cronjob work
+
+		// next we select top-K of this sorted slice and
+		// do cronj work
 		if len(stats) < topKactiveUsers {
 			topKactiveUsers = len(stats)
 		}
+
 		for _, userStat := range stats[:topKactiveUsers] {
 			report = append(report,
-				fmt.Sprintf("\nUser - *%s*, total: %d msgs, avg. msgs length: %d word",
-					userStat.Username, userStat.AllMsgsCount, userStat.MeanAllMsgsLength))
+				fmt.Sprintf("\nUser - *%s*, total: %d msgs, " +
+					"avg. msgs length: %d word",
+					userStat.Username, userStat.AllMsgsCount, 
+					userStat.MeanAllMsgsLength))
 		}
 
-		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers, strings.Join(report, ""))
-		resp, err := sendMessage(job, replyText)
+		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers,
+			strings.Join(report, ""))
+		resp, err := j.SendMessage(replyText, 0)
 
 		// reset maps
 		UserStatistics = make(map[int]*UserMessageStats)
-		delete(ChatIds, job.ingressBody.Message.Chat.Id)
+		delete(ChatIds, j.req.Message.Chat.Id)
 
 		return resp, err
 	}
 }
 
-func CronJobNewcomersCount(job *Job) (interface{}, error) {
+func CronUserStats(j *Job) (interface{}, error) {
 	select {
-	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY) * time.Second):
+	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY) * 
+		time.Second):
+
 		var authR, kickR string
 		var authN int = len(NewComersAuthVerified)
 		var kickN int = len(NewComersKicked)
 
-		replyTextTpl := job.app.Features.Administration.I18n[job.app.Lang].CronJobNewcomersReport // for short reference
+		// for short reference
+		replyTextTpl := j.app.Features.Administration.
+			I18n[j.app.Lang].CronJobNewcomersReport
 
 		authDiff := utils.CountDiffInPercent(PrevAuth, authN)
 		kickDiff := utils.CountDiffInPercent(PrevKick, kickN)
@@ -133,7 +156,7 @@ func CronJobNewcomersCount(job *Job) (interface{}, error) {
 
 		replyText := fmt.Sprintf(replyTextTpl, authR, kickR)
 
-		resp, err := sendMessage(job, replyText)
+		resp, err := j.SendMessage(replyText, 0)
 
 		// reset maps
 		NewComersAuthVerified = make(map[int]interface{})
@@ -144,18 +167,4 @@ func CronJobNewcomersCount(job *Job) (interface{}, error) {
 
 		return resp, err
 	}
-}
-
-func sendMessage(job *Job, replyText string) (interface{}, error) {
-	botEgressReq := &BotEgressSendMessage{
-		ChatId:                job.ingressBody.Message.Chat.Id,
-		Text:                  replyText,
-		ParseMode:             ParseModeMarkdown,
-		DisableWebPagePreview: true,
-		DisableNotification:   true,
-		ReplyToMessageId:      0,
-		ReplyMarkup:           &BotForceReply{ForceReply: false, Selective: true},
-	}
-	// notify user about the flood limit
-	return botEgressReq.EgressSendToTelegram(job.app)
 }

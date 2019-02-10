@@ -7,7 +7,9 @@ import (
 
 type ProcessJobFn func(job *Job) (interface{}, error)
 
-func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error) {
+func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) (
+	[]interface{}, []error) {
+
 	var wg sync.WaitGroup
 	errJob := make(chan error, len(jobsFn))
 	resultJob := make(chan interface{}, len(jobsFn))
@@ -17,7 +19,10 @@ func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) ([]interface{}, []error)
 	for _, v := range jobsFn {
 		go func(jobFn ProcessJobFn) {
 			defer wg.Done()
-			result, err := jobFn(job) // here could not find the way to call job.jobFn(), so have to pass job struct as the parameter
+			// here could not find the way to call
+			// job.jobFn(), so have to pass job struct 
+			// as the parameter
+			result, err := jobFn(job)
 			if err != nil {
 				errJob <- err
 			} else {
