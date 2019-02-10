@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	netUrl "net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -86,13 +87,18 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	}
 
 	// check if user is allowed to post URLs
-	// this key expires in Redis in 7 days
 	k := fmt.Sprintf("%s-%d", REDIS_USER_VERIFIED, j.req.Message.From.Id)
-	user := j.GetFromRedis(redisConn, k)
+	t0 := j.GetFromRedis(redisConn, k).(string)
 
-	if user.(string) != "" {
-		// new users can not post URLs until 7 days
+	t0i, err := strconv.Atoi(t0)
+	if err != nil {
+		j.app.Logger.Warn("Could not convert string to int")
+	}
+
+	if t0i > 0 && (time.Now().Unix()-int64(t0i) <= NEWCOMER_URL_POST_DELAY) {
+		// new users can not post URLs until NEWCOMER_URL_POST_DELAY mins
 		n := int(NEWCOMER_URL_POST_DELAY / 60)
+
 		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
 			I18n[j.app.Lang].AuthMessageURLPost, n)
 
