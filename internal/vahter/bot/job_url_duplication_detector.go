@@ -87,16 +87,16 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 	// check if user is allowed to post URLs
 	// this key expires in Redis in 7 days
-	k := fmt.Sprintf("%s-%s", REDIS_USER_VERIFIED, j.req.Message.From.Id)
+	k := fmt.Sprintf("%s-%d", REDIS_USER_VERIFIED, j.req.Message.From.Id)
 	user := j.GetFromRedis(redisConn, k)
 
-	if user != nil {
+	if user.(string) != "" {
 		// new users can not post URLs until 7 days
 		n := int((EVERY_LAST_SEC_7TH_DAY + 1) / (3600 * 24))
 		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
 			I18n[j.app.Lang].AuthMessageURLPost, n)
 
-		botReply += fmt.Sprintf("CC: @%s", BDFL)
+		botReply += fmt.Sprintf(" CC: @%s", BDFL)
 
 		go func() {
 			select {
