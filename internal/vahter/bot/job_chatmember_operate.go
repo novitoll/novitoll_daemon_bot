@@ -50,7 +50,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	redisConn := redis.GetRedisConnection()
 	defer redisConn.Close()
 
-	t0 := time.Now()
+	t0 := time.Now().Unix()
 	NewComersAuthPending[newComer.Id] = pass
 
 	// record a newcomer and wait for his reply on the channel,
