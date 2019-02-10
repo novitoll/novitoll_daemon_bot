@@ -9,8 +9,8 @@ import (
 	"reflect"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
+	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
 	"github.com/sirupsen/logrus"
 )
 
@@ -68,7 +68,7 @@ func init() {
 // Starts HTTP server based on "net/http" pkg on TCP/8080 constant port.
 // Prints to STDOUT configuration from features.json.
 // Creates the only App{} struct which will be used along the way, and
-// while struct fields remain constant, Apps->ChatAdmins field will be 
+// while struct fields remain constant, Apps->ChatAdmins field will be
 // changed per each cron job (see cronjobs.go)
 func main() {
 	logger.Info("[+] Features config is loaded. Bot features:\n")

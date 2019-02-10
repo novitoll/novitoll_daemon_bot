@@ -7,18 +7,10 @@ import (
 	"strings"
 	"time"
 
+	redis_ "github.com/go-redis/redis"
 	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
-	// redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 	"github.com/sirupsen/logrus"
-)
-
-var (
-	PrevAuth int
-	PrevKick int
-)
-
-const (
-	EVERY_LAST_SEC_7TH_DAY = 604799
 )
 
 func (req *BotInReq) CronSchedule(app *App) {
@@ -45,13 +37,13 @@ func CronGetChatAdmins(j *Job) (interface{}, error) {
 	}
 
 	resp, err := adminsReq.GetAdmins(j.app)
-	
+
 	if err != nil {
 		return resp, err
 	}
 
 	if len(resp) < 1 {
-		j.app.Logger.Warn(fmt.Sprintf("No admins found " +
+		j.app.Logger.Warn(fmt.Sprintf("No admins found "+
 			"for chatId: %d", chatId))
 		admins = append(admins, fmt.Sprintf("@%s", BDFL))
 	} else {
@@ -77,7 +69,7 @@ func CronGetChatAdmins(j *Job) (interface{}, error) {
 
 func CronChatMsgStats(j *Job) (interface{}, error) {
 	select {
-	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY + 5) *
+	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY+5) *
 		time.Second):
 
 		var topKactiveUsers int = 5
@@ -88,14 +80,14 @@ func CronChatMsgStats(j *Job) (interface{}, error) {
 			I18n[j.app.Lang].CronJobUserMsgReport
 
 		// we have map of userId:stats
-		// we need to put to the ordered slice and sort it by 
+		// we need to put to the ordered slice and sort it by
 		// some stats field
 		stats := []*UserMessageStats{}
 		for _, v := range UserStatistics {
 			stats = append(stats, v)
 		}
 
-		sort.Slice(stats, func(i, j int) bool {
+		sort.Slice(stats, func(i, ii int) bool {
 			// descending sort
 			return stats[i].AllMsgsCount > stats[i].AllMsgsCount
 		})
@@ -108,9 +100,9 @@ func CronChatMsgStats(j *Job) (interface{}, error) {
 
 		for _, userStat := range stats[:topKactiveUsers] {
 			report = append(report,
-				fmt.Sprintf("\nUser - *%s*, total: %d msgs, " +
+				fmt.Sprintf("\nUser - *%s*, total: %d msgs, "+
 					"avg. msgs length: %d word",
-					userStat.Username, userStat.AllMsgsCount, 
+					userStat.Username, userStat.AllMsgsCount,
 					userStat.MeanAllMsgsLength))
 		}
 
@@ -128,43 +120,52 @@ func CronChatMsgStats(j *Job) (interface{}, error) {
 
 func CronUserStats(j *Job) (interface{}, error) {
 	select {
-	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY) * 
+	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY) *
 		time.Second):
 
-		var authR, kickR string
-		var authN int = len(NewComersAuthVerified)
-		var kickN int = len(NewComersKicked)
+		// use 1 redis TCP connection per goroutine
+		redisConn := redis.GetRedisConnection()
+		defer redisConn.Close()
 
 		// for short reference
 		replyTextTpl := j.app.Features.Administration.
 			I18n[j.app.Lang].CronJobNewcomersReport
 
-		authDiff := utils.CountDiffInPercent(PrevAuth, authN)
-		kickDiff := utils.CountDiffInPercent(PrevKick, kickN)
+		reports := make([]interface{}, 3)
 
-		if authN > 0 {
-			authR = fmt.Sprintf("%d(%s)", authN, authDiff)
-		} else {
-			authR = fmt.Sprintf("%d", authN)
+		for _, s := range []struct {
+			redisK  string
+			redisKp string
+		}{
+			{REDIS_USER_VERIFIED, REDIS_USER_PREV_VERIFIED},
+			{REDIS_USER_KICKED, REDIS_USER_PREV_KICK},
+			{REDIS_USER_LEFT, REDIS_USER_PREV_LEFT},
+		} {
+
+			reports = append(reports, j.__cronUserStats(redisConn, s.redisK, s.redisKp))
 		}
 
-		if kickN > 0 {
-			kickR = fmt.Sprintf("%d(%s)", kickN, kickDiff)
-		} else {
-			kickR = fmt.Sprintf("%d", kickN)
-		}
-
-		replyText := fmt.Sprintf(replyTextTpl, authR, kickR)
+		replyText := fmt.Sprintf(replyTextTpl, reports...)
 
 		resp, err := j.SendMessage(replyText, 0)
-
-		// reset maps
-		NewComersAuthVerified = make(map[int]interface{})
-		NewComersKicked = make(map[int]interface{})
-		// update global counters
-		PrevAuth = authN
-		PrevKick = kickN
-
 		return resp, err
 	}
+}
+
+func (j *Job) __cronUserStats(redisConn *redis_.Client, redisK string, redisKp string) string {
+	// will match all verified users
+	// these keys will be expired in Redis in +10 sec
+	k := fmt.Sprintf("%s-*", redisK)
+	currentUsers := j.GetBatchFromRedis(redisConn, k, 0)
+
+	prevCount := j.GetFromRedis(redisConn, redisKp)
+
+	var N int = len(currentUsers.([]string))
+
+	diff := utils.CountDiffInPercent(prevCount.(int), N)
+
+	// update counters
+	j.SaveInRedis(redisConn, redisKp, N, 0)
+
+	return fmt.Sprintf("%d(%s)", N, diff)
 }

@@ -89,8 +89,7 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 			FLOOD_TIME_INTERVAL, FLOOD_MAX_ALLOWED_MSGS))
 	}
 
-	if allWordsCount := utils.SumSliceInt(s.FloodMsgsLength);
-		allWordsCount >= FLOOD_MAX_ALLOWED_WORDS {
+	if allWordsCount := utils.SumSliceInt(s.FloodMsgsLength); allWordsCount >= FLOOD_MAX_ALLOWED_WORDS {
 
 		isFlood = true
 		replyText = append(replyText, fmt.Sprintf(template.WarnMessageTooLong,
@@ -109,7 +108,7 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 	if isFlood {
 		// notify user about the flood limit
 		txt := strings.Join(replyText, ". ")
-		
+
 		reply, err := j.SendMessage(txt, j.req.Message.MessageId)
 		if err != nil {
 			return err
@@ -120,7 +119,7 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 			go func() {
 				select {
 				case <-time.After(time.Duration(
-					TIME_TO_DELETE_REPLY_MSG + 10) * time.Second):
+					TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
 					j.DeleteMessage(reply)
 				}
 			}()

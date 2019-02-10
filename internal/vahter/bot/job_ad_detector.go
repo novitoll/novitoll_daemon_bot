@@ -30,7 +30,7 @@ func isAd(msg *BotInReqMsg) bool {
 }
 
 func JobAdDetector(j *Job) (interface{}, error) {
-	if !j.app.Features.AdDetection.Enabled || 
+	if !j.app.Features.AdDetection.Enabled ||
 		!j.HasMessageContent() {
 		return nil, nil
 	}
@@ -51,15 +51,15 @@ func JobAdDetector(j *Job) (interface{}, error) {
 		}).Warn("Ad detected: Telegram group")
 
 		adminsToNotify := strings.Join(admins, ", ")
-		
+
 		text := fmt.Sprintf(j.app.Features.AdDetection.
 			I18n[j.app.Lang].WarnMessage, adminsToNotify)
 
 		req := &BotSendMsg{
-			ChatId:                j.req.Message.Chat.Id,
-			Text:                  text,
-			ParseMode:             ParseModeMarkdown,
-			ReplyToMessageId:      j.req.Message.MessageId,
+			ChatId:           j.req.Message.Chat.Id,
+			Text:             text,
+			ParseMode:        ParseModeMarkdown,
+			ReplyToMessageId: j.req.Message.MessageId,
 			ReplyMarkup: &BotForceReply{
 				ForceReply: false,
 				Selective:  true,
@@ -74,7 +74,7 @@ func JobAdDetector(j *Job) (interface{}, error) {
 			// cleanup reply messages
 			go func() {
 				select {
-				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG +
+				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+
 					10) * time.Second):
 
 					go j.DeleteMessage(&j.req.Message)

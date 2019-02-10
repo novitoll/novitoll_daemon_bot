@@ -39,11 +39,11 @@ func init() {
 
 // https://core.telegram.org/bots/api#sendmessage
 type BotSendMsg struct {
-	ChatId                int         `json:"chat_id"`
-	Text                  string      `json:"text"`
-	ParseMode             string      `json:"parse_mode"`
-	ReplyToMessageId      int         `json:"reply_to_message_id"`
-	ReplyMarkup           interface{} `json:"reply_markup"`
+	ChatId           int         `json:"chat_id"`
+	Text             string      `json:"text"`
+	ParseMode        string      `json:"parse_mode"`
+	ReplyToMessageId int         `json:"reply_to_message_id"`
+	ReplyMarkup      interface{} `json:"reply_markup"`
 }
 
 // https://core.telegram.org/bots/api#forcereply
@@ -55,8 +55,8 @@ type BotForceReply struct {
 // https://core.telegram.org/bots/api#replykeyboardmarkup
 type ReplyKeyboardMarkup struct {
 	Keyboard        [][]KeyboardBtn `json:"keyboard"`
-	OneTimeKeyboard bool               `json:"one_time_keyboard"`
-	Selective       bool               `json:"selective"`
+	OneTimeKeyboard bool            `json:"one_time_keyboard"`
+	Selective       bool            `json:"selective"`
 }
 
 // https://core.telegram.org/bots/api#keyboardbutton

@@ -22,10 +22,10 @@ func (re *AppError) Error() string {
 	case 404:
 		msg = fmt.Sprintf("Not found. %s", re.message)
 	case 500:
-		msg = fmt.Sprintf("Internal server error. " +
+		msg = fmt.Sprintf("Internal server error. "+
 			"Please notify admins. %s", re.message)
 	default:
-		msg = fmt.Sprintf("Unknown status. " +
+		msg = fmt.Sprintf("Unknown status. "+
 			"Please notify admins. %s", re.message)
 	}
 

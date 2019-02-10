@@ -3,11 +3,11 @@
     "logLevel": "info",
     "i18n": {
         "en-us": {
-          "cronJobNewcomersReport": "Weekly report. New users - %s, kicked - %s.",
+          "cronJobNewcomersReport": "Weekly report. New users - %s, kicked - %s, left - %s",
           "cronJobUserMsgReport": "Weekly report. Top %d active users: %s"
         },
         "rus": {
-          "cronJobNewcomersReport": "Отчет за неделю по юзерам. Новых юзеров - %s, кикнуто - %s.",
+          "cronJobNewcomersReport": "Отчет за неделю по юзерам. Новых юзеров - %s, кикнуто - %s, ливнули - %s",
           "cronJobUserMsgReport": "Отчет за неделю по сообщениям. Tоп %d активных юзеров: %s"
         }
     }

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,16 +14,16 @@ var (
 	forceDeletion = make(chan bool)
 	// unbuffered chhanel to wait for the certain time
 	// for the newcomer's resp
-	chNewcomer    = make(chan int)
+	chNewcomer = make(chan int)
 )
 
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// for short code reference
 	newComer := j.req.Message.NewChatMember
-	newComerConfig := j.app.Features.NewcomerQuestionnare
-	req := newComerConfig.I18n[j.app.Lang]
+	newComerCfg := j.app.Features.NewcomerQuestionnare
+	req := newComerCfg.I18n[j.app.Lang]
 
-	if !newComerConfig.Enabled || newComer.Id == 0 || 
+	if !newComerCfg.Enabled || newComer.Id == 0 ||
 		newComer.Username == TELEGRAM_BOT_USERNAME {
 		return false, nil
 	}
@@ -33,11 +34,16 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			KeyboardBtn{req.AuthMessage},
 		},
 	}
-	welcomeMsg := fmt.Sprintf(req.WelcomeMessage, 
-		newComerConfig.AuthTimeout, newComerConfig.KickBanTimeout)
+	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
+		newComerCfg.AuthTimeout, newComerCfg.KickBanTimeout)
+
+	redisConn := redis.GetRedisConnection()
+	defer redisConn.Close()
 
 	t0 := time.Now()
-	NewComersAuthPending[newComer.Id] = t0
+	k := fmt.Sprintf("%s-%d", REDIS_USER_PENDING, newComer.Id)
+
+	j.SaveInRedis(redisConn, k, t0, int(newComerCfg.AuthTimeout))
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
@@ -47,44 +53,47 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	}).Warn("New member has been detected")
 
 	// sends the welcome authentication message
-	go j.onSendMessage(welcomeMsg, newComerConfig.AuthTimeout,
+	go j.onSendMessage(welcomeMsg, newComerCfg.AuthTimeout,
 		&ReplyKeyboardMarkup{
 			Keyboard:        keyBtns,
 			OneTimeKeyboard: true,
 			Selective:       true,
 		})
 
-	// blocks the current Job goroutine until either of 
+	// blocks the current Job goroutine until either of
 	// these 2 channels receive the value
 	select {
 	case dootId := <-chNewcomer:
-		delete(NewComersAuthPending, dootId)
-		NewComersAuthVerified[dootId] = t0
+		k = fmt.Sprintf("%s-%d", REDIS_USER_VERIFIED, dootId)
+		// +10 sec, so that cronjob computing newcomers count
+		// could finish in time with EVERY_LAST_SEC_7TH_DAY
+		j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 		j.app.Logger.WithFields(logrus.Fields{
 			"id": dootId,
 		}).Info("Newcomer has been authenticated")
 
-		if newComerConfig.ActionNotify {
+		if newComerCfg.ActionNotify {
 			forceDeletion <- true
 			return j.onSendMessage(req.AuthOKMessage,
-					TIME_TO_DELETE_REPLY_MSG,
-					&BotForceReply{
-						ForceReply: false,
-						Selective:  true,
-					})
+				TIME_TO_DELETE_REPLY_MSG,
+				&BotForceReply{
+					ForceReply: false,
+					Selective:  true,
+				})
 		} else {
 			return true, nil
 		}
-	case <-time.After(time.Duration(newComerConfig.AuthTimeout) * time.Second):
+	case <-time.After(time.Duration(newComerCfg.AuthTimeout) * time.Second):
 		resp, err := j.onKickChatMember()
 		if err == nil {
 
 			// delete the "User joined the group" event
 			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 
-			delete(NewComersAuthPending, newComer.Id)
-			NewComersKicked[newComer.Id] = t0
+			k = fmt.Sprintf("%s-%d", REDIS_USER_KICKED, newComer.Id)
+			// same +10 sec as for REDIS_USER_VERIFIED
+			j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 			j.app.Logger.WithFields(logrus.Fields{
 				"id":       newComer.Id,
@@ -101,21 +110,25 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	// will check every message if its from a newcomer to whitelist the doot,
 	// writing to the global unbuffered channel
 	if strings.ToLower(j.req.Message.Text) == strings.ToLower(i18n.AuthMessage) {
-		
+
+		redisConn := redis.GetRedisConnection()
+		defer redisConn.Close()
+
 		// doot is verified
-		if _, ok := NewComersAuthPending[j.req.Message.From.Id]; ok {
+		k := fmt.Sprintf("%s-%d", REDIS_USER_PENDING, j.req.Message.From.Id)
+		if ok := j.GetFromRedis(redisConn, k); ok != nil {
 			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 			chNewcomer <- j.req.Message.From.Id
-		
-		// answer if the user has cached message (seems, a bug for desktop users)
+
+			// answer if the user has cached message (seems, a bug for desktop users)
 		} else {
-			_, err := j.onSendMessage(i18n.AuthMessageCached, 
-				TIME_TO_DELETE_REPLY_MSG + 10,
-				 &BotForceReply{
+			_, err := j.onSendMessage(i18n.AuthMessageCached,
+				TIME_TO_DELETE_REPLY_MSG+10,
+				&BotForceReply{
 					ForceReply: false,
 					Selective:  true,
 				})
-			
+
 			// delete user's message with delay
 			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 
@@ -125,17 +138,33 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	return true, nil
 }
 
+func JobLeftParticipantDetector(j *Job) (interface{}, error) {
+	left := j.req.Message.LeftChatParticipant
+
+	if left.Id == 0 {
+		return false, nil
+	}
+
+	redisConn := redis.GetRedisConnection()
+	defer redisConn.Close()
+
+	k := fmt.Sprintf("%s-%d", REDIS_USER_LEFT, left.Id)
+	t0 := time.Now()
+	j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
+	return nil, nil
+}
+
 /*
 	Action functions
 */
 
 func (j *Job) onSendMessage(text string, delay uint8, reply interface{}) (interface{}, error) {
 	botEgressReq := &BotSendMsg{
-		ChatId:                j.req.Message.Chat.Id,
-		Text:                  text,
-		ParseMode:             ParseModeMarkdown,
-		ReplyToMessageId:      j.req.Message.MessageId,
-		ReplyMarkup:           reply,
+		ChatId:           j.req.Message.Chat.Id,
+		Text:             text,
+		ParseMode:        ParseModeMarkdown,
+		ReplyToMessageId: j.req.Message.MessageId,
+		ReplyMarkup:      reply,
 	}
 	replyMsgBody, err := botEgressReq.SendMsg(j.app)
 	if err != nil {

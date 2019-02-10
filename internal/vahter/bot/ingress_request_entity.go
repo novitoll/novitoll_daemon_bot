@@ -131,20 +131,52 @@ package bot
     "text": "\\u0421\\u043f\\u0430\\u0441\\u0438\\u0431\\u043e,\\u0432\\u044b\\u0430\\u0432\\u0442\\u043e\\u0440\\u0438\\u0437\\u043e\\u0432\\u0430\\u043d\\u044b."
   }
 }
+  Example: left chat participant
+{
+  "update_id": xxx,
+  "message": {
+    "message_id": 700,
+    "from": {
+      "id": xxx,
+      "is_bot": false,
+      "first_name": "N2",
+      "username": "xxx"
+    },
+    "chat": {
+      "id": -xxx,
+      "title": "xxx",
+      "type": "group",
+      "all_members_are_administrators": false
+    },
+    "date": 1549775149,
+    "left_chat_participant": {
+      "id": xxx,
+      "is_bot": false,
+      "first_name": "N2",
+      "username": "xxx"
+    },
+    "left_chat_member": {
+      "id": xxx,
+      "is_bot": false,
+      "first_name": "N2",
+      "username": "xxx"
+    }
+  }
+}
 */
 
 type BotInResp struct {
-	Ok          bool                     `json:"ok"`
+	Ok          bool        `json:"ok"`
 	Result      BotInReqMsg `json:"result"`
-	ErrorCode   int                      `json:"error_code"`
-	Description string                   `json:"description"`
+	ErrorCode   int         `json:"error_code"`
+	Description string      `json:"description"`
 }
 
 type BotInRespMult struct {
-	Ok          bool                        `json:"ok"`
+	Ok          bool           `json:"ok"`
 	Result      []*BotInReqMsg `json:"result"`
-	ErrorCode   int                         `json:"error_code"`
-	Description string                      `json:"description"`
+	ErrorCode   int            `json:"error_code"`
+	Description string         `json:"description"`
 }
 
 type BotInResp2 struct {
@@ -158,17 +190,18 @@ type BotInReq struct {
 }
 
 type BotInReqMsg struct {
-	From               User
-	Text               string `json:"text"`
-	Entities           []Message
-	Date               int64   `json:"date"` // time.Unix()
-	MessageId          int     `json:"message_id"`
-	Chat               Chat    `json:"chat"`
-	NewChatMembers     []User  `json:"new_chat_members"`
-	NewChatMember      User    `json:"new_chat_member"`
-	NewChatParticipant User    `json:"new_chat_participant"`
-	Sticker            Sticker `json:"sticker"`
-	Caption            string  `json:"caption"`
+	From                User
+	Text                string `json:"text"`
+	Entities            []Message
+	Date                int64   `json:"date"` // time.Unix()
+	MessageId           int     `json:"message_id"`
+	Chat                Chat    `json:"chat"`
+	NewChatMembers      []User  `json:"new_chat_members"`
+	NewChatMember       User    `json:"new_chat_member"`
+	NewChatParticipant  User    `json:"new_chat_participant"`
+	LeftChatParticipant User    `json:"left_chat_participant"`
+	Sticker             Sticker `json:"sticker"`
+	Caption             string  `json:"caption"`
 }
 
 // https://core.telegram.org/bots/api#user

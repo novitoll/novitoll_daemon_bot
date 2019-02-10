@@ -28,13 +28,13 @@ func (app *App) RegisterHandlers() {
 	http.HandleFunc("/process", app.ProcessHandler)
 	http.HandleFunc("/flushQueue", app.FlushQueueHandler)
 
-	app.Logger.Info("[+] Handlers for HTTP end-points " + 
+	app.Logger.Info("[+] Handlers for HTTP end-points " +
 		"are registered")
 }
 
 // Receives HTTP requests on /process end-point
 // from Telegram and after parsing request body raw bytes,
-// "BotInReq" struct is created which contains 
+// "BotInReq" struct is created which contains
 // sufficient info about Telegram Chat, User, Message.
 // After struct's creation, Process() goroutine is scheduled and
 // the HTTP request handler is completed with 200/OK response.
@@ -72,7 +72,7 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 		ChatIds[br.Message.Chat.Id] = time.Now()
 		go br.CronSchedule(app)
 
-		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat " +
+		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat "+
 			"are scheduled", br.Message.Chat.Id))
 	}
 

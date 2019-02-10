@@ -41,7 +41,7 @@ func sendHTTP(req *http.Request, app *App) (*bytes.Buffer, error) {
 	if err2 != nil {
 		app.Logger.WithFields(logrus.Fields{
 			"parsedBytes": parsedBytes,
-			}).Fatal("Failed in Telegram resp")
+		}).Fatal("Failed in Telegram resp")
 		return nil, err2
 	}
 
@@ -56,16 +56,16 @@ func parseBody(req *http.Request, app *App) (*BotInReqMsg, error) {
 
 	// here, for me, it's much easier to try to
 	// parse on 2 kind of structs, rather than
-	// handle the case with interface{} 
-	// throughout all calls because Telegram 
+	// handle the case with interface{}
+	// throughout all calls because Telegram
 	// resp body values differs with the same key.
 
 	// 1. Try with the usual resp body
 	var reply BotInResp
 	err = json.Unmarshal([]byte(buf.String()), &reply)
-	
+
 	if err != nil {
-		
+
 		// 2.1 if error, then try with the another one
 		var reply2 BotInResp2
 		err = json.Unmarshal([]byte(buf.String()), &reply2)
@@ -131,7 +131,7 @@ func (body *BotGetAdmins) GetAdmins(app *App) ([]*BotInReqMsg, error) {
 	var reply BotInRespMult
 	var replyStr string
 
-	 // dirty hack because Telegram resp keys are different, geez
+	// dirty hack because Telegram resp keys are different, geez
 	replyStr = strings.Replace(buf.String(),
 		"{\"user", "{\"from", -1)
 

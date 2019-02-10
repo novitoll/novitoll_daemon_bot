@@ -21,7 +21,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 	urls := xurls.Relaxed().FindAllString(j.req.
 		Message.Text, -1)
-	
+
 	if len(urls) == 0 {
 		return false, nil
 	}
@@ -37,7 +37,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		}
 
 		j.app.Logger.Info(fmt.Sprintf("Checking %d/%d URL - %s",
-			i + 1, len(urls), url))
+			i+1, len(urls), url))
 
 		if j.app.Features.UrlDuplication.IgnoreHostnames {
 			u, err := netUrl.ParseRequestURI(url)
@@ -46,10 +46,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 			}
 		}
 
-		// Redis key is constructed via channel Id in order to 
-		// let the single bot binary operate on multiple chats
-		redisKey := fmt.Sprintf("%d-%s", j.req.
-			Message.Chat.Id, url)
+		redisKey := strings.ToLower(url)
 
 		jsonStr, _ := redisConn.Get(redisKey).Result()
 
@@ -59,7 +56,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 			}).Warn("This message contains the duplicate URL")
 
 			var duplicatedMsg BotInReqMsg
-			
+
 			json.Unmarshal([]byte(jsonStr), &duplicatedMsg)
 
 			_, err := j.onURLDuplicate(&duplicatedMsg)
@@ -78,8 +75,8 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 			err2 := redisConn.Set(redisKey, payload,
 				time.Duration(j.app.Features.UrlDuplication.
-					RelevanceTimeout) * time.Second).Err()
-			
+					RelevanceTimeout)*time.Second).Err()
+
 			if err2 != nil {
 				j.app.Logger.WithFields(logrus.Fields{
 					"err": err,
@@ -94,7 +91,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 func (j *Job) onURLDuplicate(duplicatedMsg *BotInReqMsg) (
 	interface{}, error) {
-	
+
 	j.app.Logger.Info("POST HTTP request on duplicate detection")
 
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
@@ -113,7 +110,7 @@ func (j *Job) onURLDuplicate(duplicatedMsg *BotInReqMsg) (
 		// cleanup reply messages
 		go func() {
 			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG + 10) * time.Second):
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
 				go j.DeleteMessage(reply)
 			}
 		}()

@@ -5,7 +5,7 @@ type FeaturesCfg struct {
 	UrlDuplication       UrlConfigOpt               `json:"urlDuplication"`
 	NewcomerQuestionnare NewcomerConfigOpt          `json:"newcomerQuestionnare"`
 	StickersDetection    StickersDetectionConfigOpt `json:"stickersDetection"`
-	MsgStats    MsgStatsConfigOpt `json:"messageStatistics"`
+	MsgStats             MsgStatsConfigOpt          `json:"messageStatistics"`
 	Administration       AdministrationConfigOpt    `json:"administration"`
 	AdDetection          AdDetectionConfigOpt       `json:"adDetection"`
 }

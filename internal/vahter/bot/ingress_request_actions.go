@@ -24,6 +24,7 @@ func (req *BotInReq) Process(app *App) {
 		JobMsgStats,
 		JobAdDetector,
 		JobStickersDetector,
+		JobLeftParticipantDetector,
 	})
 
 	for _, e := range errors {

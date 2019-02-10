@@ -20,7 +20,7 @@ func FanOutProcessJobs(job *Job, jobsFn []ProcessJobFn) (
 		go func(jobFn ProcessJobFn) {
 			defer wg.Done()
 			// here could not find the way to call
-			// job.jobFn(), so have to pass job struct 
+			// job.jobFn(), so have to pass job struct
 			// as the parameter
 			result, err := jobFn(job)
 			if err != nil {
