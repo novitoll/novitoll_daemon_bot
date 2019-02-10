@@ -39,6 +39,16 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		n := int(EVERY_LAST_SEC_7TH_DAY + 1/(3600*24))
 		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
 			I18n[j.app.Lang].AuthMessageURLPost, n)
+
+		botReply += fmt.Sprintf("CC: @%s", BDFL)
+
+		go func() {
+			select {
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
+				j.DeleteMessage(&j.req.Message)
+			}
+		}()
+
 		return j.SendMessage(botReply, j.req.Message.MessageId)
 	}
 

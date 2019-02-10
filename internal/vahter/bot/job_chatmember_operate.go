@@ -4,7 +4,6 @@ package bot
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
@@ -128,17 +127,17 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	}
 
 	// 1. Let's check if this is for newmember auth related message or not
-	matched := authRgxp.FindAllString(strings.ToLower(j.req.Message.Text), -1)
+	matched := authRgxp.FindAllString(j.req.Message.Text, -1)
 	if len(matched) == 0 {
 		return nil, nil
 	}
 
 	// 2. ok, but let's check if user is in our auth pending map or not
-	_, pass := NewComersAuthPending[j.req.Message.From.Id]
+	pass, ok := NewComersAuthPending[j.req.Message.From.Id]
 
 	// 3. ok, let's check then if user's password is legit with outs
 	passOrig := fmt.Sprintf("%s. %s - %s", i18n.AuthMessage, i18n.AuthPasswd, pass)
-	if pass && passOrig == j.req.Message.Text {
+	if ok && passOrig == j.req.Message.Text {
 		go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 		chNewcomer <- j.req.Message.From.Id
 

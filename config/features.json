@@ -34,7 +34,7 @@
         "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
         "authMessage": "I am not a bot",
-        "authPasswd": "Password - %s",
+        "authPasswd": "Password",
         "authMessageCached": "Yes, you are not bot. But you use desktop client and seems, you have cached message.",
         "authMessageURLPost": "New users are not allowed to post URLs until first %d days."
       },
@@ -42,7 +42,7 @@
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
         "authMessage": "Я - не бот",
-        "authPasswd": "Пароль - %s",
+        "authPasswd": "Пароль",
         "authMessageCached": "Да, вы - не бот. Но вы используете десктоп клиент, и видимо, это кэш.",
         "authMessageURLPost": "Новые юзера не могут постить ссылки в течении первых %d дней."
       }
