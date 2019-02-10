@@ -47,10 +47,10 @@ func JobSentimentDetector(j *Job) (interface{}, error) {
 		go func() {
 			select {
 			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
-				go j.DeleteMessage(&j.req.Message)
+				go j.DeleteMessage(reply)
 
 				if f.DeleteMessage {
-					go j.DeleteMessage(reply)
+					go j.DeleteMessage(&j.req.Message)
 				}
 			}
 		}()

@@ -66,14 +66,14 @@
     }
   },
   "sentimentDetection": {
-    "enabled": false,
+    "enabled": true,
     "deleteMessage": false,
     "i18n": {
       "en-us": {
-        "warnMessage": "No need for showing your emotions."
+        "warnMessage": "No need for showing your emotions. It floods the public chat."
       },
       "rus": {
-        "warnMessage": "Без сентиментальности. Эмоции не нужны."
+        "warnMessage": "Без сентиментальности. Эмоции не нужны. Это спамит публичный чат."
       }
     }
   },
