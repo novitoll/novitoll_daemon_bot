@@ -74,3 +74,7 @@ Webhook flow
 -------
 
 .. image:: docs/flow.jpg
+
+Demo
+-------
+.. image:: docs/demo.gif
