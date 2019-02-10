@@ -2,12 +2,12 @@
 package config
 
 type FeaturesCfg struct {
-	UrlDuplication       UrlConfigOpt               `json:"urlDuplication"`
-	NewcomerQuestionnare NewcomerConfigOpt          `json:"newcomerQuestionnare"`
-	StickersDetection    StickersDetectionConfigOpt `json:"stickersDetection"`
-	MsgStats             MsgStatsConfigOpt          `json:"messageStatistics"`
-	Administration       AdministrationConfigOpt    `json:"administration"`
-	AdDetection          AdDetectionConfigOpt       `json:"adDetection"`
+	UrlDuplication       UrlConfigOpt                `json:"urlDuplication"`
+	NewcomerQuestionnare NewcomerConfigOpt           `json:"newcomerQuestionnare"`
+	SentimentDetection   SentimentDetectionConfigOpt `json:"sentimentDetection"`
+	MsgStats             MsgStatsConfigOpt           `json:"messageStatistics"`
+	Administration       AdministrationConfigOpt     `json:"administration"`
+	AdDetection          AdDetectionConfigOpt        `json:"adDetection"`
 }
 
 type NewcomerConfigOpt struct {
@@ -35,9 +35,10 @@ type UrlConfigOpt struct {
 	} `json:"i18n"`
 }
 
-type StickersDetectionConfigOpt struct {
-	Enabled bool `json:"enabled"`
-	I18n    map[string]struct {
+type SentimentDetectionConfigOpt struct {
+	Enabled       bool `json:"enabled"`
+	DeleteMessage bool `json:"deleteMessage"`
+	I18n          map[string]struct {
 		WarnMessage string `json:"warnMessage"`
 	}
 }
