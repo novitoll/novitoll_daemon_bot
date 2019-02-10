@@ -3,6 +3,7 @@ package bot
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -16,6 +17,13 @@ var (
 	// unbuffered chhanel to wait for the certain time
 	// for the newcomer's resp
 	chNewcomer = make(chan int)
+	// we could store this map in Redis as well,
+	// but once we have the record here, we have to
+	// check Redis (open TCP connection) per each message
+	// because we don't know beforehand if the message is
+	// from the Auth pending user or not. So fuck it
+	NewComersAuthPending = make(map[int]string)
+	authRgxp             *regexp.Regexp
 )
 
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
@@ -29,12 +37,12 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
-	p := utils.RandStringRunes(6)
-
 	// init vars
+	pass := utils.RandStringRunes(9)
+
 	keyBtns := [][]KeyboardBtn{
 		[]KeyboardBtn{
-			KeyboardBtn{fmt.Sprintf(req.AuthMessage, p)},
+			KeyboardBtn{fmt.Sprintf("%s. %s", req.AuthMessage, pass)},
 		},
 	}
 	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
@@ -44,9 +52,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	defer redisConn.Close()
 
 	t0 := time.Now()
-	k := fmt.Sprintf("%s-%d", REDIS_USER_PENDING, newComer.Id)
-
-	j.SaveInRedis(redisConn, k, p, int(newComerCfg.AuthTimeout+10))
+	NewComersAuthPending[newComer.Id] = pass
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
@@ -67,7 +73,8 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// these 2 channels receive the value
 	select {
 	case dootId := <-chNewcomer:
-		k = fmt.Sprintf("%s-%d", REDIS_USER_VERIFIED, dootId)
+		delete(NewComersAuthPending, dootId)
+		k := fmt.Sprintf("%s-%d", REDIS_USER_VERIFIED, dootId)
 		// +10 sec, so that cronjob computing newcomers count
 		// could finish in time with EVERY_LAST_SEC_7TH_DAY
 		j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
@@ -94,7 +101,9 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			// delete the "User joined the group" event
 			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 
-			k = fmt.Sprintf("%s-%d", REDIS_USER_KICKED, newComer.Id)
+			delete(NewComersAuthPending, newComer.Id)
+
+			k := fmt.Sprintf("%s-%d", REDIS_USER_KICKED, newComer.Id)
 			// same +10 sec as for REDIS_USER_VERIFIED
 			j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
@@ -112,33 +121,45 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 
 	// will check every message if its from a newcomer to whitelist the doot,
 	// writing to the global unbuffered channel
-	redisConn := redis.GetRedisConnection()
-	defer redisConn.Close()
 
-	k := fmt.Sprintf("%s-%d", REDIS_USER_PENDING, j.req.Message.From.Id)
-	p := j.GetFromRedis(redisConn, k)
-
-	if strings.ToLower(j.req.Message.Text) == strings.ToLower(fmt.Sprintf(i18n.AuthMessage, p)) {
-		// doot is verified
-		if p != nil {
-			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
-			chNewcomer <- j.req.Message.From.Id
-
-			// answer if the user has cached message (seems, a bug for desktop users)
-		} else {
-			_, err := j.onSendMessage(i18n.AuthMessageCached,
-				TIME_TO_DELETE_REPLY_MSG+10,
-				&BotForceReply{
-					ForceReply: false,
-					Selective:  true,
-				})
-
-			// delete user's message with delay
-			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
-
-			return nil, err
-		}
+	// this should not compile per each fucking message
+	if authRgxp == nil {
+		authRgxp = regexp.MustCompile(fmt.Sprintf("^%s", i18n.AuthMessage))
 	}
+
+	// 1. Let's check if this is for newmember auth related message or not
+	matched := authRgxp.FindAllString(strings.ToLower(j.req.Message.Text), -1)
+	if len(matched) == 0 {
+		return nil, nil
+	}
+
+	// 2. ok, but let's check if user is in our auth pending map or not
+	_, pass := NewComersAuthPending[j.req.Message.From.Id]
+
+	// 3. ok, let's check then if user's password is legit with outs
+	passOrig := fmt.Sprintf("%s. %s", i18n.AuthMessage, pass)
+	if pass && passOrig == j.req.Message.Text {
+		go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
+		chNewcomer <- j.req.Message.From.Id
+
+		// answer if the user has cached message (seems, a bug for desktop users)
+		// or if user is already verified, he/she will get the reply
+		// or if user is in auth pending but failed with password,
+		// then time.After channel about will kick the fuck out that guy.
+	} else {
+		_, err := j.onSendMessage(i18n.AuthMessageCached,
+			TIME_TO_DELETE_REPLY_MSG+10,
+			&BotForceReply{
+				ForceReply: false,
+				Selective:  true,
+			})
+
+		// delete user's message with delay
+		go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
+
+		return nil, err
+	}
+
 	return true, nil
 }
 

@@ -26,9 +26,21 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
-	// TODO: improve this using Redis Pool of connections
 	redisConn := redis.GetRedisConnection()
 	defer redisConn.Close()
+
+	// check if user is allowed to post URLs
+	// this key expires in Redis in 7 days
+	k := fmt.Sprintf("%s-%s", REDIS_USER_VERIFIED, j.req.Message.From.Id)
+	user := j.GetFromRedis(redisConn, k)
+
+	if user != nil {
+		// new users can not post URLs until 7 days
+		n := int(EVERY_LAST_SEC_7TH_DAY + 1/(3600*24))
+		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
+			I18n[j.app.Lang].AuthMessageURLPost, n)
+		return j.SendMessage(botReply, j.req.Message.MessageId)
+	}
 
 	for i, url := range urls {
 		// this should be controlled in JobAdDetector

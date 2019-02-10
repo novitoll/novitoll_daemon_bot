@@ -16,10 +16,12 @@ type NewcomerConfigOpt struct {
 	AuthTimeout    uint8 `json:"authTimeout"`
 	KickBanTimeout uint8 `json:"kickBanTimeout"`
 	I18n           map[string]struct {
-		WelcomeMessage    string `json:"welcomeMessage"`
-		AuthOKMessage     string `json:"authOKMessage"`
-		AuthMessage       string `json:"authMessage"`
-		AuthMessageCached string `json:"authMessageCached"`
+		WelcomeMessage     string `json:"welcomeMessage"`
+		AuthOKMessage      string `json:"authOKMessage"`
+		AuthMessage        string `json:"authMessage"`
+		AuthPasswd         string `json:"authPasswd"`
+		AuthMessageCached  string `json:"authMessageCached"`
+		AuthMessageURLPost string `json:"authMessageURLPost"`
 	} `json:"i18n"`
 }
 
