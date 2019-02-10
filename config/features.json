@@ -33,13 +33,13 @@
       "en-us": {
         "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
         "authOKMessage": "Thanks. You are whitelisted.",
-        "authMessage": "I am not a bot",
+        "authMessage": "I am not a bot. Password - %s",
         "authMessageCached": "Yes, you are not bot. But you use desktop client and seems, you have cached message."
       },
       "rus": {
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
         "authOKMessage": "Спасибо, вы авторизованы.",
-        "authMessage": "Я - не бот",
+        "authMessage": "Я - не бот. Пароль - %s",
         "authMessageCached": "Да, вы - не бот. Но вы используете десктоп клиент, и видимо, это кэш."
       }
     },    
@@ -51,11 +51,13 @@
     "i18n": {
       "en-us": {
         "warnMessageTooFreq": "Tsss! Dont flood. For last %d seconds you posted %d messages.",
-        "warnMessageTooLong": "Tsss! Dont flood. Your message is too long (>%d)."
+        "warnMessageTooLong": "Tsss! Dont flood. Your message is too long (>%d).",
+        "warnMessageDialogue": "Guys, last %d messages are coming only from %d of you. `goto` private."
       },
       "rus": {
         "warnMessageTooFreq": "Тссс! Не флудите. За последние %d секунд вы написали %d сообщений.",
-        "warnMessageTooLong": "Тссс! Не флудите. Ваше сообщение слишком длинное (>%d)."
+        "warnMessageTooLong": "Тссс! Не флудите. Ваше сообщение слишком длинное (>%d).",
+        "warnMessageDialogue": "Ребята, последние %d сообщений идут только от вас %d. `goto` в ЛС."
       }
     }
   },

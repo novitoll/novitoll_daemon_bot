@@ -43,8 +43,9 @@ type StickersDetectionConfigOpt struct {
 type MsgStatsConfigOpt struct {
 	Enabled bool `json:"enabled"`
 	I18n    map[string]struct {
-		WarnMessageTooFreq string `json:"warnMessageTooFreq"`
-		WarnMessageTooLong string `json:"warnMessageTooLong"`
+		WarnMessageTooFreq  string `json:"warnMessageTooFreq"`
+		WarnMessageTooLong  string `json:"warnMessageTooLong"`
+		warnMessageDialogue string `json:"warnMessageDialogue"`
 	} `json:"i18n"`
 }
 

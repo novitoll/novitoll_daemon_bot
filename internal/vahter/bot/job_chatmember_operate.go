@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
 	"github.com/sirupsen/logrus"
 )
@@ -28,10 +29,12 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
+	p := utils.RandStringRunes(6)
+
 	// init vars
 	keyBtns := [][]KeyboardBtn{
 		[]KeyboardBtn{
-			KeyboardBtn{req.AuthMessage},
+			KeyboardBtn{fmt.Sprintf(req.AuthMessage, p)},
 		},
 	}
 	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
@@ -43,7 +46,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	t0 := time.Now()
 	k := fmt.Sprintf("%s-%d", REDIS_USER_PENDING, newComer.Id)
 
-	j.SaveInRedis(redisConn, k, t0, int(newComerCfg.AuthTimeout))
+	j.SaveInRedis(redisConn, k, p, int(newComerCfg.AuthTimeout+10))
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
@@ -109,14 +112,15 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 
 	// will check every message if its from a newcomer to whitelist the doot,
 	// writing to the global unbuffered channel
-	if strings.ToLower(j.req.Message.Text) == strings.ToLower(i18n.AuthMessage) {
+	redisConn := redis.GetRedisConnection()
+	defer redisConn.Close()
 
-		redisConn := redis.GetRedisConnection()
-		defer redisConn.Close()
+	k := fmt.Sprintf("%s-%d", REDIS_USER_PENDING, j.req.Message.From.Id)
+	p := j.GetFromRedis(redisConn, k)
 
+	if strings.ToLower(j.req.Message.Text) == strings.ToLower(fmt.Sprintf(i18n.AuthMessage, p)) {
 		// doot is verified
-		k := fmt.Sprintf("%s-%d", REDIS_USER_PENDING, j.req.Message.From.Id)
-		if ok := j.GetFromRedis(redisConn, k); ok != nil {
+		if p != nil {
 			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 			chNewcomer <- j.req.Message.From.Id
 

@@ -14,6 +14,8 @@ const (
 	FLOOD_TIME_INTERVAL     = 10
 	FLOOD_MAX_ALLOWED_MSGS  = 3
 	FLOOD_MAX_ALLOWED_WORDS = 500
+	CONT_MSGS_ALLOWED       = 20
+	CONT_USER_MSG_ALLOWED   = 3
 )
 
 // formula 1. (Incremental average) M_n = M_(n-1) + ((A_n - M_(n-1)) / n),

@@ -3,8 +3,18 @@ package utils
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
+	"time"
 )
+
+var (
+	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+)
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func SumSliceInt(n []int) int {
 	s := 0
@@ -40,4 +50,12 @@ func PrintReflectValues(s reflect.Value) {
 			fmt.Printf("\n")
 		}
 	}
+}
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
