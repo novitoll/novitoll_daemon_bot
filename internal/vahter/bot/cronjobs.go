@@ -4,6 +4,7 @@ package bot
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -159,10 +160,15 @@ func (j *Job) __cronUserStats(redisConn *redis_.Client, redisK string, redisKp s
 	currentUsers := j.GetBatchFromRedis(redisConn, k, 0)
 
 	prevCount := j.GetFromRedis(redisConn, redisKp)
+	prevCountI, err := strconv.Atoi(prevCount.(string))
+	if err != nil {
+		j.app.Logger.Warn("Could not convert string to int")
+		return nil
+	}
 
 	var N int = len(currentUsers.([]string))
 
-	diff := utils.CountDiffInPercent(prevCount.(int), N)
+	diff := utils.CountDiffInPercent(prevCountI, N)
 
 	// update counters
 	j.SaveInRedis(redisConn, redisKp, N, 0)
