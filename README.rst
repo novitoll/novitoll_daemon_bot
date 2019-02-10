@@ -5,7 +5,7 @@
 
 Requirements
 -------
-		$ go version
+	$ go version
 
         go1.11.1 linux/amd64
 
