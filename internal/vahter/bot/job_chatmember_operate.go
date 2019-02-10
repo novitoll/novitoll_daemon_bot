@@ -42,7 +42,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 	keyBtns := [][]KeyboardBtn{
 		[]KeyboardBtn{
-			KeyboardBtn{fmt.Sprintf("%s. %s", req.AuthMessage, pass)},
+			KeyboardBtn{fmt.Sprintf("%s. %s - %s", req.AuthMessage, req.AuthPasswd, pass)},
 		},
 	}
 	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
@@ -137,7 +137,7 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	_, pass := NewComersAuthPending[j.req.Message.From.Id]
 
 	// 3. ok, let's check then if user's password is legit with outs
-	passOrig := fmt.Sprintf("%s. %s", i18n.AuthMessage, pass)
+	passOrig := fmt.Sprintf("%s. %s - %s", i18n.AuthMessage, i18n.AuthPasswd, pass)
 	if pass && passOrig == j.req.Message.Text {
 		go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 		chNewcomer <- j.req.Message.From.Id
