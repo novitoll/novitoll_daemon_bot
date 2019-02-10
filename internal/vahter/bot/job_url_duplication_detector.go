@@ -29,29 +29,6 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	redisConn := redis.GetRedisConnection()
 	defer redisConn.Close()
 
-	// check if user is allowed to post URLs
-	// this key expires in Redis in 7 days
-	k := fmt.Sprintf("%s-%s", REDIS_USER_VERIFIED, j.req.Message.From.Id)
-	user := j.GetFromRedis(redisConn, k)
-
-	if user != nil {
-		// new users can not post URLs until 7 days
-		n := int(EVERY_LAST_SEC_7TH_DAY + 1/(3600*24))
-		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
-			I18n[j.app.Lang].AuthMessageURLPost, n)
-
-		botReply += fmt.Sprintf("CC: @%s", BDFL)
-
-		go func() {
-			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
-				j.DeleteMessage(&j.req.Message)
-			}
-		}()
-
-		return j.SendMessage(botReply, j.req.Message.MessageId)
-	}
-
 	for i, url := range urls {
 		// this should be controlled in JobAdDetector
 		if strings.Contains(url, "t.me/") {
@@ -106,6 +83,29 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 				return false, err
 			}
 		}
+	}
+
+	// check if user is allowed to post URLs
+	// this key expires in Redis in 7 days
+	k := fmt.Sprintf("%s-%s", REDIS_USER_VERIFIED, j.req.Message.From.Id)
+	user := j.GetFromRedis(redisConn, k)
+
+	if user != nil {
+		// new users can not post URLs until 7 days
+		n := int((EVERY_LAST_SEC_7TH_DAY + 1) / (3600 * 24))
+		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
+			I18n[j.app.Lang].AuthMessageURLPost, n)
+
+		botReply += fmt.Sprintf("CC: @%s", BDFL)
+
+		go func() {
+			select {
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
+				j.DeleteMessage(&j.req.Message)
+			}
+		}()
+
+		return j.SendMessage(botReply, j.req.Message.MessageId)
 	}
 
 	return nil, nil

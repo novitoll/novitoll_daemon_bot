@@ -26,7 +26,7 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 * flood detection
 	* detects the limit of 3 messages within 10 seconds per user
 	* detects the long-long text copy-paste
-	* detects if in chat group, last 20 messages are posted between 3 users, regardless proportion
+	* detects if in chat group, last 20 messages are posted between 3 users, regardless proportion (TBD)
 * weekly chat statistics
 	* weekly report generation of newcomers
 	* weekly report generation of active users messages' stats
