@@ -134,7 +134,7 @@ func CronUserStats(j *Job) (interface{}, error) {
 
 		reports := make([]interface{}, 3)
 
-		for _, s := range []struct {
+		for i, s := range []struct {
 			redisK  string
 			redisKp string
 		}{
@@ -143,12 +143,15 @@ func CronUserStats(j *Job) (interface{}, error) {
 			{REDIS_USER_LEFT, REDIS_USER_PREV_LEFT},
 		} {
 
-			reports = append(reports, j.__cronUserStats(redisConn, s.redisK, s.redisKp))
+			reports[i] = j.__cronUserStats(redisConn, s.redisK, s.redisKp)
 		}
 
 		replyText := fmt.Sprintf(replyTextTpl, reports...)
 
 		resp, err := j.SendMessage(replyText, 0)
+
+		delete(ChatIds, j.req.Message.Chat.Id)
+
 		return resp, err
 	}
 }
@@ -163,7 +166,7 @@ func (j *Job) __cronUserStats(redisConn *redis_.Client, redisK string, redisKp s
 	prevCountI, err := strconv.Atoi(prevCount.(string))
 	if err != nil {
 		j.app.Logger.Warn("Could not convert string to int")
-		return nil
+		return ""
 	}
 
 	var N int = len(currentUsers.([]string))
