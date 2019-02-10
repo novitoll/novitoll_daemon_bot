@@ -20,8 +20,8 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 * newcomer questionnaire in bot's IM to prevent newcomers' shadow mode and post-action
 	* greet a newcomer and kindly ask for the feedback upon the group joining in order to authenticate, otherwise user will be kicked for the certain time.
 	* restricts newcomers to post links right after group join until first 15 mins
-* stickers detection and post-action
-	* auto-delete the message with the sticker
+* sentiment detection
+	* auto-delete the message with the sticker / if the whole message is emoji
 	* kindly reply with a notification and auto-delete the reply
 * flood detection
 	* detects the limit of 3 messages within 10 seconds per user
