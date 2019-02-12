@@ -23,7 +23,7 @@ func JobSentimentDetector(j *Job) (interface{}, error) {
 	}
 
 	// check if the entire message is emoji
-	if emojiRgxp.ReplaceAllString(t, "") == "" {
+	if t != "" && emojiRgxp.ReplaceAllString(t, "") == "" {
 		emojiMsg = true
 	}
 
