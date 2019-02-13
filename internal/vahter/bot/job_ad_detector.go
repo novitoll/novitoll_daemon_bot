@@ -30,14 +30,20 @@ func isAd(msg *BotInReqMsg) bool {
 }
 
 func JobAdDetector(j *Job) (interface{}, error) {
-	if !j.app.Features.AdDetection.Enabled ||
+	f := j.app.Features.AdDetection
+
+	if !f.Enabled ||
 		!j.HasMessageContent() {
 		return nil, nil
 	}
 
 	// detection of Telegram groups
 	if isAd(&j.req.Message) {
-		admins := j.app.ChatAdmins[j.req.Message.Chat.Id]
+		admins := []string{BDFL}
+
+		if f.AdminAlert {
+			admins = append(j.app.ChatAdmins[j.req.Message.Chat.Id])
+		}
 
 		for _, a := range admins {
 			if fmt.Sprintf("@%s", j.req.Message.
@@ -52,8 +58,7 @@ func JobAdDetector(j *Job) (interface{}, error) {
 
 		adminsToNotify := strings.Join(admins, ", ")
 
-		text := fmt.Sprintf(j.app.Features.AdDetection.
-			I18n[j.app.Lang].WarnMessage, adminsToNotify)
+		text := fmt.Sprintf(f.I18n[j.app.Lang].WarnMessage, adminsToNotify)
 
 		req := &BotSendMsg{
 			ChatId:           j.req.Message.Chat.Id,
