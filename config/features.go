@@ -62,6 +62,7 @@ type AdministrationConfigOpt struct {
 
 type AdDetectionConfigOpt struct {
 	Enabled bool `json:"enabled"`
+	AdminAlert bool `json:"adminAlert"`
 	I18n    map[string]struct {
 		WarnMessage string `json:"warnMessage"`
 	} `json:"i18n"`
