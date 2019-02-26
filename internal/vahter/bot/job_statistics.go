@@ -76,7 +76,8 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 	var replyText []string
 
 	// for short reference
-	template := j.app.Features.MsgStats.I18n[j.app.Lang]
+	f := j.app.Features.MsgStats
+	template := f.I18n[j.app.Lang]
 
 	if s.SinceLastMsg <= FLOOD_TIME_INTERVAL &&
 		len(s.FloodMsgsLength) >= FLOOD_MAX_ALLOWED_MSGS {
@@ -91,24 +92,39 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 			FLOOD_TIME_INTERVAL, FLOOD_MAX_ALLOWED_MSGS))
 	}
 
-	if allWordsCount := utils.SumSliceInt(s.FloodMsgsLength); allWordsCount >= FLOOD_MAX_ALLOWED_WORDS {
+	// notify admins & check if user is admin
+	var isAdmin bool
+	admins := []string{BDFL}
 
+	if f.AdminAlert {
+		for _, a := range j.app.ChatAdmins[j.req.Message.Chat.Id] {
+			admins = append(admins, a)
+			if !isAdmin && j.req.Message.From.Username == a {
+				isAdmin = true
+			}
+		}
+	}
+
+	allWordsCount := utils.SumSliceInt(s.FloodMsgsLength)
+
+	if !isAdmin && allWordsCount >= FLOOD_MAX_ALLOWED_WORDS {
 		isFlood = true
 		replyText = append(replyText, fmt.Sprintf(template.WarnMessageTooLong,
 			FLOOD_MAX_ALLOWED_WORDS))
-
-		// notify admins
-		var admins []string
-
-		for _, a := range j.app.ChatAdmins[j.req.Message.Chat.Id] {
-			admins = append(admins, fmt.Sprintf("@%s", a))
-		}
-		replyText = append(replyText, fmt.Sprintf(". CC: %s",
-			strings.Join(admins, ", ")))
 	}
 
+	replyText = append(replyText, fmt.Sprintf(". CC: %s",
+		strings.Join(admins, ", ")))
+
+	if s.SinceLastMsg > FLOOD_TIME_INTERVAL {
+		s.FloodMsgsLength = []int{}
+	}
+
+	// 4. update the user s map
+	UserStatistics[j.req.Message.From.Id] = s
+
+	// 5. notify user about the flood limit
 	if isFlood {
-		// notify user about the flood limit
 		txt := strings.Join(replyText, ". ")
 
 		reply, err := j.SendMessage(txt, j.req.Message.MessageId)
@@ -128,11 +144,5 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 		}
 	}
 
-	if s.SinceLastMsg > FLOOD_TIME_INTERVAL {
-		s.FloodMsgsLength = []int{}
-	}
-
-	// 4. update the user s map
-	UserStatistics[j.req.Message.From.Id] = s
 	return nil
 }

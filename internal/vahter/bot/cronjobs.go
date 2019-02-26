@@ -52,8 +52,7 @@ func CronGetChatAdmins(j *Job) (interface{}, error) {
 			if br.From.Username == TELEGRAM_BOT_USERNAME {
 				continue
 			}
-			admins = append(admins, fmt.Sprintf("@%s",
-				br.From.Username))
+			admins = append(admins, br.From.Username)
 		}
 	}
 

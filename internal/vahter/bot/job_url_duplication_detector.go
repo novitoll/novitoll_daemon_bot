@@ -102,7 +102,9 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
 			I18n[j.app.Lang].AuthMessageURLPost, n)
 
-		botReply += fmt.Sprintf(" CC: @%s", BDFL)
+		admins := j.app.ChatAdmins[j.req.Message.Chat.Id]
+
+		botReply += fmt.Sprintf(" CC: @%s, %s", BDFL, strings.Join(admins, ", "))
 
 		go func() {
 			select {

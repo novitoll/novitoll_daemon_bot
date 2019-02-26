@@ -44,8 +44,9 @@ type SentimentDetectionConfigOpt struct {
 }
 
 type MsgStatsConfigOpt struct {
-	Enabled bool `json:"enabled"`
-	I18n    map[string]struct {
+	Enabled    bool `json:"enabled"`
+	AdminAlert bool `json:"adminAlert"`
+	I18n       map[string]struct {
 		WarnMessageTooFreq  string `json:"warnMessageTooFreq"`
 		WarnMessageTooLong  string `json:"warnMessageTooLong"`
 		warnMessageDialogue string `json:"warnMessageDialogue"`
@@ -61,9 +62,9 @@ type AdministrationConfigOpt struct {
 }
 
 type AdDetectionConfigOpt struct {
-	Enabled bool `json:"enabled"`
-	AdminAlert bool `json:"adminAlert"`
-	I18n    map[string]struct {
+	Enabled        bool `json:"enabled"`
+	AdminAlert     bool `json:"adminAlert"`
+	I18n           map[string]struct {
 		WarnMessage string `json:"warnMessage"`
 	} `json:"i18n"`
 }

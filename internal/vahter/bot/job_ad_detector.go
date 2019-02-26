@@ -46,8 +46,7 @@ func JobAdDetector(j *Job) (interface{}, error) {
 		}
 
 		for _, a := range admins {
-			if fmt.Sprintf("@%s", j.req.Message.
-				From.Username) == a {
+			if j.req.Message.From.Username == a {
 				return nil, nil
 			}
 		}
