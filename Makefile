@@ -33,5 +33,5 @@ debug:
 	dlv debug --output bot.bin cmd/novitoll_daemon_bot/main.go
 
 test:
-	go test -v -cover -coverprofile=coverage.out github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot
+	go test -v -cover -coverprofile=coverage.out github.com/novitoll/novitoll_daemon_bot/internal/bot
 	go tool cover -html=coverage.out -o coverage.html 

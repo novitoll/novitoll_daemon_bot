@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/justincampbell/timeago"
-	redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
 	"github.com/sirupsen/logrus"
 	"mvdan.cc/xurls"
 )

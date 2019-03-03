@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +17,7 @@ import (
 var (
 	gopath, _       = os.LookupEnv("GOPATH")
 	gopathPostfix   = "src/github.com/novitoll/novitoll_daemon_bot"
-	testdataDirPath = "internal/vahter/bot/testdata"
+	testdataDirPath = "internal/bot/testdata"
 )
 
 func concatStringsWithSlash(s []string) string {

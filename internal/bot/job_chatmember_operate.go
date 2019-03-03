@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
-	redis "github.com/novitoll/novitoll_daemon_bot/internal/vahter/redis_client"
+	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
 	"github.com/sirupsen/logrus"
 )
 
