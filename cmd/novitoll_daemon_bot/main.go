@@ -10,7 +10,7 @@ import (
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
-	"github.com/novitoll/novitoll_daemon_bot/internal/vahter/bot"
+	"github.com/novitoll/novitoll_daemon_bot/internal/bot"
 	"github.com/sirupsen/logrus"
 )
 
