@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 
 	"github.com/novitoll/novitoll_daemon_bot/internal/bot"
 	"github.com/sirupsen/logrus"
@@ -71,8 +72,15 @@ func (ro *Router) FlushChatQueue(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	ro := &Router{}
+	logger := logrus.New()
+	logger.SetOutput(os.Stdout)
+
+	ro := &Router{
+		logger,
+	}
 	http.HandleFunc("/process", ro.Route)
 	http.HandleFunc("/flushQueue", ro.FlushChatQueue)
+
+	logger.Info("[+] Serving router's TCP/8080 port..")
 	http.ListenAndServe(":8080", nil)
 }
