@@ -47,6 +47,7 @@ template="""
       - "../:/opt/src/github.com/novitoll/novitoll_daemon_bot"  
 """
 
+cp ./docker-compose-tpl.yml ./docker-compose.yml
 echo "${template}" >> ./docker-compose.yml
 
 # backup
