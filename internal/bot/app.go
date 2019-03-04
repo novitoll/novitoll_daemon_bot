@@ -46,8 +46,13 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf := make([]byte, MAX_ALLOWED_BUFFER_SIZE)
-	_, err := buf.ReadFrom(r.Body)
+	buf := new(bytes.Buffer)
+	n, err := buf.ReadFrom(r.Body)
+
+	if n >= MAX_ALLOWED_BUFFER_SIZE {
+		app.Logger.Warn("Exceeded max buffer size")
+	}
+
 	if err != nil {
 		msg := &AppError{w, 400, nil,
 			"Could not parse the request body"}
