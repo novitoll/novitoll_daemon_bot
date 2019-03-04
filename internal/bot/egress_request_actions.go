@@ -37,10 +37,10 @@ func sendHTTP(req *http.Request, app *App) (*bytes.Buffer, error) {
 	defer resp.Body.Close()
 
 	buf := new(bytes.Buffer)
-	parsedBytes, err2 := buf.ReadFrom(resp.Body)
+	n, err2 := buf.ReadFrom(resp.Body)
 	if err2 != nil {
 		app.Logger.WithFields(logrus.Fields{
-			"parsedBytes": parsedBytes,
+			"n": n,
 		}).Fatal("Failed in Telegram resp")
 		return nil, err2
 	}

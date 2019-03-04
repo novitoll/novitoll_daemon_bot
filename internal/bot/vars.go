@@ -9,6 +9,9 @@ const (
 	EVERY_LAST_SEC_7TH_DAY = 604799
 	// 15 min
 	NEWCOMER_URL_POST_DELAY = 900
+	// for incoming HTTP request body size
+	// https://core.telegram.org/method/messages.sendMessage
+	MAX_ALLOWED_BUFFER_SIZE = 4096
 )
 
 var (

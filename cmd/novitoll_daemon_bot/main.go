@@ -9,8 +9,8 @@ import (
 	"reflect"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	"github.com/novitoll/novitoll_daemon_bot/internal/bot"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -84,6 +84,6 @@ func main() {
 	}
 	app.RegisterHandlers()
 
-	logger.Info("[+] Serving TCP 8080 port..")
-	http.ListenAndServe(":8080", nil)
+	logger.Info("[+] Serving TCP/8080 port..")
+	logger.Fatal(http.ListenAndServe(":8080", nil))
 }
