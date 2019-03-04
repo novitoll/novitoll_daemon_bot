@@ -85,5 +85,5 @@ func main() {
 	app.RegisterHandlers()
 
 	logger.Info("[+] Serving TCP/8080 port..")
-	http.ListenAndServe(":8080", nil)
+	logger.Fatal(http.ListenAndServe(":8080", nil))
 }

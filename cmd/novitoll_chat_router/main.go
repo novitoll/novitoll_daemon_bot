@@ -82,5 +82,5 @@ func main() {
 	http.HandleFunc("/flushQueue", ro.FlushChatQueue)
 
 	logger.Info("[+] Serving router's TCP/8080 port..")
-	http.ListenAndServe(":8080", nil)
+	logger.Fatal(http.ListenAndServe(":8080", nil))
 }
