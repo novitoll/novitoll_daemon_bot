@@ -1,7 +1,7 @@
 FROM golang:1.11.1
 
 ARG PROJECT_PATH
-ARG TARGET
+ARG MAKEFILE_TARGET
 ENV GOPATH=/opt
 
 RUN mkdir -p /opt/src/${PROJECT_PATH}
@@ -13,4 +13,4 @@ RUN make configure
 
 VOLUME /opt/src/${PROJECT_PATH}
 
-ENTRYPOINT ["make", "run", "TARGET=${TARGET}"]
+ENTRYPOINT ["make", "run", "TARGET=${MAKEFILE_TARGET}"]

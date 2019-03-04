@@ -30,7 +30,7 @@ template="""
       context: ../
       args:
         PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
-        TARGET: bot
+        MAKEFILE_TARGET: bot
     image: vahter-bot:0.0.9
     container_name: bot_${id}
     environment:
@@ -48,4 +48,9 @@ template="""
 """
 
 echo "${template}" >> ./docker-compose.yml
+
+# backup
+cp ./docker-compose.yml /var/log/bot
+echo "[+] Done. Docker compose config backup is ready at /var/log/bot"
+
 cat ./docker-compose.yml

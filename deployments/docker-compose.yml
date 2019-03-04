@@ -6,7 +6,7 @@ services:
       context: ../
       args:
         PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
-        TARGET: router
+        MAKEFILE_TARGET: router
     image: router:0.0.9
     container_name: router
     env_file:
