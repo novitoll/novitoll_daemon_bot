@@ -9,7 +9,7 @@ services:
       context: ../
       args:
         PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
-    image: vahter-bot:0.0.3
+    image: vahter-bot:0.0.9
     container_name: vahter-bot
     environment:
       - REDIS_HOST=redis
@@ -25,4 +25,3 @@ services:
       - redis
     volumes:
       - "../:/opt/src/github.com/novitoll/novitoll_daemon_bot"
-  

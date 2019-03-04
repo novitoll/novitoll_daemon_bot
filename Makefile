@@ -14,6 +14,10 @@ run:
 	@make build
 	./bot.bin
 
+run-router:
+	go build -o router.bin -ldflags="-s -w" cmd/novitoll_chat_router/main.go
+	./router.bin
+
 docker-compose-local:
 	docker-compose -f deployments/docker-compose-local.yml up
 

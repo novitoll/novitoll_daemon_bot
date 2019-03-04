@@ -7,3 +7,5 @@ vendor
 Gopkg.lock
 coverage.out
 coverage.html
+
+deployments/docker-compose.yml

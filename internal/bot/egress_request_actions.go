@@ -36,7 +36,7 @@ func sendHTTP(req *http.Request, app *App) (*bytes.Buffer, error) {
 	}
 	defer resp.Body.Close()
 
-	buf := new(bytes.Buffer)
+	buf := make([]byte, MAX_ALLOWED_BUFFER_SIZE)
 	parsedBytes, err2 := buf.ReadFrom(resp.Body)
 	if err2 != nil {
 		app.Logger.WithFields(logrus.Fields{
