@@ -1,6 +1,6 @@
 configure:
 	go get -u github.com/golang/dep/cmd/dep
-	[ -L  /usr/local/bin/dep ] || ln -s ${GOPATH}/bin/dep /usr/local/bin/dep
+	[ -L /usr/local/bin/dep ] || ln -s ${GOPATH}/bin/dep /usr/local/bin/dep
 	dep ensure
 	go get -u mvdan.cc/xurls github.com/go-redis/redis
 	go get -u github.com/stretchr/testify/assert
@@ -10,13 +10,19 @@ configure:
 build:
 	go build -o bot.bin -ldflags="-s -w" cmd/novitoll_daemon_bot/main.go
 
+build-router:
+	go build -o router.bin -ldflags="-s -w" cmd/novitoll_chat_router/main.go
+
+TARGET = "bot"
+
 run:
+ifeq ("$(TARGET)", "bot")
 	@make build
 	./bot.bin
-
-run-router:
-	go build -o router.bin -ldflags="-s -w" cmd/novitoll_chat_router/main.go
+else
+	@make build-router
 	./router.bin
+endif
 
 docker-compose-local:
 	docker-compose -f deployments/docker-compose-local.yml up
