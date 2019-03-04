@@ -30,6 +30,7 @@ template="""
       context: ../
       args:
         PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
+        TARGET: bot
     image: vahter-bot:0.0.9
     container_name: bot_${id}
     environment:
