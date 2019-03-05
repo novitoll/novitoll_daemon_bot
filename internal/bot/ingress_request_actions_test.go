@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	redisClient "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
+	redisClient "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )

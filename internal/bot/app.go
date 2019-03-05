@@ -28,8 +28,7 @@ func (app *App) RegisterHandlers() {
 	http.HandleFunc("/process", app.ProcessHandler)
 	http.HandleFunc("/flushQueue", app.FlushQueueHandler)
 
-	app.Logger.Info("[+] Handlers for HTTP end-points " +
-		"are registered")
+	app.Logger.Info("[+] Handlers for HTTP end-points are registered")
 }
 
 // Receives HTTP requests on /process end-point
@@ -42,15 +41,16 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		msg := &AppError{w, 400, nil, "Please send a request body"}
 		app.Logger.Fatal(msg.Error())
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	buf := new(bytes.Buffer)
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		msg := &AppError{w, 400, nil, "Could not parse " +
-			"the request body"}
+		msg := &AppError{w, 400, nil, "Could not parse the request body"}
 		app.Logger.Fatal(msg.Error())
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	// This should be useful to analyze STDOUT logs
@@ -62,6 +62,7 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		msg := &AppError{w, 400, nil, "Please send a valid JSON"}
 		app.Logger.Fatal(msg.Error())
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -72,8 +73,8 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 		ChatIds[br.Message.Chat.Id] = time.Now()
 		go br.CronSchedule(app)
 
-		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat "+
-			"are scheduled", br.Message.Chat.Id))
+		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d cha are scheduled",
+			br.Message.Chat.Id))
 	}
 
 	w.WriteHeader(http.StatusAccepted)

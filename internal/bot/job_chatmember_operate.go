@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
-	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
+	redis "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
