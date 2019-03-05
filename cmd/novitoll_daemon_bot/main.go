@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"context"
 	"os"
 	"reflect"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	"github.com/novitoll/novitoll_daemon_bot/internal/bot"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,6 +20,7 @@ var (
 	features cfg.FeaturesCfg
 	lang     string = "en-us"
 	logger          = logrus.New()
+	requestID = 0
 )
 
 // Initializes FeaturesCfg and do following configuration:
@@ -65,6 +67,18 @@ func init() {
 	})
 }
 
+func nextRequestID() int {
+  requestID++
+  return requestID
+}
+
+func addRequestID(next http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    ctx := context.WithValue(r.Context(), "request_id", nextRequestID())
+    next.ServeHTTP(w, r.WithContext(ctx))
+  })
+}
+
 // Starts HTTP server based on "net/http" pkg on TCP/8080 constant port.
 // Prints to STDOUT configuration from features.json.
 // Creates the only App{} struct which will be used along the way, and
@@ -76,14 +90,19 @@ func main() {
 	featureFields := reflect.ValueOf(&features).Elem()
 	utils.PrintReflectValues(featureFields)
 
+	mux := http.NewServeMux()
+
 	app := bot.App{
 		Features:   &features,
 		Lang:       lang,
 		Logger:     logger,
 		ChatAdmins: make(map[int][]string),
+		Mux: mux
 	}
 	app.RegisterHandlers()
 
+	contextedMux := addRequestID(mux)
+
 	logger.Info("[+] Serving TCP 8080 port..")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", contextedMux)
 }

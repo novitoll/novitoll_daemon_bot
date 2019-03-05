@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 

@@ -9,8 +9,8 @@ import (
 	"time"
 
 	redis_ "github.com/go-redis/redis"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
-	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
+	redis "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -44,8 +44,7 @@ func CronGetChatAdmins(j *Job) (interface{}, error) {
 	}
 
 	if len(resp) < 1 {
-		j.app.Logger.Warn(fmt.Sprintf("No admins found "+
-			"for chatId: %d", chatId))
+		j.app.Logger.Warn(fmt.Sprintf("No admins found for chatId: %d", chatId))
 		admins = append(admins, fmt.Sprintf("@%s", BDFL))
 	} else {
 		for _, br := range resp {

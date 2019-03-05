@@ -72,8 +72,7 @@ func parseBody(req *http.Request, app *App) (*BotInReqMsg, error) {
 
 		if err != nil {
 			// 2.2. if error, then return error
-			app.Logger.Fatal("Could not parse resp body with " +
-				"none of structs")
+			app.Logger.Fatal("Could not parse resp body with none of structs")
 			return nil, err
 		}
 
