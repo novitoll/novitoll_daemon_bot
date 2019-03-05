@@ -6,8 +6,7 @@
 Requirements
 -------
 	$ go version
-
-        go1.11.1 linux/amd64
+    go1.12 linux/amd64
 
 
 Features

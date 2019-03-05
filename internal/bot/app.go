@@ -22,11 +22,12 @@ type App struct {
 	Lang       string
 	Logger     *logrus.Logger
 	ChatAdmins map[int][]string
+	Mux 		*http.ServeMux
 }
 
 func (app *App) RegisterHandlers() {
-	http.HandleFunc("/process", app.ProcessHandler)
-	http.HandleFunc("/flushQueue", app.FlushQueueHandler)
+	app.Mux.HandleFunc("/process", app.ProcessHandler)
+	app.Mux.HandleFunc("/flushQueue", app.FlushQueueHandler)
 
 	app.Logger.Info("[+] Handlers for HTTP end-points are registered")
 }
