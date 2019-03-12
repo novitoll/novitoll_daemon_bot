@@ -54,9 +54,6 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// This should be useful to analyze STDOUT logs
-	// instead of storing them in RDBMS etc.
-	app.Logger.Info(buf.String())
 
 	var br BotInReq
 	err = json.Unmarshal([]byte(buf.String()), &br)
@@ -67,15 +64,21 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	chat_id := br.Message.Chat.Id
+
+	// This should be useful to analyze STDOUT logs
+	// instead of storing them in RDBMS etc.
+	app.Logger.WithFields(logrus.Fields{"chat_id": chat_id}).Info(buf.String())
+
 	go br.Process(app)
 
 	// we cant run crons unless we know chat ID
-	if _, ok := ChatIds[br.Message.Chat.Id]; !ok {
-		ChatIds[br.Message.Chat.Id] = time.Now()
+	if _, ok := ChatIds[chat_id]; !ok {
+		ChatIds[chat_id] = time.Now()
 		go br.CronSchedule(app)
 
-		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d cha are scheduled",
-			br.Message.Chat.Id))
+		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled",
+			chat_id))
 	}
 
 	w.WriteHeader(http.StatusAccepted)
