@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
+	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -116,6 +116,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 }
 
 func JobNewChatMemberAuth(j *Job) (interface{}, error) {
+	var isAuthMsg bool
 	i18n := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang]
 
 	// will check every message if its from a newcomer to whitelist the doot,
@@ -128,16 +129,23 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 
 	// 1. Let's check if this is for newmember auth related message or not
 	matched := authRgxp.FindAllString(j.req.Message.Text, -1)
-	if len(matched) == 0 {
+	isAuthMsg = len(matched) != 0
+
+	// 2. ok, but let's check if user is in our auth pending map or not
+	pass, isPending := NewComersAuthPending[j.req.Message.From.Id]
+
+	// 2.1 pending users can not send messages except auth
+	if !isAuthMsg && isPending {
+		go j.onDeleteMessage(&j.req.Message, 1)
+		return nil, nil
+	} else if !isAuthMsg {
+		// not auth message
 		return nil, nil
 	}
 
-	// 2. ok, but let's check if user is in our auth pending map or not
-	pass, ok := NewComersAuthPending[j.req.Message.From.Id]
-
 	// 3. ok, let's check then if user's password is legit with outs
 	passOrig := fmt.Sprintf("%s. %s - %s", i18n.AuthMessage, i18n.AuthPasswd, pass)
-	if ok && passOrig == j.req.Message.Text {
+	if isPending && passOrig == j.req.Message.Text {
 		go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 		chNewcomer <- j.req.Message.From.Id
 

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	AD_WORDS = []string{"t.me/", "joinchat"}
+	AD_WORDS = []string{"t.me/", "t.cn/", "joinchat"}
 )
 
 func isAd(msg *BotInReqMsg) bool {
