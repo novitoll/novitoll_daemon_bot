@@ -7,6 +7,7 @@ configure:
 	go get -u github.com/justincampbell/timeago
 	go get -u github.com/sirupsen/logrus
 	go get -u golang.org/x/tools/cmd/cover
+	go get -u golang.org/x/tools/cmd/goimports
 
 build:
 	go build -o bot.bin -ldflags="-s -w" cmd/novitoll_daemon_bot/main.go

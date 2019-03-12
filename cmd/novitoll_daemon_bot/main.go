@@ -2,10 +2,10 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"context"
 	"os"
 	"reflect"
 
@@ -17,10 +17,10 @@ import (
 
 // Global variables of "main" pkg
 var (
-	features cfg.FeaturesCfg
-	lang     string = "en-us"
-	logger          = logrus.New()
-	requestID = 0
+	features  cfg.FeaturesCfg
+	lang      string = "en-us"
+	logger           = logrus.New()
+	requestID        = 0
 )
 
 // Initializes FeaturesCfg and do following configuration:
@@ -68,15 +68,15 @@ func init() {
 }
 
 func nextRequestID() int {
-  requestID++
-  return requestID
+	requestID++
+	return requestID
 }
 
 func addRequestID(next http.Handler) http.Handler {
-  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    ctx := context.WithValue(r.Context(), "request_id", nextRequestID())
-    next.ServeHTTP(w, r.WithContext(ctx))
-  })
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "request_id", nextRequestID())
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 // Starts HTTP server based on "net/http" pkg on TCP/8080 constant port.
@@ -97,7 +97,7 @@ func main() {
 		Lang:       lang,
 		Logger:     logger,
 		ChatAdmins: make(map[int][]string),
-		Mux: mux
+		Mux:        mux,
 	}
 	app.RegisterHandlers()
 

@@ -22,7 +22,7 @@ type App struct {
 	Lang       string
 	Logger     *logrus.Logger
 	ChatAdmins map[int][]string
-	Mux 		*http.ServeMux
+	Mux        *http.ServeMux
 }
 
 func (app *App) RegisterHandlers() {

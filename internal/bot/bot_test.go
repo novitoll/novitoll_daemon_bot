@@ -2,19 +2,18 @@
 package bot_test
 
 import (
-	// "fmt"
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"bytes"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
-	"net/http/httptest"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	redisClient "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
 	. "github.com/novitoll/novitoll_daemon_bot/internal/bot"
+	redisClient "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -72,7 +71,7 @@ func BuildApp(t *testing.T) (*App, *BotInReq) {
 		Lang:       "en-us",
 		Logger:     logrus.New(),
 		ChatAdmins: make(map[int][]string),
-		Mux: 		mux,
+		Mux:        mux,
 	}
 	return app, pBotRequest
 }
@@ -105,7 +104,6 @@ func TestTelegramResponseBodyStruct(t *testing.T) {
 
 func TestHandlers(t *testing.T) {
 	// ProcessHandler
-
 	s := []string{testdataDirPath, "ingress_reqbody-1.json"}
 	_, pBotRequest := ConfigureStructs(t, ConcatStringsWithSlash(s))
 
@@ -115,27 +113,34 @@ func TestHandlers(t *testing.T) {
 	}
 	j := bytes.NewReader(jsonBytes)
 
-    req, err2 := http.NewRequest("POST", "/process", j)
-    if err2 != nil {
-        t.Fatal(err2)
-    }
+	req, err2 := http.NewRequest("POST", "/process", j)
+	if err2 != nil {
+		t.Fatal(err2)
+	}
 
-    app, _ := BuildApp(t)
-    // We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
-    rr := httptest.NewRecorder()
-    handler := http.HandlerFunc(app.ProcessHandler)
+	app, _ := BuildApp(t)
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(app.ProcessHandler)
 
-    // Our handlers satisfy http.Handler, so we can call their ServeHTTP method 
-    // directly and pass in our Request and ResponseRecorder.
-    handler.ServeHTTP(rr, req)
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
 
-    // Check the status code is what we expect.
-    if status := rr.Code; status != http.StatusAccepted {
-        t.Errorf("handler returned wrong status code: got %v want %v",
-            status, http.StatusAccepted)
-    }
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusAccepted {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusAccepted)
+	}
 
-    // fmt.Printf("AAAAAAAAAAAAA%s", rr.Body.String())
+	// FlushQueueHandler
+	req, err2 = http.NewRequest("POST", "/flushQueue", j)
+	if err2 != nil {
+		t.Fatal(err2)
+	}
+	handler = http.HandlerFunc(app.FlushQueueHandler)
+	handler.ServeHTTP(rr, req)
+	assert.Equal(t, rr.Code, http.StatusAccepted)
 }
 
 /*
