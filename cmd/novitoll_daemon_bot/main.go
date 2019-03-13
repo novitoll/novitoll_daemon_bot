@@ -9,8 +9,8 @@ import (
 	"reflect"
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	"github.com/novitoll/novitoll_daemon_bot/internal/bot"
+	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 

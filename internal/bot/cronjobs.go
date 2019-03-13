@@ -9,8 +9,8 @@ import (
 	"time"
 
 	redis_ "github.com/go-redis/redis"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
+	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 

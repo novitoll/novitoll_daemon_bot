@@ -31,7 +31,7 @@
     "actionNotify": true,
     "i18n": {
       "en-us": {
-        "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons.",
+        "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons. All messages will be deleted if you haven't authorized.",
         "authOKMessage": "Thanks. You are whitelisted.",
         "authMessage": "I am not a bot",
         "authPasswd": "Password",
@@ -39,7 +39,7 @@
         "authMessageURLPost": "New users are not allowed to post URLs until first %d mins. You are kicked for the time being."
       },
       "rus": {
-        "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам.",
+        "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам. Все сообщения будут удалены пока не авторизуетесь.",
         "authOKMessage": "Спасибо, вы авторизованы.",
         "authMessage": "Я - не бот",
         "authPasswd": "Пароль",
