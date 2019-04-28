@@ -12,4 +12,10 @@ RUN make configure
 
 VOLUME /opt/src/${PROJECT_PATH}
 
+HEALTHCHECK \
+	--interval=1m \
+	--timeout=10s \
+	--retries=3 \
+	CMD curl -f http://localhost:8080 || exit 1
+
 ENTRYPOINT ["make", "run"]
