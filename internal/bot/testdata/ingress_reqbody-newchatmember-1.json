@@ -3,34 +3,34 @@
   "message": {
     "message_id": 107,
     "from": {
-      "id": 345019684,
+      "id": 1111111,
       "is_bot": false,
       "first_name": "novitoll",
       "username": "novitoll",
       "language_code": "en-US"
     },
     "chat": {
-      "id": -253761934,
-      "title": "test_novitoll_daemon_bot",
+      "id": -2222,
+      "title": "TEST",
       "type": "group",
       "all_members_are_administrators": true
     },
     "date": 1539515176,
     "new_chat_participant": {
-      "id": 553713145,
+      "id": 3333,
       "is_bot": true,
       "first_name": "novitoll_daemon_bot",
       "username": "novitoll_daemon_bot"
     },
     "new_chat_member": {
-      "id": 553713145,
+      "id": 3333,
       "is_bot": true,
       "first_name": "novitoll_daemon_bot",
       "username": "novitoll_daemon_bot"
     },
     "new_chat_members": [
       {
-        "id": 553713145,
+        "id": 3333,
         "is_bot": true,
         "first_name": "novitoll_daemon_bot",
         "username": "novitoll_daemon_bot"

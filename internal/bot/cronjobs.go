@@ -9,8 +9,8 @@ import (
 	"time"
 
 	redis_ "github.com/go-redis/redis"
-	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
+	redis "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -44,8 +44,7 @@ func CronGetChatAdmins(j *Job) (interface{}, error) {
 	}
 
 	if len(resp) < 1 {
-		j.app.Logger.Warn(fmt.Sprintf("No admins found "+
-			"for chatId: %d", chatId))
+		j.app.Logger.Warn(fmt.Sprintf("No admins found for chatId: %d", chatId))
 		admins = append(admins, fmt.Sprintf("@%s", BDFL))
 	} else {
 		for _, br := range resp {
@@ -68,12 +67,15 @@ func CronGetChatAdmins(j *Job) (interface{}, error) {
 }
 
 func CronChatMsgStats(j *Job) (interface{}, error) {
+	// TODO: refactor this code. It's crappy
 	select {
 	case <-time.After(time.Duration(EVERY_LAST_SEC_7TH_DAY+5) *
 		time.Second):
 
 		var topKactiveUsers int = 5
 		var report []string
+
+		chatId := j.req.Message.Chat.Id
 
 		// for short reference
 		replyTextTpl := j.app.Features.Administration.
@@ -82,37 +84,44 @@ func CronChatMsgStats(j *Job) (interface{}, error) {
 		// we have map of userId:stats
 		// we need to put to the ordered slice and sort it by
 		// some stats field
-		stats := []*UserMessageStats{}
-		for _, v := range UserStatistics {
-			stats = append(stats, v)
+		stats := map[int][]*UserMessageStats{}
+		chatIds := []int{}
+		for cId, v := range UserStatistics {
+			for _, s := range v {
+				stats[cId] = append(stats, s)
+				chatIds = append(chatIds, cId)
+			}
 		}
 
-		sort.Slice(stats, func(i, ii int) bool {
-			// descending sort
-			return stats[i].AllMsgsCount > stats[i].AllMsgsCount
-		})
+		for _, cId := chatIds {			
+			sort.Slice(stats, func(i, ii int) bool {
+				// descending sort
+				return stats[i].AllMsgsCount > stats[i].AllMsgsCount
+			})
 
-		// next we select top-K of this sorted slice and
-		// do cronj work
-		if len(stats) < topKactiveUsers {
-			topKactiveUsers = len(stats)
+			// next we select top-K of this sorted slice and
+			// do cronj work
+			if len(stats) < topKactiveUsers {
+				topKactiveUsers = len(stats)
+			}
+
+			for _, userStat := range stats[:topKactiveUsers] {
+				report = append(report,
+					fmt.Sprintf("\nUser - *%s*, total: %d msgs, "+
+						"avg. msgs length: %d word",
+						userStat.Username, userStat.AllMsgsCount,
+						userStat.MeanAllMsgsLength))
+			}
+
+			replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers,
+				strings.Join(report, ""))
+			resp, err := j.SendMessage(replyText, 0)
+
+			delete(ChatIds, chatId)
 		}
-
-		for _, userStat := range stats[:topKactiveUsers] {
-			report = append(report,
-				fmt.Sprintf("\nUser - *%s*, total: %d msgs, "+
-					"avg. msgs length: %d word",
-					userStat.Username, userStat.AllMsgsCount,
-					userStat.MeanAllMsgsLength))
-		}
-
-		replyText := fmt.Sprintf(replyTextTpl, topKactiveUsers,
-			strings.Join(report, ""))
-		resp, err := j.SendMessage(replyText, 0)
 
 		// reset maps
-		UserStatistics = make(map[int]*UserMessageStats)
-		delete(ChatIds, j.req.Message.Chat.Id)
+		UserStatistics = make(map[int]map[int]*UserMessageStats)
 
 		return resp, err
 	}

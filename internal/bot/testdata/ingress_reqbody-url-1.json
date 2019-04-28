@@ -5,7 +5,7 @@
       "username": "novitoll",
       "first_name": "novitoll",
       "is_bot": false,
-      "id": 345019684,
+      "id": 3333,
       "language_code": "en-US"
     },
     "text": "message https://test-123.com",
@@ -20,7 +20,7 @@
       "username": "novitoll",
       "first_name": "novitoll",
       "type": "private",
-      "id": 345019684
+      "id": 3333
     },
     "date": 1537020424,
     "message_id": 28

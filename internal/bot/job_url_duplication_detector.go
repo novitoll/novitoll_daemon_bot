@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/justincampbell/timeago"
-	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
+	redis "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
 	"github.com/sirupsen/logrus"
 	"mvdan.cc/xurls"
 )
@@ -68,8 +68,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 			// should not be the case here
 			if err != nil {
-				j.app.Logger.Fatal("Can not marshal " +
-					"BotInReq.Message from Redis")
+				j.app.Logger.Fatal("Can not marshal BotInReq.Message from Redis")
 				return false, err
 			}
 

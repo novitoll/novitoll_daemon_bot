@@ -22,14 +22,14 @@ type App struct {
 	Lang       string
 	Logger     *logrus.Logger
 	ChatAdmins map[int][]string
+	Mux        *http.ServeMux
 }
 
 func (app *App) RegisterHandlers() {
-	http.HandleFunc("/process", app.ProcessHandler)
-	http.HandleFunc("/flushQueue", app.FlushQueueHandler)
+	app.Mux.HandleFunc("/process", app.ProcessHandler)
+	app.Mux.HandleFunc("/flushQueue", app.FlushQueueHandler)
 
-	app.Logger.Info("[+] Handlers for HTTP end-points " +
-		"are registered")
+	app.Logger.Info("[+] Handlers for HTTP end-points are registered")
 }
 
 // Receives HTTP requests on /process end-point
@@ -42,38 +42,43 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		msg := &AppError{w, 400, nil, "Please send a request body"}
 		app.Logger.Fatal(msg.Error())
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	buf := new(bytes.Buffer)
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		msg := &AppError{w, 400, nil, "Could not parse " +
-			"the request body"}
+		msg := &AppError{w, 400, nil, "Could not parse the request body"}
 		app.Logger.Fatal(msg.Error())
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// This should be useful to analyze STDOUT logs
-	// instead of storing them in RDBMS etc.
-	app.Logger.Info(buf.String())
 
 	var br BotInReq
 	err = json.Unmarshal([]byte(buf.String()), &br)
 	if err != nil {
 		msg := &AppError{w, 400, nil, "Please send a valid JSON"}
 		app.Logger.Fatal(msg.Error())
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	chat_id := br.Message.Chat.Id
+
+	// This should be useful to analyze STDOUT logs
+	// instead of storing them in RDBMS etc.
+	app.Logger.WithFields(logrus.Fields{"chat_id": chat_id}).Info(buf.String())
 
 	go br.Process(app)
 
 	// we cant run crons unless we know chat ID
-	if _, ok := ChatIds[br.Message.Chat.Id]; !ok {
-		ChatIds[br.Message.Chat.Id] = time.Now()
+	if _, ok := ChatIds[chat_id]; !ok {
+		ChatIds[chat_id] = time.Now()
 		go br.CronSchedule(app)
 
-		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat "+
-			"are scheduled", br.Message.Chat.Id))
+		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled",
+			chat_id))
 	}
 
 	w.WriteHeader(http.StatusAccepted)

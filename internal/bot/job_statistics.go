@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,7 +37,7 @@ func JobMsgStats(j *Job) (interface{}, error) {
 	}
 
 	// 1. get the s. s
-	s := UserStatistics[j.req.Message.From.Id]
+	s := UserStatistics[j.req.Message.Chat.Id][j.req.Message.From.Id]
 	W := len(strings.Fields(j.req.Message.Text))
 	t0 := time.Now().Unix()
 
@@ -78,12 +78,14 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 	// for short reference
 	f := j.app.Features.MsgStats
 	template := f.I18n[j.app.Lang]
+	userId := j.req.Message.From.Id
+	chatId := j.req.Message.Chat.Id
 
 	if s.SinceLastMsg <= FLOOD_TIME_INTERVAL &&
 		len(s.FloodMsgsLength) >= FLOOD_MAX_ALLOWED_MSGS {
 
 		j.app.Logger.WithFields(logrus.Fields{
-			"userId": j.req.Message.From.Id,
+			"userId": userId,
 		}).Warn("User is flooding")
 
 		s.FloodMsgsLength = []int{}
@@ -121,7 +123,7 @@ func floodDetection(j *Job, s *UserMessageStats) error {
 	}
 
 	// 4. update the user s map
-	UserStatistics[j.req.Message.From.Id] = s
+	UserStatistics[chatId][userId] = s
 
 	// 5. notify user about the flood limit
 	if isFlood {
