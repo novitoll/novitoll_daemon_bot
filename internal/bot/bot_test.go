@@ -65,14 +65,11 @@ func BuildApp(t *testing.T) (*App, *BotInReq) {
 	s := []string{testdataDirPath, "ingress_reqbody-url-1.json"}
 	pFeatures, pBotRequest := ConfigureStructs(t, ConcatStringsWithSlash(s))
 
-	mux := http.NewServeMux()
-
 	app := &App{
 		Features:   pFeatures,
 		Lang:       "en-us",
 		Logger:     logrus.New(),
 		ChatAdmins: make(map[int][]string),
-		Mux:        mux,
 	}
 	return app, pBotRequest
 }
