@@ -18,6 +18,7 @@ type NewcomerConfigOpt struct {
 	I18n           map[string]struct {
 		WelcomeMessage     string `json:"welcomeMessage"`
 		AuthOKMessage      string `json:"authOKMessage"`
+		AuthNotPendingMsg  string `json:"authNotPending"`
 		AuthMessage        string `json:"authMessage"`
 		AuthPasswd         string `json:"authPasswd"`
 		AuthMessageCached  string `json:"authMessageCached"`

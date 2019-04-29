@@ -33,6 +33,7 @@
       "en-us": {
         "welcomeMessage": "Ping? Please press the button here within %d seconds, otherwise you will be kicked for %d seconds due to a variety of reasons. All messages will be deleted if you haven't authorized.",
         "authOKMessage": "Thanks. You are whitelisted.",
+        "authNotPending": "This is not for you",
         "authMessage": "I am not a bot",
         "authPasswd": "Password",
         "authMessageCached": "Yes, you are not bot. But you use desktop client and seems, you have cached message.",
@@ -41,6 +42,7 @@
       "rus": {
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам. Все сообщения будут удалены пока не авторизуетесь.",
         "authOKMessage": "Спасибо, вы авторизованы.",
+        "authNotPending": "Это кнопка для новых юзеров",
         "authMessage": "Я - не бот",
         "authPasswd": "Пароль",
         "authMessageCached": "Да, вы - не бот. Но вы используете десктоп клиент, и видимо, это кэш.",

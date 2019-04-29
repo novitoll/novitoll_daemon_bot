@@ -88,7 +88,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// After user hits the button, CallbackQuery will be sent back
 	// This will eliminate bots sending password in plain text by reading it.
 	// kudos for the idea to @kazgeek
-	go j.SendMessageWReply(welcomeMsg, msg.MessageId,
+	go j.SendMessageWCleanup(welcomeMsg,
 		&InlineKeyboardMarkup{
 			InlineKeyboard: keyBtns,
 		})
@@ -164,24 +164,25 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 
 	if isPending {
 		if origPass == cb.Data {
+			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
 			chNewcomer <- cb
 		} else {
 			j.app.Logger.Info("Pending user's callback password was incorrect. That's weird")
 		}
+		return req.AnswerCallbackQuery(j.app)
 	} else {
 		newComerCfg := j.app.Features.NewcomerQuestionnare
 		req := newComerCfg.I18n[j.app.Lang]
 
 		j.app.Logger.Info("Not pending user clicked the button")
 
-		j.SendMessageWCleanupForCB(&cb, req.AuthOKMessage,
-				&BotForceReply{
-					ForceReply: false,
-					Selective:  true,
-				})
+		j.SendMessageWCleanupForCB(&cb, req.AuthNotPendingMsg,
+			&BotForceReply{
+				ForceReply: false,
+				Selective:  true,
+			})
+		return false, nil
 	}
-
-	return req.AnswerCallbackQuery(j.app)
 }
 
 func JobLeftParticipantDetector(j *Job) (interface{}, error) {

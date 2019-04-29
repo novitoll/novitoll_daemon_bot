@@ -53,7 +53,7 @@ func (j *Job) SendMessageWReply(replyText string, replyMsgId int, reply interfac
 		Text:             replyText,
 		ParseMode:        ParseModeMarkdown,
 		ReplyToMessageId: replyMsgId,
-		ReplyMarkup: 	  reply,
+		ReplyMarkup:      reply,
 	}
 	return req.SendMsg(j.app)
 }

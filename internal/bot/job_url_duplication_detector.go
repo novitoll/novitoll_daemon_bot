@@ -112,9 +112,9 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		botReply += fmt.Sprintf(" CC: @%s, %s", BDFL, strings.Join(admins, ", "))
 
 		j.SendMessageWCleanup(botReply, &BotForceReply{
-				ForceReply: false,
-				Selective:  true,
-			})
+			ForceReply: false,
+			Selective:  true,
+		})
 
 		// kick him/her/it
 		j.KickChatMember(msg.From.Id, msg.From.Username)
