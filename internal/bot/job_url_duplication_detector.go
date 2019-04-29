@@ -4,7 +4,6 @@ package bot
 import (
 	"encoding/json"
 	"fmt"
-	netUrl "net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -110,25 +109,24 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 			I18n[j.app.Lang].AuthMessageURLPost, n)
 
 		admins := j.app.ChatAdmins[msg.Chat.Id]
-
 		botReply += fmt.Sprintf(" CC: @%s, %s", BDFL, strings.Join(admins, ", "))
+
+		replyMsg, _ := j.SendMessageWCleanup(botReply, TIME_TO_DELETE_REPLY_MSG,
+			&BotForceReply{
+				ForceReply: false,
+				Selective:  true,
+			})
+
+		// kick him/her/it
+		j.KickChatMember()
 
 		go func() {
 			select {
 			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
 				// delete newcomer's message
 				j.DeleteMessage(&msg)
-
-				// and kick him/her/it
-				j.KickChatMember()
 			}
 		}()
-
-		return j.SendMessageWCleanup(botReply, TIME_TO_DELETE_REPLY_MSG,
-			&BotForceReply{
-				ForceReply: false,
-				Selective:  true,
-			})
 	}
 
 	return nil, nil
