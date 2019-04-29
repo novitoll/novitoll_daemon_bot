@@ -91,8 +91,8 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	// check if user is allowed to post URLs
 	k := fmt.Sprintf("%s-%d-%d", REDIS_USER_VERIFIED, msg.Chat.Id, msg.From.Id)
 
-	t0, err := j.GetFromRedis(redisConn, k)
-	if err != nil {
+	t0 := j.GetFromRedis(redisConn, k)
+	if t0 == nil {
 		return false, err
 	}
 

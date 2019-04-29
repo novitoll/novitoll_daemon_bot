@@ -48,21 +48,20 @@ func (j *Job) SendMessage(replyText string, replyMsgId int) (*BotInReqMsg, error
 }
 
 func (j *Job) SaveInRedis(redisConn *redis.Client, k string, v interface{}, t int) {
-	err := redisConn.Set(k, v,
-		time.Duration(t)*time.Second).Err()
+	err := redisConn.Set(k, v, time.Duration(t)*time.Second).Err()
 	if err != nil {
 		txt := fmt.Sprintf("Could not save %s in redis", k)
 		j.app.Logger.Warn(txt)
 	}
 }
 
-func (j *Job) GetFromRedis(redisConn *redis.Client, k string) (interface{}, error) {
+func (j *Job) GetFromRedis(redisConn *redis.Client, k string) interface{} {
 	res, err := redisConn.Get(k).Result()
 	if err != nil {
 		txt := fmt.Sprintf("Could not get %s in redis", k)
 		j.app.Logger.Warn(txt)
 	}
-	return res, err
+	return res
 }
 
 func (j *Job) GetBatchFromRedis(redisConn *redis.Client, k string, limit int) interface{} {

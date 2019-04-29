@@ -65,10 +65,6 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 
 	chat_id := br.Message.Chat.Id
 
-	// This should be useful to analyze STDOUT logs
-	// instead of storing them in RDBMS etc.
-	app.Logger.WithFields(logrus.Fields{"chat_id": chat_id}).Info(buf.String())
-
 	go br.Process(app)
 
 	// we cant run crons unless we know chat ID
@@ -76,8 +72,7 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 		ChatIds[chat_id] = time.Now()
 		go br.CronSchedule(app)
 
-		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled",
-			chat_id))
+		app.Logger.Info(fmt.Sprintf("[+] Cron jobs for %d chat are scheduled", chat_id))
 	}
 
 	w.WriteHeader(http.StatusAccepted)
