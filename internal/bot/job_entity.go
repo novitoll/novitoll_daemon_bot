@@ -53,16 +53,16 @@ func (j *Job) SendMessageWReply(replyText string, replyMsgId int, reply interfac
 		Text:             replyText,
 		ParseMode:        ParseModeMarkdown,
 		ReplyToMessageId: replyMsgId,
-		ReplyMarkup:      reply,
+		ReplyMarkup: 	  reply,
 	}
 	return req.SendMsg(j.app)
 }
 
-func (j *Job) SendMessageWCleanup(chatId int, text string, delay uint8, reply interface{}) (interface{}, error) {
+func (j *Job) SendMessageWCleanup(text string, reply interface{}) (interface{}, error) {
 	// Send message to user and delete own (bot's) message as cleanup
 	msg := j.req.Message
 	botEgressReq := &BotSendMsg{
-		ChatId:           chatId,
+		ChatId:           msg.Chat.Id,
 		Text:             text,
 		ParseMode:        ParseModeMarkdown,
 		ReplyToMessageId: msg.MessageId,
