@@ -20,6 +20,7 @@ func (req *BotInReq) Process(app *App) {
 	_, errors := FanOutProcessJobs(job, []ProcessJobFn{
 		JobNewChatMemberDetector,
 		JobNewChatMemberAuth,
+		JobPendingUserControl,
 		JobUrlDuplicationDetector,
 		JobMsgStats,
 		JobAdDetector,

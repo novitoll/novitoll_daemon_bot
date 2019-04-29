@@ -41,7 +41,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 	// do not validate yourself
 	if !newComerCfg.Enabled || msg.NewChatMember.Id == 0 ||
-		msg.NewChatMember.Username == TELEGRAM_BOT_USERNAME || !j.HasMessageContent() {
+		msg.NewChatMember.Username == TELEGRAM_BOT_USERNAME {
 		return false, nil
 	}
 
@@ -142,40 +142,57 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	}
 }
 
-func JobNewChatMemberAuth(j *Job) (interface{}, error) {
-	// will check CallbackQuery only from a newcomer to whitelist the doot,
-	// writing to the global unbuffered channel
+func JobPendingUserControl(j *Job) (interface{}, error) {
+	// while user is in pending map, control his/her/its actions
+	// let's check if user is in our auth pending map or not
 	msg := j.req.Message
 
-	// let's check if user is in our auth pending map or not
-	_, ok := NewComersAuthPending[msg.Chat.Id]	
+	_, ok := NewComersAuthPending[msg.Chat.Id]
 	if !ok {
 		return nil, nil
 	}
 
-	origPass, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
+	_, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
 	if !isPending {
 		return false, nil
 	}
 
+	// pending users can not send messages except callback query
+	if isPending {
+		j.app.Logger.Info("Deleting pending user message")
+		go j.DeleteMessage(&msg)
+	}
+	
+	return nil, nil
+}
+
+func JobNewChatMemberAuth(j *Job) (interface{}, error) {
+	// will check CallbackQuery only from a newcomer to whitelist the doot,
+	// writing to the global unbuffered channel
+	msg := j.req.Message
 	cb := j.req.CallbackQuery
 
-	// pending users can not send messages except callback query
-	if isPending && cb.Id == "" {
-		go j.DeleteMessage(&msg)
+	if cb.Id == "" {
 		return nil, nil
 	}
-
-	j.app.Logger.Info("!!!!!!!!!!!!!!!!!!")
-	j.app.Logger.Info(cb.Message.Text)
 
 	req := &BotAnswerCallbackQuery{
 		CallbackQueryId: cb.Id,
 	}
 
-	if origPass == cb.Message.Text {
-		chNewcomer <- msg.From.Id
+	origPass, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
+
+	if !isPending {
+		if origPass == cb.Message.Text {
+			chNewcomer <- msg.From.Id
+		} else {
+			j.app.Logger.Info("Pending user's callback password was incorrect. That's weird")
+		}
+	} else {
+		j.app.Logger.Info("Not pending user clicked the button")
+		// TODO: j.SendMessage(..)
 	}
+	
 	return req.AnswerCallbackQuery(j.app)
 }
 
