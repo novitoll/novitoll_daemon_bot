@@ -90,13 +90,16 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	// check if user is allowed to post URLs
 	k := fmt.Sprintf("%s-%d-%d", REDIS_USER_VERIFIED, msg.Chat.Id, msg.From.Id)
 
-	t0, _ := redisConn.Get(j).Result()
-	if t0 == "" {
-		j.app.Logger("User is not in verified map. Probably user is aight.")
+	// t - is time when other user posted this URL before, in int32 datatype
+	t, _ := redisConn.Get(k).Result()
+	if t == "" {
+		j.app.Logger.Info("User is not in verified map. Probably user is aight.")
 		return false, nil
 	}
 
-	t0i, err := strconv.Atoi(t0.(string))
+	// convert from string to int32
+	t0 := t.(string)
+	t0i, err := strconv.Atoi(t0)
 	if err != nil {
 		j.app.Logger.Warn("Could not convert string to int")
 		return false, err
