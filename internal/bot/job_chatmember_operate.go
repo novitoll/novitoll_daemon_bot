@@ -114,7 +114,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 		if newComerCfg.ActionNotify {
 			forceDeletion <- true
-			return j.SendMessageWCleanup(req.AuthOKMessage,
+			return j.SendMessageWCleanup(dootChatId, req.AuthOKMessage,
 				TIME_TO_DELETE_REPLY_MSG,
 				&BotForceReply{
 					ForceReply: false,
