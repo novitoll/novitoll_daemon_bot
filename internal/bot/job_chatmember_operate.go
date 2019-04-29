@@ -83,14 +83,18 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		"username": msg.NewChatMember.Username,
 	}).Warn("New member has been detected")
 
+	keyBtns := [][]InlineKeyboardButton{
+		Text: auth,
+		CallbackData: pass,
+	}
+
 	// sends the welcome authentication message with a callback
 	// After user hits the button, CallbackQuery will be sent back
 	// This will eliminate bots sending password in plain text by reading it.
 	// kudos to @kazgeek
 	go j.SendMessageWCleanup(welcomeMsg, newComerCfg.AuthTimeout,
-		&InlineKeyboardButton{
-			Text: auth,
-			CallbackData: pass,
+		&InlineKeyboardMarkup{
+			InlineKeyboard: keyBtns,
 		})
 
 	// blocks the current Job goroutine until either of
@@ -152,7 +156,6 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	// will check CallbackQuery only from a newcomer to whitelist the doot,
 	// writing to the global unbuffered channel
 	msg := j.req.Message
-	i18n := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang]
 
 	cb := j.req.CallbackQuery
 

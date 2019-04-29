@@ -59,6 +59,11 @@ type ReplyKeyboardMarkup struct {
 	Selective       bool            `json:"selective"`
 }
 
+// https://core.telegram.org/bots/api#inlinekeyboardmarkup
+type InlineKeyboardMarkup struct {
+	InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
+}
+
 // https://core.telegram.org/bots/api#inlinekeyboardbutton
 type InlineKeyboardButton struct {
 	Text string `json:"text"`
