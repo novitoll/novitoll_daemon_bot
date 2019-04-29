@@ -16,7 +16,7 @@ var (
 	forceDeletion = make(chan bool)
 	// unbuffered chanel to wait for the certain time
 	// for the newcomer's response.
-	chNewcomer = make(chan int)
+	chNewcomer = make(chan []int)
 	// we could store this map in Redis as well,
 	// but once we have the record here, we have to
 	// check Redis (open TCP connection) per each message
@@ -96,18 +96,19 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// blocks the current Job goroutine until either of
 	// these 2 channels receive the value
 	select {
-	case dootId := <-chNewcomer:
+	case doot := <-chNewcomer:
+		dootId, dootChatId := doot[0], doot[1]
 		// remove from pending  map the authenticated newcomer
-		delete(NewComersAuthPending[msg.Chat.Id], dootId)
+		delete(NewComersAuthPending[dootChatId], dootId)
 
 		// add the authenticated user to redis's verified map
-		k := fmt.Sprintf("%s-%d-%d", REDIS_USER_VERIFIED, msg.Chat.Id, dootId)
+		k := fmt.Sprintf("%s-%d-%d", REDIS_USER_VERIFIED, dootChatId, dootId)
 		// +10 sec, so that cronjob computing newcomers count
 		// could finish in time with EVERY_LAST_SEC_7TH_DAY
 		j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 		j.app.Logger.WithFields(logrus.Fields{
-			"chat": msg.Chat.Id,
+			"chat": dootChatId,
 			"id":   dootId,
 		}).Info("Newcomer has been authenticated")
 
@@ -151,7 +152,6 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	// will check CallbackQuery only from a newcomer to whitelist the doot,
 	// writing to the global unbuffered channel
-	msg := j.req.Message
 	cb := j.req.CallbackQuery
 
 	if cb.Id == "" {
@@ -162,11 +162,12 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 		CallbackQueryId: cb.Id,
 	}
 
-	origPass, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
+	origPass, isPending := NewComersAuthPending[cb.Message.Chat.Id][cb.From.Id]
 
 	if isPending {
 		if origPass == cb.Data {
-			chNewcomer <- msg.From.Id
+			doot := []int{cb.From.Id, cb.Message.Chat.Id}
+			chNewcomer <- doot
 		} else {
 			j.app.Logger.Info("Pending user's callback password was incorrect. That's weird")
 		}
