@@ -72,24 +72,24 @@ func (j *Job) SendMessageWCleanup(text string, delay uint8, reply interface{}) (
 		}()
 	}
 
-	return replyMsgBody, err
+	return false, err
 }
 
-func (j *Job) KickChatMember() (interface{}, error) {
+func (j *Job) KickChatMember(userId int, username string) (interface{}, error) {
 	msg := j.req.Message
 	t := time.Now().Add(time.Duration(j.app.Features.
 		NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
 
 	j.app.Logger.WithFields(logrus.Fields{
 		"chat":     msg.Chat.Id,
-		"id":       msg.NewChatMember.Id,
-		"username": msg.NewChatMember.Username,
+		"id":       userId,
+		"username": username,
 		"until":    t,
 	}).Warn("Kicking a newcomer")
 
 	botEgressReq := &BotKickChatMember{
 		ChatId:    msg.Chat.Id,
-		UserId:    msg.NewChatMember.Id,
+		UserId:    userId,
 		UntilDate: t,
 	}
 	return botEgressReq.KickChatMember(j.app)

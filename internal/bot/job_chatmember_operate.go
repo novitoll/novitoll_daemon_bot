@@ -119,7 +119,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			return true, nil
 		}
 	case <-time.After(time.Duration(newComerCfg.AuthTimeout) * time.Second):
-		resp, err := j.KickChatMember()
+		resp, err := j.KickChatMember(msg.NewChatMember.Id, msg.NewChatMember.Username)
 		if err == nil {
 			// delete the "User joined the group" event
 			go j.onDeleteMessage(&msg, TIME_TO_DELETE_REPLY_MSG)
@@ -135,7 +135,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 			j.app.Logger.WithFields(logrus.Fields{
-				"":         msg.Chat.Id,
+				"chat":         msg.Chat.Id,
 				"id":       msg.NewChatMember.Id,
 				"username": msg.NewChatMember.Username,
 			}).Warn("Newcomer has been kicked")

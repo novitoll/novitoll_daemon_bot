@@ -102,7 +102,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	}
 
 	if t0i > 0 && (time.Now().Unix()-int64(t0i) <= NEWCOMER_URL_POST_DELAY) {
-		// new users can not post URLs until NEWCOMER_URL_POST_DELAY mins
+		// new users can NOT post URLs during first NEWCOMER_URL_POST_DELAY mins
 		n := int(NEWCOMER_URL_POST_DELAY / 60)
 
 		botReply := fmt.Sprintf(j.app.Features.NewcomerQuestionnare.
@@ -111,14 +111,14 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		admins := j.app.ChatAdmins[msg.Chat.Id]
 		botReply += fmt.Sprintf(" CC: @%s, %s", BDFL, strings.Join(admins, ", "))
 
-		replyMsg, _ := j.SendMessageWCleanup(botReply, TIME_TO_DELETE_REPLY_MSG,
+		j.SendMessageWCleanup(botReply, TIME_TO_DELETE_REPLY_MSG,
 			&BotForceReply{
 				ForceReply: false,
 				Selective:  true,
 			})
 
 		// kick him/her/it
-		j.KickChatMember()
+		j.KickChatMember(msg.From.Id, msg.From.Username)
 
 		go func() {
 			select {
