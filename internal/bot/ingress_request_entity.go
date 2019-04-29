@@ -23,7 +23,7 @@ type BotInResp2 struct {
 type BotInReq struct {
 	Update_Id     int `json:"update_id"`
 	Message       BotInReqMsg
-	CallbackQuery CallbackQuery
+	CallbackQuery CallbackQuery `json:"callback_query"`
 }
 
 type BotInReqMsg struct {
@@ -78,4 +78,5 @@ type CallbackQuery struct {
 	From            User        `json:"from"`
 	Message         BotInReqMsg `json:"message"`
 	ChatInstance    string      `json:"chat_instance"`
+	Data            string      `json:"data"`
 }

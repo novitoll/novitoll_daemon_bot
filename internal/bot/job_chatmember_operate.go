@@ -62,6 +62,11 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
 	}
 	// store a newcomer per chat
+	if _, isPending := NewComersAuthPending[msg.Chat.Id]; isPending {
+		j.app.Logger.Info("Deleting pending user message")
+		go j.DeleteMessage(&msg)
+	}
+
 	NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id] = pass
 
 	// record a newcomer and wait for his reply on the channel,
@@ -142,30 +147,6 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	}
 }
 
-func JobPendingUserControl(j *Job) (interface{}, error) {
-	// while user is in pending map, control his/her/its actions
-	// let's check if user is in our auth pending map or not
-	msg := j.req.Message
-
-	_, ok := NewComersAuthPending[msg.Chat.Id]
-	if !ok {
-		return nil, nil
-	}
-
-	_, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
-	if !isPending {
-		return false, nil
-	}
-
-	// pending users can not send messages except callback query
-	if isPending {
-		j.app.Logger.Info("Deleting pending user message")
-		go j.DeleteMessage(&msg)
-	}
-	
-	return nil, nil
-}
-
 func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	// will check CallbackQuery only from a newcomer to whitelist the doot,
 	// writing to the global unbuffered channel
@@ -182,8 +163,8 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 
 	origPass, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
 
-	if !isPending {
-		if origPass == cb.Message.Text {
+	if isPending {
+		if origPass == cb.Data {
 			chNewcomer <- msg.From.Id
 		} else {
 			j.app.Logger.Info("Pending user's callback password was incorrect. That's weird")
@@ -192,7 +173,7 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 		j.app.Logger.Info("Not pending user clicked the button")
 		// TODO: j.SendMessage(..)
 	}
-	
+
 	return req.AnswerCallbackQuery(j.app)
 }
 
