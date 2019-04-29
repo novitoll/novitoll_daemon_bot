@@ -66,7 +66,7 @@ type InlineKeyboardMarkup struct {
 
 // https://core.telegram.org/bots/api#inlinekeyboardbutton
 type InlineKeyboardButton struct {
-	Text string `json:"text"`
+	Text         string `json:"text"`
 	CallbackData string `json:"callback_data"`
 }
 
@@ -95,5 +95,5 @@ type BotGetAdmins struct {
 
 // https://core.telegram.org/bots/api#answercallbackquery
 type BotAnswerCallbackQuery struct {
-	CallbackQueryId string `json:"callback_query_id"`	
+	CallbackQueryId string `json:"callback_query_id"`
 }

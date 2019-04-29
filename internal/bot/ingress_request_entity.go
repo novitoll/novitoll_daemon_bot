@@ -21,8 +21,8 @@ type BotInResp2 struct {
 }
 
 type BotInReq struct {
-	Update_Id int `json:"update_id"`
-	Message   BotInReqMsg
+	Update_Id     int `json:"update_id"`
+	Message       BotInReqMsg
 	CallbackQuery CallbackQuery
 }
 
@@ -73,9 +73,9 @@ type Sticker struct {
 
 // https://core.telegram.org/bots/api#callbackquery
 type CallbackQuery struct {
-	Id 	string `json:"id"`
-	InlineMessageId string `json:"inline_message_id"`
-	From 	User `json:"from"`
-	Message 	BotInReqMsg `json:"message"`
-	ChatInstance string `json:"chat_instance"`
+	Id              string      `json:"id"`
+	InlineMessageId string      `json:"inline_message_id"`
+	From            User        `json:"from"`
+	Message         BotInReqMsg `json:"message"`
+	ChatInstance    string      `json:"chat_instance"`
 }

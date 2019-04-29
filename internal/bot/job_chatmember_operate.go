@@ -84,15 +84,16 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	}).Warn("New member has been detected")
 
 	keyBtns := [][]InlineKeyboardButton{
-		Text: auth,
-		CallbackData: pass,
+		[]InlineKeyboardButton{
+			InlineKeyboardButton{Text: auth, CallbackData: pass},
+		},
 	}
 
 	// sends the welcome authentication message with a callback
 	// After user hits the button, CallbackQuery will be sent back
 	// This will eliminate bots sending password in plain text by reading it.
 	// kudos to @kazgeek
-	go j.SendMessageWCleanup(welcomeMsg, newComerCfg.AuthTimeout,
+	go j.SendMessageWReply(welcomeMsg, newComerCfg.AuthTimeout,
 		&InlineKeyboardMarkup{
 			InlineKeyboard: keyBtns,
 		})
@@ -143,7 +144,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 			j.app.Logger.WithFields(logrus.Fields{
-				"chat":         msg.Chat.Id,
+				"chat":     msg.Chat.Id,
 				"id":       msg.NewChatMember.Id,
 				"username": msg.NewChatMember.Username,
 			}).Warn("Newcomer has been kicked")

@@ -47,6 +47,17 @@ func (j *Job) SendMessage(replyText string, replyMsgId int) (*BotInReqMsg, error
 	return req.SendMsg(j.app)
 }
 
+func (j *Job) SendMessageWReply(replyText string, replyMsgId int, reply interface{}) (*BotInReqMsg, error) {
+	req := &BotSendMsg{
+		ChatId:           j.req.Message.Chat.Id,
+		Text:             replyText,
+		ParseMode:        ParseModeMarkdown,
+		ReplyToMessageId: replyMsgId,
+		ReplyMarkup:      reply,
+	}
+	return req.SendMsg(j.app)
+}
+
 func (j *Job) SendMessageWCleanup(text string, delay uint8, reply interface{}) (interface{}, error) {
 	// Send message to user and delete own (bot's) message as cleanup
 	msg := j.req.Message
