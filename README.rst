@@ -6,8 +6,7 @@
 Requirements
 -------
 	$ go version
-
-        go1.11.1 linux/amd64
+    go1.12 linux/amd64
 
 
 Features
@@ -41,9 +40,9 @@ Make commands
 * ``make configure`` -- configure `dep` GoLang package and install deps.
 * ``make build`` -- compile Go src to the "$PWD/bot" binary.
 * ``make run`` -- compile and run a standalone Go binary.
-* ``make docker-compose-local`` -- For local development. Runs docker-compose that brings up 1 redis & 1 vahter-bot containers & 1 telegram-mock image.
-* ``make docker-compose`` -- For the prod. Runs docker-compose that brings up 1 redis & 1 vahter-bot containers. `TELEGRAM_TOKEN` should be set as ENV var manually or in `.env` file. Containers run in deattached mode.
-* ``make docker-compose-green`` -- For the green deployment running along with `make docker-compose` but on different TCP 8081 host port. Runs docker-compose that brings up 1 redis-dev & 1 vahter-bot-dev containers. `TELEGRAM_TOKEN` should be set as ENV var manually or in `.env` file.
+* ``make docker-compose-local`` -- For local development. Runs docker-compose that brings up 1 redis & 1 bot containers & 1 telegram-mock image.
+* ``make docker-compose`` -- For the prod. Runs docker-compose that brings up 1 redis & 1 bot containers. `TELEGRAM_TOKEN` should be set as ENV var manually or in `.env` file. Containers run in deattached mode.
+* ``make docker-compose-green`` -- For the green deployment running along with `make docker-compose` but on different TCP 8081 host port. Runs docker-compose that brings up 1 redis-dev & 1 bot-dev containers. `TELEGRAM_TOKEN` should be set as ENV var manually or in `.env` file.
 * ``make docker-compose-stop`` -- Stops the containers run via `make docker-compose`.
 * ``make test`` -- run unit tests.
 * ``make debug`` -- compile and run `delve` debugger.

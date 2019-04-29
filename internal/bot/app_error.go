@@ -25,8 +25,7 @@ func (re *AppError) Error() string {
 		msg = fmt.Sprintf("Internal server error. "+
 			"Please notify admins. %s", re.message)
 	default:
-		msg = fmt.Sprintf("Unknown status. "+
-			"Please notify admins. %s", re.message)
+		msg = fmt.Sprintf("Unknown status Please notify admins. %s", re.message)
 	}
 
 	http.Error(re.w, msg, re.code)

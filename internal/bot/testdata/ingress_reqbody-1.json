@@ -3,19 +3,19 @@
   "message": {
     "message_id": 108,
     "from": {
-      "id": 345019684,
+      "id": 11111111112,
       "is_bot": false,
       "first_name": "novitoll",
       "username": "novitoll",
       "language_code": "en-US"
     },
     "chat": {
-      "id": -253761934,
-      "title": "test_novitoll_daemon_bot",
+      "id": -2222222,
+      "title": "TEST",
       "type": "group",
       "all_members_are_administrators": true
     },
     "date": 1539515199,
-    "migrate_to_chat_id": -1001276148791
+    "migrate_to_chat_id": -111
   }
 }

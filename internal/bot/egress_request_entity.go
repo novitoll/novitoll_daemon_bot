@@ -59,6 +59,17 @@ type ReplyKeyboardMarkup struct {
 	Selective       bool            `json:"selective"`
 }
 
+// https://core.telegram.org/bots/api#inlinekeyboardmarkup
+type InlineKeyboardMarkup struct {
+	InlineKeyboard [][]InlineKeyboardButton `json:"inline_keyboard"`
+}
+
+// https://core.telegram.org/bots/api#inlinekeyboardbutton
+type InlineKeyboardButton struct {
+	Text         string `json:"text"`
+	CallbackData string `json:"callback_data"`
+}
+
 // https://core.telegram.org/bots/api#keyboardbutton
 type KeyboardBtn struct {
 	Text string `json:"text"`
@@ -80,4 +91,9 @@ type BotDeleteMsg struct {
 // https://core.telegram.org/bots/api#getchatadministrators
 type BotGetAdmins struct {
 	ChatId int `json:"chat_id"`
+}
+
+// https://core.telegram.org/bots/api#answercallbackquery
+type BotAnswerCallbackQuery struct {
+	CallbackQueryId string `json:"callback_query_id"`
 }

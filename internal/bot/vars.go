@@ -12,6 +12,9 @@ const (
 )
 
 var (
+	// All these REDIS_* are Redis keys with following common
+	// nested map:
+	// { <chat-id>: { <user_id>: timestamp } }
 	REDIS_USER_PENDING       = "NewComersAuthPending"
 	REDIS_USER_VERIFIED      = "NewComersAuthVerified"
 	REDIS_USER_KICKED        = "NewComersAuthKicked"
@@ -19,8 +22,5 @@ var (
 	REDIS_USER_PREV_LEFT     = "ParticipantLeftPrev"
 	REDIS_USER_PREV_KICK     = "NewComersAuthKickedPrev"
 	REDIS_USER_PREV_VERIFIED = "NewComersAuthVerifiedPrev"
-	// Map to store user message statistics.
-	// Data in the map is cleaned up when the CronJob executes
-	// (every last second of 7th day)
-	UserStatistics = make(map[int]*UserMessageStats)
+	REDIS_USER_SENT_URL      = "UserSentUrl"
 )

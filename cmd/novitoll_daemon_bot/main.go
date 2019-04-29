@@ -10,15 +10,16 @@ import (
 
 	cfg "github.com/novitoll/novitoll_daemon_bot/config"
 	"github.com/novitoll/novitoll_daemon_bot/internal/bot"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
 // Global variables of "main" pkg
 var (
-	features cfg.FeaturesCfg
-	lang     string = "en-us"
-	logger          = logrus.New()
+	features  cfg.FeaturesCfg
+	lang      string = "en-us"
+	logger           = logrus.New()
+	requestID        = 0
 )
 
 // Initializes FeaturesCfg and do following configuration:
@@ -63,6 +64,11 @@ func init() {
 		DisableColors: false,
 		FullTimestamp: true,
 	})
+}
+
+func nextRequestID() int {
+	requestID++
+	return requestID
 }
 
 // Starts HTTP server based on "net/http" pkg on TCP/8080 constant port.

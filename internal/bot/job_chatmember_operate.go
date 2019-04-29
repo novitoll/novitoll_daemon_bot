@@ -6,44 +6,49 @@ import (
 	"regexp"
 	"time"
 
-	redis "github.com/novitoll/novitoll_daemon_bot/internal/redis_client"
-	"github.com/novitoll/novitoll_daemon_bot/internal/utils"
+	redis "github.com/novitoll/novitoll_daemon_bot/pkg/redis_client"
+	"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
 var (
+	authRgxp      *regexp.Regexp
 	forceDeletion = make(chan bool)
-	// unbuffered chhanel to wait for the certain time
-	// for the newcomer's resp
-	chNewcomer = make(chan int)
+	// unbuffered chanel to wait for the certain time
+	// for the newcomer's response.
+	chNewcomer = make(chan CallbackQuery)
 	// we could store this map in Redis as well,
 	// but once we have the record here, we have to
 	// check Redis (open TCP connection) per each message
 	// because we don't know beforehand if the message is
-	// from the Auth pending user or not. So fuck it
-	NewComersAuthPending = make(map[int]string)
-	authRgxp             *regexp.Regexp
+	// from the Auth pending user or not. So keep in memory
+	// a double nested hashmap for multiple chats.
+	// {
+	//   <chat_id>: {
+	//   	<user_id>: <timestamp>,
+	//   	<user_id>: <timestamp>,
+	//	},
+	//   <chat_id>: {..}
+	// }
+	NewComersAuthPending = make(map[int]map[int]string)
 )
 
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// for short code reference
-	newComer := j.req.Message.NewChatMember
+	msg := j.req.Message
 	newComerCfg := j.app.Features.NewcomerQuestionnare
 	req := newComerCfg.I18n[j.app.Lang]
 
-	if !newComerCfg.Enabled || newComer.Id == 0 ||
-		newComer.Username == TELEGRAM_BOT_USERNAME {
+	// do not validate yourself
+	if !newComerCfg.Enabled || msg.NewChatMember.Id == 0 ||
+		msg.NewChatMember.Username == TELEGRAM_BOT_USERNAME {
 		return false, nil
 	}
 
-	// init vars
+	// init a randomized auth check
 	pass := utils.RandStringRunes(9)
+	auth := fmt.Sprintf("%s. %s - %s", req.AuthMessage, req.AuthPasswd, pass)
 
-	keyBtns := [][]KeyboardBtn{
-		[]KeyboardBtn{
-			KeyboardBtn{fmt.Sprintf("%s. %s - %s", req.AuthMessage, req.AuthPasswd, pass)},
-		},
-	}
 	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
 		newComerCfg.AuthTimeout, newComerCfg.KickBanTimeout)
 
@@ -51,41 +56,64 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	defer redisConn.Close()
 
 	t0 := time.Now().Unix()
-	NewComersAuthPending[newComer.Id] = pass
+
+	if _, ok := NewComersAuthPending[msg.Chat.Id]; !ok {
+		// init inner map if it's first time for this chat
+		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
+	}
+	// store a newcomer per chat
+	if _, isPending := NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id]; isPending {
+		j.app.Logger.Info("Deleting pending user message")
+		go j.DeleteMessage(&msg)
+		return nil, nil
+	}
+
+	NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id] = pass
 
 	// record a newcomer and wait for his reply on the channel,
 	// otherwise kick that not-doot and delete the record from this map
 	j.app.Logger.WithFields(logrus.Fields{
-		"id":       newComer.Id,
-		"username": newComer.Username,
+		"chat":     msg.Chat.Id,
+		"id":       msg.NewChatMember.Id,
+		"username": msg.NewChatMember.Username,
 	}).Warn("New member has been detected")
 
-	// sends the welcome authentication message
-	go j.onSendMessage(welcomeMsg, newComerCfg.AuthTimeout,
-		&ReplyKeyboardMarkup{
-			Keyboard:        keyBtns,
-			OneTimeKeyboard: true,
-			Selective:       true,
+	keyBtns := [][]InlineKeyboardButton{
+		[]InlineKeyboardButton{
+			InlineKeyboardButton{Text: auth, CallbackData: pass},
+		},
+	}
+
+	// sends the welcome authentication message with a callback
+	// After user hits the button, CallbackQuery will be sent back
+	// This will eliminate bots sending password in plain text by reading it.
+	// kudos for the idea to @kazgeek
+	go j.SendMessageWCleanup(welcomeMsg,
+		&InlineKeyboardMarkup{
+			InlineKeyboard: keyBtns,
 		})
 
 	// blocks the current Job goroutine until either of
 	// these 2 channels receive the value
 	select {
-	case dootId := <-chNewcomer:
-		delete(NewComersAuthPending, dootId)
-		k := fmt.Sprintf("%s-%d", REDIS_USER_VERIFIED, dootId)
+	case cb := <-chNewcomer:
+		// remove from pending  map the authenticated newcomer
+		delete(NewComersAuthPending[cb.Message.Chat.Id], cb.From.Id)
+
+		// add the authenticated user to redis's verified map
+		k := fmt.Sprintf("%s-%d-%d", REDIS_USER_VERIFIED, cb.Message.Chat.Id, cb.From.Id)
 		// +10 sec, so that cronjob computing newcomers count
 		// could finish in time with EVERY_LAST_SEC_7TH_DAY
 		j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 		j.app.Logger.WithFields(logrus.Fields{
-			"id": dootId,
+			"chat": cb.Message.Chat.Id,
+			"id":   cb.From.Id,
 		}).Info("Newcomer has been authenticated")
 
 		if newComerCfg.ActionNotify {
 			forceDeletion <- true
-			return j.onSendMessage(req.AuthOKMessage,
-				TIME_TO_DELETE_REPLY_MSG,
+			return j.SendMessageWCleanupForCB(&cb, req.AuthOKMessage,
 				&BotForceReply{
 					ForceReply: false,
 					Selective:  true,
@@ -94,21 +122,25 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			return true, nil
 		}
 	case <-time.After(time.Duration(newComerCfg.AuthTimeout) * time.Second):
-		resp, err := j.onKickChatMember()
+		resp, err := j.KickChatMember(msg.NewChatMember.Id, msg.NewChatMember.Username)
 		if err == nil {
-
 			// delete the "User joined the group" event
-			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
+			go j.onDeleteMessage(&msg, TIME_TO_DELETE_REPLY_MSG)
 
-			delete(NewComersAuthPending, newComer.Id)
+			// delete un-authenticated user from pending map
+			delete(NewComersAuthPending[msg.Chat.Id], msg.NewChatMember.Id)
 
-			k := fmt.Sprintf("%s-%d", REDIS_USER_KICKED, newComer.Id)
+			// record this event in redis's kicked users map
+			k := fmt.Sprintf("%s-%d-%d", REDIS_USER_KICKED,
+				msg.Chat.Id, msg.NewChatMember.Id)
+
 			// same +10 sec as for REDIS_USER_VERIFIED
 			j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 			j.app.Logger.WithFields(logrus.Fields{
-				"id":       newComer.Id,
-				"username": newComer.Username,
+				"chat":     msg.Chat.Id,
+				"id":       msg.NewChatMember.Id,
+				"username": msg.NewChatMember.Username,
 			}).Warn("Newcomer has been kicked")
 		}
 		return resp, err
@@ -116,68 +148,46 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 }
 
 func JobNewChatMemberAuth(j *Job) (interface{}, error) {
-	/*will check every message if its from a newcomer to whitelist the doot,
-	writing to the global unbuffered channel
-	*/
-	var isAuthMsg bool
-	i18n := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang]
+	// will check CallbackQuery only from a newcomer to whitelist the doot,
+	// writing to the global unbuffered channel
+	cb := j.req.CallbackQuery
 
-	// ignore own and content-less messages
-	if j.req.Message.From.Username == TELEGRAM_BOT_USERNAME || !j.HasMessageContent() {
+	if cb.Id == "" {
 		return nil, nil
 	}
 
-	// this should not compile per each fucking message
-	if authRgxp == nil {
-		authRgxp = regexp.MustCompile(fmt.Sprintf("^%s", i18n.AuthMessage))
+	req := &BotAnswerCallbackQuery{
+		CallbackQueryId: cb.Id,
 	}
 
-	// 1. Let's check if this is for newmember auth related message or not
-	matched := authRgxp.FindAllString(j.req.Message.Text, -1)
-	isAuthMsg = len(matched) > 0
+	origPass, isPending := NewComersAuthPending[cb.Message.Chat.Id][cb.From.Id]
 
-	// 2. ok, but let's check if user is in our auth pending map or not
-	pass, isPending := NewComersAuthPending[j.req.Message.From.Id]
-
-	// 2.1 pending users can not send messages except auth
-	if isPending && !isAuthMsg {
-		go j.DeleteMessage(&j.req.Message)
-		return nil, nil
-	}
-
-	if !isAuthMsg {
-		return nil, nil
-	}
-
-	// 3. ok, let's check then if user's password is legit with outs
-	passOrig := fmt.Sprintf("%s. %s - %s", i18n.AuthMessage, i18n.AuthPasswd, pass)
-	if isPending && passOrig == j.req.Message.Text {
-		go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
-		chNewcomer <- j.req.Message.From.Id
-
-		// answer if the user has cached message (seems, a bug for desktop users)
-		// or if user is already verified, he/she will get the reply
-		// or if user is in auth pending but failed with password,
-		// then time.After channel about will kick the fuck out that guy.
+	if isPending {
+		if origPass == cb.Data {
+			go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
+			chNewcomer <- cb
+		} else {
+			j.app.Logger.Info("Pending user's callback password was incorrect. That's weird")
+		}
+		return req.AnswerCallbackQuery(j.app)
 	} else {
-		_, err := j.onSendMessage(i18n.AuthMessageCached,
-			TIME_TO_DELETE_REPLY_MSG+10,
+		newComerCfg := j.app.Features.NewcomerQuestionnare
+		req := newComerCfg.I18n[j.app.Lang]
+
+		j.app.Logger.Info("Not pending user clicked the button")
+
+		j.SendMessageWCleanupForCB(&cb, req.AuthNotPendingMsg,
 			&BotForceReply{
 				ForceReply: false,
 				Selective:  true,
 			})
-
-		// delete user's message with delay
-		go j.onDeleteMessage(&j.req.Message, TIME_TO_DELETE_REPLY_MSG)
-
-		return nil, err
+		return false, nil
 	}
-
-	return true, nil
 }
 
 func JobLeftParticipantDetector(j *Job) (interface{}, error) {
-	left := j.req.Message.LeftChatParticipant
+	msg := j.req.Message
+	left := msg.LeftChatParticipant
 
 	if left.Id == 0 {
 		return false, nil
@@ -186,7 +196,7 @@ func JobLeftParticipantDetector(j *Job) (interface{}, error) {
 	redisConn := redis.GetRedisConnection()
 	defer redisConn.Close()
 
-	k := fmt.Sprintf("%s-%d", REDIS_USER_LEFT, left.Id)
+	k := fmt.Sprintf("%s-%d-%d", REDIS_USER_LEFT, msg.Chat.Id, left.Id)
 	t0 := time.Now()
 	j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 	return nil, nil
@@ -196,12 +206,22 @@ func JobLeftParticipantDetector(j *Job) (interface{}, error) {
 	Action functions
 */
 
-func (j *Job) onSendMessage(text string, delay uint8, reply interface{}) (interface{}, error) {
+func (j *Job) onDeleteMessage(resp *BotInReqMsg, delay uint8) (interface{}, error) {
+	// dirty hack to do the same function on either channel (fan-in pattern)
+	select {
+	case <-forceDeletion:
+		return j.DeleteMessage(resp)
+	case <-time.After(time.Duration(delay) * time.Second):
+		return j.DeleteMessage(resp)
+	}
+}
+
+func (j *Job) SendMessageWCleanupForCB(cb *CallbackQuery, text string, reply interface{}) (interface{}, error) {
 	botEgressReq := &BotSendMsg{
-		ChatId:           j.req.Message.Chat.Id,
+		ChatId:           cb.Message.Chat.Id,
 		Text:             text,
 		ParseMode:        ParseModeMarkdown,
-		ReplyToMessageId: j.req.Message.MessageId,
+		ReplyToMessageId: cb.Message.MessageId,
 		ReplyMarkup:      reply,
 	}
 	replyMsgBody, err := botEgressReq.SendMsg(j.app)
@@ -211,36 +231,13 @@ func (j *Job) onSendMessage(text string, delay uint8, reply interface{}) (interf
 
 	if replyMsgBody != nil {
 		// cleanup reply messages
-		go j.onDeleteMessage(replyMsgBody, delay)
+		go func() {
+			select {
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
+				j.DeleteMessage(replyMsgBody)
+			}
+		}()
 	}
 
-	return replyMsgBody, err
-}
-
-func (j *Job) onKickChatMember() (interface{}, error) {
-	t := time.Now().Add(time.Duration(j.app.Features.
-		NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
-
-	j.app.Logger.WithFields(logrus.Fields{
-		"id":       j.req.Message.NewChatMember.Id,
-		"username": j.req.Message.NewChatMember.Username,
-		"until":    t,
-	}).Warn("Kicking a newcomer")
-
-	botEgressReq := &BotKickChatMember{
-		ChatId:    j.req.Message.Chat.Id,
-		UserId:    j.req.Message.NewChatMember.Id,
-		UntilDate: t,
-	}
-	return botEgressReq.KickChatMember(j.app)
-}
-
-func (j *Job) onDeleteMessage(resp *BotInReqMsg, delay uint8) (interface{}, error) {
-	// dirty hack to do the same function on either channel (fan-in pattern)
-	select {
-	case <-forceDeletion:
-		return j.DeleteMessage(resp)
-	case <-time.After(time.Duration(delay) * time.Second):
-		return j.DeleteMessage(resp)
-	}
+	return false, err
 }

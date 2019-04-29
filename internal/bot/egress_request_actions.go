@@ -72,8 +72,7 @@ func parseBody(req *http.Request, app *App) (*BotInReqMsg, error) {
 
 		if err != nil {
 			// 2.2. if error, then return error
-			app.Logger.Fatal("Could not parse resp body with " +
-				"none of structs")
+			app.Logger.Fatal("Could not parse resp body with none of structs")
 			return nil, err
 		}
 
@@ -111,6 +110,10 @@ func (body *BotKickChatMember) KickChatMember(app *App) (*BotInReqMsg, error) {
 
 func (body *BotDeleteMsg) DeleteMsg(app *App) (*BotInReqMsg, error) {
 	return app.SendToTelegram(body, "deleteMessage")
+}
+
+func (body *BotAnswerCallbackQuery) AnswerCallbackQuery(app *App) (*BotInReqMsg, error) {
+	return app.SendToTelegram(body, "answerCallbackQuery")
 }
 
 // This is the same wrapper as above struct functions,

@@ -47,22 +47,71 @@ func (j *Job) SendMessage(replyText string, replyMsgId int) (*BotInReqMsg, error
 	return req.SendMsg(j.app)
 }
 
+func (j *Job) SendMessageWReply(replyText string, replyMsgId int, reply interface{}) (*BotInReqMsg, error) {
+	req := &BotSendMsg{
+		ChatId:           j.req.Message.Chat.Id,
+		Text:             replyText,
+		ParseMode:        ParseModeMarkdown,
+		ReplyToMessageId: replyMsgId,
+		ReplyMarkup:      reply,
+	}
+	return req.SendMsg(j.app)
+}
+
+func (j *Job) SendMessageWCleanup(text string, reply interface{}) (interface{}, error) {
+	// Send message to user and delete own (bot's) message as cleanup
+	msg := j.req.Message
+	botEgressReq := &BotSendMsg{
+		ChatId:           msg.Chat.Id,
+		Text:             text,
+		ParseMode:        ParseModeMarkdown,
+		ReplyToMessageId: msg.MessageId,
+		ReplyMarkup:      reply,
+	}
+	replyMsgBody, err := botEgressReq.SendMsg(j.app)
+	if err != nil {
+		return false, err
+	}
+
+	if replyMsgBody != nil {
+		// cleanup reply messages
+		go func() {
+			select {
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
+				j.DeleteMessage(replyMsgBody)
+			}
+		}()
+	}
+
+	return false, err
+}
+
+func (j *Job) KickChatMember(userId int, username string) (interface{}, error) {
+	msg := j.req.Message
+	t := time.Now().Add(time.Duration(j.app.Features.
+		NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
+
+	j.app.Logger.WithFields(logrus.Fields{
+		"chat":     msg.Chat.Id,
+		"id":       userId,
+		"username": username,
+		"until":    t,
+	}).Warn("Kicking a newcomer")
+
+	botEgressReq := &BotKickChatMember{
+		ChatId:    msg.Chat.Id,
+		UserId:    userId,
+		UntilDate: t,
+	}
+	return botEgressReq.KickChatMember(j.app)
+}
+
 func (j *Job) SaveInRedis(redisConn *redis.Client, k string, v interface{}, t int) {
-	err := redisConn.Set(k, v,
-		time.Duration(t)*time.Second).Err()
+	err := redisConn.Set(k, v, time.Duration(t)*time.Second).Err()
 	if err != nil {
 		txt := fmt.Sprintf("Could not save %s in redis", k)
 		j.app.Logger.Warn(txt)
 	}
-}
-
-func (j *Job) GetFromRedis(redisConn *redis.Client, k string) interface{} {
-	res, err := redisConn.Get(k).Result()
-	if err != nil {
-		txt := fmt.Sprintf("Could not get %s in redis", k)
-		j.app.Logger.Warn(txt)
-	}
-	return res
 }
 
 func (j *Job) GetBatchFromRedis(redisConn *redis.Client, k string, limit int) interface{} {
@@ -72,6 +121,8 @@ func (j *Job) GetBatchFromRedis(redisConn *redis.Client, k string, limit int) in
 	if err != nil {
 		txt := fmt.Sprintf("Could not scan batch %s in redis", k)
 		j.app.Logger.Warn(txt)
+		return nil
+	} else {
+		return keys
 	}
-	return keys
 }

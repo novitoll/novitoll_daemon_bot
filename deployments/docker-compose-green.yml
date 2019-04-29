@@ -4,13 +4,13 @@ services:
   redis-dev:
     container_name: redis-dev
     image: redis:5.0-rc
-  vahter-dev:
+  bot-dev:
     build:
       context: ../
       args:
         PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
-    image: vahter-bot
-    container_name: vahter-bot-dev
+    image: bot:0.0.3
+    container_name: bot-dev
     environment:
       - REDIS_HOST=redis-dev
       - REDIS_PORT=6379
