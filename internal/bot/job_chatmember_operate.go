@@ -64,6 +64,12 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	defer redisConn.Close()
 
 	t0 := time.Now().Unix()
+
+	if _, ok := NewComersAuthPending[msg.Chat.Id]; !ok {
+		// init inner map if it's first time for this chat
+		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
+	}
+
 	// store a newcomer per chat
 	NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id] = pass
 
@@ -76,7 +82,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	}).Warn("New member has been detected")
 
 	// sends the welcome authentication message
-	go j.onSendMessage(welcomeMsg, newComerCfg.AuthTimeout,
+	go j.SendMessageWCleanup(welcomeMsg, newComerCfg.AuthTimeout,
 		&ReplyKeyboardMarkup{
 			Keyboard:        keyBtns,
 			OneTimeKeyboard: true,
@@ -103,7 +109,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 		if newComerCfg.ActionNotify {
 			forceDeletion <- true
-			return j.onSendMessage(req.AuthOKMessage,
+			return j.SendMessageWCleanup(req.AuthOKMessage,
 				TIME_TO_DELETE_REPLY_MSG,
 				&BotForceReply{
 					ForceReply: false,
@@ -113,7 +119,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			return true, nil
 		}
 	case <-time.After(time.Duration(newComerCfg.AuthTimeout) * time.Second):
-		resp, err := j.onKickChatMember()
+		resp, err := j.KickChatMember()
 		if err == nil {
 			// delete the "User joined the group" event
 			go j.onDeleteMessage(&msg, TIME_TO_DELETE_REPLY_MSG)
@@ -183,7 +189,7 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 		// or if user is already verified, he/she will get the reply
 		// or if user is in auth pending but failed with password,
 		// then time.After channel about will kick the fuck out that guy.
-		_, err := j.onSendMessage(i18n.AuthMessageCached,
+		_, err := j.SendMessageWCleanup(i18n.AuthMessageCached,
 			TIME_TO_DELETE_REPLY_MSG+10,
 			&BotForceReply{
 				ForceReply: false,
@@ -219,48 +225,6 @@ func JobLeftParticipantDetector(j *Job) (interface{}, error) {
 /*
 	Action functions
 */
-
-func (j *Job) onSendMessage(text string, delay uint8, reply interface{}) (interface{}, error) {
-	msg := j.req.Message
-	botEgressReq := &BotSendMsg{
-		ChatId:           msg.Chat.Id,
-		Text:             text,
-		ParseMode:        ParseModeMarkdown,
-		ReplyToMessageId: msg.MessageId,
-		ReplyMarkup:      reply,
-	}
-	replyMsgBody, err := botEgressReq.SendMsg(j.app)
-	if err != nil {
-		return false, err
-	}
-
-	if replyMsgBody != nil {
-		// cleanup reply messages
-		go j.onDeleteMessage(replyMsgBody, delay)
-	}
-
-	return replyMsgBody, err
-}
-
-func (j *Job) onKickChatMember() (interface{}, error) {
-	msg := j.req.Message
-	t := time.Now().Add(time.Duration(j.app.Features.
-		NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
-
-	j.app.Logger.WithFields(logrus.Fields{
-		"chat":     msg.Chat.Id,
-		"id":       msg.NewChatMember.Id,
-		"username": msg.NewChatMember.Username,
-		"until":    t,
-	}).Warn("Kicking a newcomer")
-
-	botEgressReq := &BotKickChatMember{
-		ChatId:    msg.Chat.Id,
-		UserId:    msg.NewChatMember.Id,
-		UntilDate: t,
-	}
-	return botEgressReq.KickChatMember(j.app)
-}
 
 func (j *Job) onDeleteMessage(resp *BotInReqMsg, delay uint8) (interface{}, error) {
 	// dirty hack to do the same function on either channel (fan-in pattern)

@@ -47,6 +47,54 @@ func (j *Job) SendMessage(replyText string, replyMsgId int) (*BotInReqMsg, error
 	return req.SendMsg(j.app)
 }
 
+func (j *Job) SendMessageWCleanup(text string, delay uint8, reply interface{}) (interface{}, error) {
+	// Send message to user and delete own (bot's) message as cleanup
+	msg := j.req.Message
+	botEgressReq := &BotSendMsg{
+		ChatId:           msg.Chat.Id,
+		Text:             text,
+		ParseMode:        ParseModeMarkdown,
+		ReplyToMessageId: msg.MessageId,
+		ReplyMarkup:      reply,
+	}
+	replyMsgBody, err := botEgressReq.SendMsg(j.app)
+	if err != nil {
+		return false, err
+	}
+
+	if replyMsgBody != nil {
+		// cleanup reply messages
+		go func() {
+			select {
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
+				j.DeleteMessage(replyMsgBody)
+			}
+		}()
+	}
+
+	return replyMsgBody, err
+}
+
+func (j *Job) KickChatMember() (interface{}, error) {
+	msg := j.req.Message
+	t := time.Now().Add(time.Duration(j.app.Features.
+		NewcomerQuestionnare.KickBanTimeout) * time.Second).Unix()
+
+	j.app.Logger.WithFields(logrus.Fields{
+		"chat":     msg.Chat.Id,
+		"id":       msg.NewChatMember.Id,
+		"username": msg.NewChatMember.Username,
+		"until":    t,
+	}).Warn("Kicking a newcomer")
+
+	botEgressReq := &BotKickChatMember{
+		ChatId:    msg.Chat.Id,
+		UserId:    msg.NewChatMember.Id,
+		UntilDate: t,
+	}
+	return botEgressReq.KickChatMember(j.app)
+}
+
 func (j *Job) SaveInRedis(redisConn *redis.Client, k string, v interface{}, t int) {
 	err := redisConn.Set(k, v, time.Duration(t)*time.Second).Err()
 	if err != nil {

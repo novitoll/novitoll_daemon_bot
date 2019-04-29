@@ -42,8 +42,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 			i+1, len(urls), url))
 
 		if f.IgnoreHostnames {
-			u, err := netUrl.ParseRequestURI(url)
-			if err != nil || u.Path == "" {
+			if !strings.Contains(url, "/") {
 				continue
 			}
 		}
@@ -93,13 +92,11 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	// t - is time when other user posted this URL before, in int32 datatype
 	t, _ := redisConn.Get(k).Result()
 	if t == "" {
-		j.app.Logger.Info("User is not in verified map. Probably user is aight.")
 		return false, nil
 	}
 
 	// convert from string to int32
-	t0 := t.(string)
-	t0i, err := strconv.Atoi(t0)
+	t0i, err := strconv.Atoi(t)
 	if err != nil {
 		j.app.Logger.Warn("Could not convert string to int")
 		return false, err
@@ -118,12 +115,20 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 		go func() {
 			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
+			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
+				// delete newcomer's message
 				j.DeleteMessage(&msg)
+
+				// and kick him/her/it
+				j.KickChatMember()
 			}
 		}()
 
-		return j.SendMessage(botReply, msg.MessageId)
+		return j.SendMessageWCleanup(botReply, TIME_TO_DELETE_REPLY_MSG,
+			&BotForceReply{
+				ForceReply: false,
+				Selective:  true,
+			})
 	}
 
 	return nil, nil
