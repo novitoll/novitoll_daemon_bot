@@ -127,14 +127,15 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 }
 
 func (j *Job) onURLDuplicate(duplicatedMsg *BotInReqMsg) (interface{}, error) {
+	msg := j.req.Message
+	urlFeature := j.app.Features.UrlDuplication
 
 	j.app.Logger.Info("POST HTTP request on duplicate detection")
 
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
 	d, _ := time.ParseDuration(t.String())
 
-	botReply := fmt.Sprintf(urlFeature.
-		I18n[j.app.Lang].WarnMessage,
+	botReply := fmt.Sprintf(urlFeature.I18n[j.app.Lang].WarnMessage,
 		duplicatedMsg.From.Username, timeago.FromDuration(d))
 
 	reply, err := j.SendMessage(botReply, msg.MessageId)
