@@ -45,23 +45,8 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		return false, nil
 	}
 
-	if _, ok := NewComersAuthPending[msg.Chat.Id]; !ok {
-		// init inner map if it's first time for this chat
-		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
-	}
-
-	// let's check if user is in our auth pending map or not
-	_, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
-
-	// pending users can not send messages except callback query
-	if isPending {
-		go j.DeleteMessage(&msg)
-		return nil, nil
-	}
-
 	// init a randomized auth check
 	pass := utils.RandStringRunes(9)
-
 	auth := fmt.Sprintf("%s. %s - %s", req.AuthMessage, req.AuthPasswd, pass)
 
 	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
@@ -72,6 +57,10 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 	t0 := time.Now().Unix()
 
+	if _, ok := NewComersAuthPending[msg.Chat.Id]; !ok {
+		// init inner map if it's first time for this chat
+		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
+	}
 	// store a newcomer per chat
 	NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id] = pass
 
@@ -92,8 +81,8 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	// sends the welcome authentication message with a callback
 	// After user hits the button, CallbackQuery will be sent back
 	// This will eliminate bots sending password in plain text by reading it.
-	// kudos to @kazgeek
-	go j.SendMessageWReply(welcomeMsg, newComerCfg.AuthTimeout,
+	// kudos for the idea to @kazgeek
+	go j.SendMessageWReply(welcomeMsg, msg.MessageId,
 		&InlineKeyboardMarkup{
 			InlineKeyboard: keyBtns,
 		})
@@ -158,17 +147,23 @@ func JobNewChatMemberAuth(j *Job) (interface{}, error) {
 	// writing to the global unbuffered channel
 	msg := j.req.Message
 
-	cb := j.req.CallbackQuery
-
-	if cb.Id == "" {
-		return false, nil
+	// let's check if user is in our auth pending map or not
+	_, ok := NewComersAuthPending[msg.Chat.Id]	
+	if !ok {
+		return nil, nil
 	}
 
 	origPass, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
-
 	if !isPending {
-		j.app.Logger.Warn("Callback query from not-pending auth user.")
 		return false, nil
+	}
+
+	cb := j.req.CallbackQuery
+
+	// pending users can not send messages except callback query
+	if isPending && cb.Id == "" {
+		go j.DeleteMessage(&msg)
+		return nil, nil
 	}
 
 	j.app.Logger.Info("!!!!!!!!!!!!!!!!!!")
