@@ -93,13 +93,13 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 	t0 := j.GetFromRedis(redisConn, k)
 	if t0 == nil {
-		return false, err
+		return false, nil
 	}
 
-	t0i, err2 := strconv.Atoi(t0.(string))
-	if err2 != nil {
+	t0i, err := strconv.Atoi(t0.(string))
+	if err != nil {
 		j.app.Logger.Warn("Could not convert string to int")
-		return false, err2
+		return false, err
 	}
 
 	if t0i > 0 && (time.Now().Unix()-int64(t0i) <= NEWCOMER_URL_POST_DELAY) {
