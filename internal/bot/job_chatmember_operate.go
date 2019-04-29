@@ -62,9 +62,10 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
 	}
 	// store a newcomer per chat
-	if _, isPending := NewComersAuthPending[msg.Chat.Id]; isPending {
+	if _, isPending := NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id]; isPending {
 		j.app.Logger.Info("Deleting pending user message")
 		go j.DeleteMessage(&msg)
+		return nil, nil
 	}
 
 	NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id] = pass
