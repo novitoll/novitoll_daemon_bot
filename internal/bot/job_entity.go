@@ -56,13 +56,13 @@ func (j *Job) SaveInRedis(redisConn *redis.Client, k string, v interface{}, t in
 	}
 }
 
-func (j *Job) GetFromRedis(redisConn *redis.Client, k string) interface{} {
+func (j *Job) GetFromRedis(redisConn *redis.Client, k string) (interface{}, error) {
 	res, err := redisConn.Get(k).Result()
 	if err != nil {
 		txt := fmt.Sprintf("Could not get %s in redis", k)
 		j.app.Logger.Warn(txt)
 	}
-	return res
+	return res, err
 }
 
 func (j *Job) GetBatchFromRedis(redisConn *redis.Client, k string, limit int) interface{} {
