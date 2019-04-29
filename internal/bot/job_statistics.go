@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0
 package bot
 
-import (
-	//"fmt"
-	//"strings"
-	//"time"
+//"fmt"
+//"strings"
+//"time"
 
-	//"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
-	//"github.com/sirupsen/logrus"
-)
+//"github.com/novitoll/novitoll_daemon_bot/pkg/utils"
+//"github.com/sirupsen/logrus"
 
 const (
 	FLOOD_TIME_INTERVAL     = 10
@@ -41,7 +39,6 @@ var (
 func JobMsgStats(j *Job) (interface{}, error) {
 	return nil, nil
 }
-
 
 //func JobMsgStats(j *Job) (interface{}, error) {
 //	if !j.app.Features.MsgStats.Enabled || !j.HasMessageContent() {

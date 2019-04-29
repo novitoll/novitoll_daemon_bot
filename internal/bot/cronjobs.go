@@ -19,7 +19,7 @@ func (req *BotInReq) CronSchedule(app *App) {
 
 	_, errors := FanOutProcessJobs(j, []ProcessJobFn{
 		// FIXME: will be done in another way
-		//CronUserStats, 
+		//CronUserStats,
 		//CronChatMsgStats,
 
 		CronGetChatAdmins,

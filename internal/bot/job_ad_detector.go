@@ -31,6 +31,7 @@ func isAd(msg *BotInReqMsg) bool {
 
 func JobAdDetector(j *Job) (interface{}, error) {
 	f := j.app.Features.AdDetection
+	msg := j.req.Message
 
 	if !f.Enabled ||
 		!j.HasMessageContent() {
@@ -38,37 +39,39 @@ func JobAdDetector(j *Job) (interface{}, error) {
 	}
 
 	// detection of Telegram groups
-	if isAd(&j.req.Message) {
+	if isAd(&msg) {
 		admins := []string{BDFL}
 
 		if f.AdminAlert {
-			admins = append(j.app.ChatAdmins[j.req.Message.Chat.Id])
+			admins = append(j.app.ChatAdmins[msg.Chat.Id])
 		}
 
 		for _, a := range admins {
-			if j.req.Message.From.Username == a {
+			if msg.From.Username == a {
 				return nil, nil
 			}
 		}
 
 		j.app.Logger.WithFields(logrus.Fields{
-			"userId": j.req.Message.From.Id,
-		}).Warn("Ad detected: Telegram group")
+			"chat":   msg.Chat.Id,
+			"userId": msg.From.Id,
+		}).Warn("Ad detected")
 
 		adminsToNotify := strings.Join(admins, ", ")
 
 		text := fmt.Sprintf(f.I18n[j.app.Lang].WarnMessage, adminsToNotify)
 
 		req := &BotSendMsg{
-			ChatId:           j.req.Message.Chat.Id,
+			ChatId:           msg.Chat.Id,
 			Text:             text,
 			ParseMode:        ParseModeMarkdown,
-			ReplyToMessageId: j.req.Message.MessageId,
+			ReplyToMessageId: msg.MessageId,
 			ReplyMarkup: &BotForceReply{
 				ForceReply: false,
 				Selective:  true,
 			},
 		}
+
 		replyMsgBody, err := req.SendMsg(j.app)
 		if err != nil {
 			return false, err
@@ -78,10 +81,8 @@ func JobAdDetector(j *Job) (interface{}, error) {
 			// cleanup reply messages
 			go func() {
 				select {
-				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+
-					10) * time.Second):
-
-					go j.DeleteMessage(&j.req.Message)
+				case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG+10) * time.Second):
+					go j.DeleteMessage(&msg)
 					go j.DeleteMessage(replyMsgBody)
 				}
 			}()

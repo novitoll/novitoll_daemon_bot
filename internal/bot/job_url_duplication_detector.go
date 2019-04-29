@@ -17,14 +17,13 @@ import (
 
 func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	msg := j.req.Message
-	urlFeature := j.app.Features.UrlDuplication
+	f := j.app.Features.UrlDuplication
 
-	if !urlFeature.Enabled {
+	if !f.Enabled {
 		return false, nil
 	}
 
-	urls := xurls.Relaxed().FindAllString(j.req.
-		Message.Text, -1)
+	urls := xurls.Relaxed().FindAllString(msg.Text, -1)
 
 	if len(urls) == 0 {
 		return false, nil
@@ -42,20 +41,21 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 		j.app.Logger.Info(fmt.Sprintf("Checking %d/%d URL - %s",
 			i+1, len(urls), url))
 
-		if urlFeature.IgnoreHostnames {
+		if f.IgnoreHostnames {
 			u, err := netUrl.ParseRequestURI(url)
 			if err != nil || u.Path == "" {
 				continue
 			}
 		}
 
-		redisKey := strings.ToLower(url)
+		redisKey := fmt.Sprintf("%s-%d-%s", REDIS_USER_SENT_URL, msg.Chat.Id, strings.ToLower(url))
 
 		jsonStr, _ := redisConn.Get(redisKey).Result()
 
 		if jsonStr != "" {
 			j.app.Logger.WithFields(logrus.Fields{
-				"url": url,
+				"chat": msg.Chat.Id,
+				"url":  url,
 			}).Warn("This message contains the duplicate URL")
 
 			var duplicatedMsg BotInReqMsg
@@ -76,8 +76,7 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 			}
 
 			err2 := redisConn.Set(redisKey, payload,
-				time.Duration(urlFeature.
-					RelevanceTimeout)*time.Second).Err()
+				time.Duration(f.RelevanceTimeout)*time.Second).Err()
 
 			if err2 != nil {
 				j.app.Logger.WithFields(logrus.Fields{
@@ -91,8 +90,9 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 	// check if user is allowed to post URLs
 	k := fmt.Sprintf("%s-%d-%d", REDIS_USER_VERIFIED, msg.Chat.Id, msg.From.Id)
 
-	t0 := j.GetFromRedis(redisConn, k)
-	if t0 == nil {
+	t0, _ := redisConn.Get(j).Result()
+	if t0 == "" {
+		j.app.Logger("User is not in verified map. Probably user is aight.")
 		return false, nil
 	}
 
@@ -128,14 +128,14 @@ func JobUrlDuplicationDetector(j *Job) (interface{}, error) {
 
 func (j *Job) onURLDuplicate(duplicatedMsg *BotInReqMsg) (interface{}, error) {
 	msg := j.req.Message
-	urlFeature := j.app.Features.UrlDuplication
+	f := j.app.Features.UrlDuplication
 
 	j.app.Logger.Info("POST HTTP request on duplicate detection")
 
 	t := time.Since(time.Unix(duplicatedMsg.Date, 0))
 	d, _ := time.ParseDuration(t.String())
 
-	botReply := fmt.Sprintf(urlFeature.I18n[j.app.Lang].WarnMessage,
+	botReply := fmt.Sprintf(f.I18n[j.app.Lang].WarnMessage,
 		duplicatedMsg.From.Username, timeago.FromDuration(d))
 
 	reply, err := j.SendMessage(botReply, msg.MessageId)

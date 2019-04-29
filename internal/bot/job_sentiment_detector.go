@@ -15,29 +15,29 @@ var (
 
 func JobSentimentDetector(j *Job) (interface{}, error) {
 	var emojiMsg bool
+
 	f := j.app.Features.SentimentDetection
-	t := j.req.Message.Text
+	msg := j.req.Message
 
 	if !f.Enabled || !j.HasMessageContent() {
 		return nil, nil
 	}
 
 	// check if the entire message is emoji
-	if t != "" && emojiRgxp.ReplaceAllString(t, "") == "" {
+	if msg.Text != "" && emojiRgxp.ReplaceAllString(msg.Text, "") == "" {
 		emojiMsg = true
 	}
 
-	if emojiMsg || j.req.Message.Sticker.FileId != "" {
-		j.app.Logger.WithFields(logrus.Fields{"userId": j.req.Message.From.Id}).
-			Warn("Sentiment detected")
+	if emojiMsg || msg.Sticker.FileId != "" {
+		j.app.Logger.WithFields(logrus.Fields{"userId": msg.From.Id}).Warn("Sentiment detected")
 	} else {
 		return nil, nil
 	}
 
 	// sentiment detected - warn user
-	text := f.I18n[j.app.Lang].WarnMessage
+	replyText := f.I18n[j.app.Lang].WarnMessage
 
-	reply, err := j.SendMessage(text, j.req.Message.MessageId)
+	reply, err := j.SendMessage(replyText, msg.MessageId)
 	if err != nil {
 		return false, err
 	}
@@ -50,7 +50,7 @@ func JobSentimentDetector(j *Job) (interface{}, error) {
 				go j.DeleteMessage(reply)
 
 				if f.DeleteMessage {
-					go j.DeleteMessage(&j.req.Message)
+					go j.DeleteMessage(&msg)
 				}
 			}
 		}()

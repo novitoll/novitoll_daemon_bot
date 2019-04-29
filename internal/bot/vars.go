@@ -6,9 +6,9 @@ const (
 	TELEGRAM_BOT_USERNAME    = "novitoll_daemon_bot"
 	TIME_TO_DELETE_REPLY_MSG = 10
 	// 7 days - 1 sec
-	EVERY_LAST_SEC_7TH_DAY 	 = 604799
+	EVERY_LAST_SEC_7TH_DAY = 604799
 	// 15 min
-	NEWCOMER_URL_POST_DELAY  = 900
+	NEWCOMER_URL_POST_DELAY = 900
 )
 
 var (
@@ -22,4 +22,5 @@ var (
 	REDIS_USER_PREV_LEFT     = "ParticipantLeftPrev"
 	REDIS_USER_PREV_KICK     = "NewComersAuthKickedPrev"
 	REDIS_USER_PREV_VERIFIED = "NewComersAuthVerifiedPrev"
+	REDIS_USER_SENT_URL      = "UserSentUrl"
 )

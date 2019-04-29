@@ -55,15 +55,6 @@ func (j *Job) SaveInRedis(redisConn *redis.Client, k string, v interface{}, t in
 	}
 }
 
-func (j *Job) GetFromRedis(redisConn *redis.Client, k string) interface{} {
-	res, err := redisConn.Get(k).Result()
-	if err != nil {
-		txt := fmt.Sprintf("Could not get %s in redis", k)
-		j.app.Logger.Warn(txt)
-	}
-	return res
-}
-
 func (j *Job) GetBatchFromRedis(redisConn *redis.Client, k string, limit int) interface{} {
 	var cursor uint64
 
@@ -71,6 +62,8 @@ func (j *Job) GetBatchFromRedis(redisConn *redis.Client, k string, limit int) in
 	if err != nil {
 		txt := fmt.Sprintf("Could not scan batch %s in redis", k)
 		j.app.Logger.Warn(txt)
+		return nil
+	} else {
+		return keys
 	}
-	return keys
 }

@@ -52,7 +52,7 @@ func ConfigureStructs(t *testing.T, reqBodyFilepath string) (*cfg.FeaturesCfg, *
 	var features cfg.FeaturesCfg
 	FilepathToStruct(t, "config/features.json", &features)
 	assert.Equal(t, features.Administration.LogLevel, "info",
-	 "[-] Should be equal FeaturesCfg struct features.LogLevel field")
+		"[-] Should be equal FeaturesCfg struct features.LogLevel field")
 
 	// BotInReq init
 	var req BotInReq

@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	authRgxp      *regexp.Regexp
 	forceDeletion = make(chan bool)
 	// unbuffered chanel to wait for the certain time
 	// for the newcomer's response.
@@ -22,16 +23,14 @@ var (
 	// because we don't know beforehand if the message is
 	// from the Auth pending user or not. So keep in memory
 	// a double nested hashmap for multiple chats.
-	// { 
+	// {
 	//   <chat_id>: {
 	//   	<user_id>: <timestamp>,
 	//   	<user_id>: <timestamp>,
 	//	},
-	//   <chat_id>: {..} 
+	//   <chat_id>: {..}
 	// }
-
 	NewComersAuthPending = make(map[int]map[int]string)
-	authRgxp             *regexp.Regexp
 )
 
 func JobNewChatMemberDetector(j *Job) (interface{}, error) {
@@ -57,8 +56,9 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 				req.AuthMessage, req.AuthPasswd, pass)},
 		},
 	}
+
 	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
-			 newComerCfg.AuthTimeout, newComerCfg.KickBanTimeout)
+		newComerCfg.AuthTimeout, newComerCfg.KickBanTimeout)
 
 	redisConn := redis.GetRedisConnection()
 	defer redisConn.Close()
@@ -98,7 +98,7 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 		j.app.Logger.WithFields(logrus.Fields{
 			"chat": msg.Chat.Id,
-			"id": dootId,
+			"id":   dootId,
 		}).Info("Newcomer has been authenticated")
 
 		if newComerCfg.ActionNotify {
@@ -124,11 +124,12 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 			// record this event in redis's kicked users map
 			k := fmt.Sprintf("%s-%d-%d", REDIS_USER_KICKED,
 				msg.Chat.Id, msg.NewChatMember.Id)
+
 			// same +10 sec as for REDIS_USER_VERIFIED
 			j.SaveInRedis(redisConn, k, t0, EVERY_LAST_SEC_7TH_DAY+10)
 
 			j.app.Logger.WithFields(logrus.Fields{
-				"":	    msg.Chat.Id,
+				"":         msg.Chat.Id,
 				"id":       msg.NewChatMember.Id,
 				"username": msg.NewChatMember.Username,
 			}).Warn("Newcomer has been kicked")
