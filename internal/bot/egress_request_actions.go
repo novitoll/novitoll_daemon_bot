@@ -112,6 +112,10 @@ func (body *BotDeleteMsg) DeleteMsg(app *App) (*BotInReqMsg, error) {
 	return app.SendToTelegram(body, "deleteMessage")
 }
 
+func (body *BotAnswerCallbackQuery) AnswerCallbackQuery(app *App) (*BotInReqMsg, error) {
+	return app.SendToTelegram(body, "answerCallbackQuery")
+}
+
 // This is the same wrapper as above struct functions,
 // but its response and request parsing are different,
 // so have to duplicate the code without ready func. wrappers

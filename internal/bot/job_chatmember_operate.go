@@ -41,21 +41,28 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 
 	// do not validate yourself
 	if !newComerCfg.Enabled || msg.NewChatMember.Id == 0 ||
-		msg.NewChatMember.Username == TELEGRAM_BOT_USERNAME {
+		msg.NewChatMember.Username == TELEGRAM_BOT_USERNAME || !j.HasMessageContent() {
 		return false, nil
+	}
+
+	if _, ok := NewComersAuthPending[msg.Chat.Id]; !ok {
+		// init inner map if it's first time for this chat
+		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
+	}
+
+	// let's check if user is in our auth pending map or not
+	_, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
+
+	// pending users can not send messages except callback query
+	if isPending {
+		go j.DeleteMessage(&msg)
+		return nil, nil
 	}
 
 	// init a randomized auth check
 	pass := utils.RandStringRunes(9)
 
-	// keyboard for authentication with the only button
-	// TODO: Do the callback instead of pasting plain-text
-	keyBtns := [][]KeyboardBtn{
-		[]KeyboardBtn{
-			KeyboardBtn{fmt.Sprintf("%s. %s - %s",
-				req.AuthMessage, req.AuthPasswd, pass)},
-		},
-	}
+	auth := fmt.Sprintf("%s. %s - %s", req.AuthMessage, req.AuthPasswd, pass)
 
 	welcomeMsg := fmt.Sprintf(req.WelcomeMessage,
 		newComerCfg.AuthTimeout, newComerCfg.KickBanTimeout)
@@ -64,11 +71,6 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 	defer redisConn.Close()
 
 	t0 := time.Now().Unix()
-
-	if _, ok := NewComersAuthPending[msg.Chat.Id]; !ok {
-		// init inner map if it's first time for this chat
-		NewComersAuthPending[msg.Chat.Id] = map[int]string{}
-	}
 
 	// store a newcomer per chat
 	NewComersAuthPending[msg.Chat.Id][msg.NewChatMember.Id] = pass
@@ -81,12 +83,14 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 		"username": msg.NewChatMember.Username,
 	}).Warn("New member has been detected")
 
-	// sends the welcome authentication message
+	// sends the welcome authentication message with a callback
+	// After user hits the button, CallbackQuery will be sent back
+	// This will eliminate bots sending password in plain text by reading it.
+	// kudos to @kazgeek
 	go j.SendMessageWCleanup(welcomeMsg, newComerCfg.AuthTimeout,
-		&ReplyKeyboardMarkup{
-			Keyboard:        keyBtns,
-			OneTimeKeyboard: true,
-			Selective:       true,
+		&InlineKeyboardButton{
+			Text: auth,
+			CallbackData: pass,
 		})
 
 	// blocks the current Job goroutine until either of
@@ -145,64 +149,35 @@ func JobNewChatMemberDetector(j *Job) (interface{}, error) {
 }
 
 func JobNewChatMemberAuth(j *Job) (interface{}, error) {
-	/*will check every message if its from a newcomer to whitelist the doot,
-	writing to the global unbuffered channel
-	*/
-	var isAuthMsg bool
-	i18n := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang]
+	// will check CallbackQuery only from a newcomer to whitelist the doot,
+	// writing to the global unbuffered channel
 	msg := j.req.Message
+	i18n := j.app.Features.NewcomerQuestionnare.I18n[j.app.Lang]
 
-	// ignore own and content-less messages
-	if msg.From.Username == TELEGRAM_BOT_USERNAME || !j.HasMessageContent() {
-		return nil, nil
+	cb := j.req.CallbackQuery
+
+	if cb.Id == "" {
+		return false, nil
 	}
 
-	// this should not compile per each message
-	if authRgxp == nil {
-		authRgxp = regexp.MustCompile(fmt.Sprintf("^%s", i18n.AuthMessage))
+	origPass, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
+
+	if !isPending {
+		j.app.Logger.Warn("Callback query from not-pending auth user.")
+		return false, nil
 	}
 
-	// 1. Let's check if this is for newmember auth related message or not
-	matched := authRgxp.FindAllString(msg.Text, -1)
-	isAuthMsg = len(matched) > 0
+	j.app.Logger.Info("!!!!!!!!!!!!!!!!!!")
+	j.app.Logger.Info(cb.Message.Text)
 
-	// 2. ok, but let's check if user is in our auth pending map or not
-	pass, isPending := NewComersAuthPending[msg.Chat.Id][msg.From.Id]
-
-	// 2.1 pending users can not send messages except auth
-	if isPending && !isAuthMsg {
-		go j.DeleteMessage(&msg)
-		return nil, nil
+	req := &BotAnswerCallbackQuery{
+		CallbackQueryId: cb.Id,
 	}
 
-	if !isAuthMsg {
-		return nil, nil
-	}
-
-	// 3. ok, let's check then if user's password is legit with outs
-	passOrig := fmt.Sprintf("%s. %s - %s", i18n.AuthMessage, i18n.AuthPasswd, pass)
-	if isPending && passOrig == msg.Text {
-		go j.onDeleteMessage(&msg, TIME_TO_DELETE_REPLY_MSG)
+	if origPass == cb.Message.Text {
 		chNewcomer <- msg.From.Id
-	} else {
-		// answer if the user has cached message (seems, a bug for desktop users)
-		// or if user is already verified, he/she will get the reply
-		// or if user is in auth pending but failed with password,
-		// then time.After channel about will kick the fuck out that guy.
-		_, err := j.SendMessageWCleanup(i18n.AuthMessageCached,
-			TIME_TO_DELETE_REPLY_MSG+10,
-			&BotForceReply{
-				ForceReply: false,
-				Selective:  true,
-			})
-
-		// delete user's message with delay
-		go j.onDeleteMessage(&msg, TIME_TO_DELETE_REPLY_MSG)
-
-		return nil, err
 	}
-
-	return true, nil
+	return req.AnswerCallbackQuery(j.app)
 }
 
 func JobLeftParticipantDetector(j *Job) (interface{}, error) {
