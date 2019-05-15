@@ -10,11 +10,28 @@ import (
 )
 
 var (
+	// TODO(novitoll): Move this to configuration file
 	AD_WORDS = []string{"t.me/", "t.cn/", "joinchat"}
+	// TODO(novitoll): Make a channel dependent
+	EXCEPTIONS = []string{"t.me/proxy", "t.me/cyberseckz"}
 )
+
+func stringContainInSlice(a string, list []string) bool {
+    for _, b := range list {
+        if strings.Contains(a, b) {
+            return true
+        }
+    }
+    return false
+}
 
 func isAd(msg *BotInReqMsg) bool {
 	var isMsgAd bool = false
+	// Check if this is the exceptional string
+	if ok := stringContainInSlice(msg.Text, EXCEPTIONS); ok {
+		return false
+	}
+
 	contexts := []string{msg.Text, msg.Caption}
 	for _, s := range contexts {
 		if isMsgAd {
