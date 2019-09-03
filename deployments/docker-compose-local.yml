@@ -9,7 +9,7 @@ services:
       context: ../
       args:
         PROJECT_PATH: github.com/novitoll/novitoll_daemon_bot
-    image: bot:0.0.3
+    image: bot
     container_name: bot
     environment:
       - REDIS_HOST=redis
@@ -22,7 +22,6 @@ services:
       - "8080:8080"
     links:
       - redis
-     - telegrammock
     depends_on:
       - redis
     volumes:

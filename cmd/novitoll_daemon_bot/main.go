@@ -16,8 +16,8 @@ import (
 
 // Global variables of "main" pkg
 var (
-	features  cfg.FeaturesCfg
-	lang      string = "en-us"
+	features	 cfg.FeaturesCfg
+	lang		 = "en-us"
 	logger           = logrus.New()
 	requestID        = 0
 )
