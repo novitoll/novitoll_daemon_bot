@@ -1,7 +1,5 @@
 configure:
-	go get -u github.com/golang/dep/cmd/dep
-	[ -L  /usr/local/bin/dep ] || ln -s ${GOPATH}/bin/dep /usr/local/bin/dep
-	dep ensure
+	./configure.sh
 	go get -u mvdan.cc/xurls github.com/go-redis/redis
 	go get -u github.com/stretchr/testify/assert
 	go get -u github.com/justincampbell/timeago

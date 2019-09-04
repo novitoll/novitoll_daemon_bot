@@ -37,7 +37,7 @@ Bot features can be enabled/disabled via `config/features.json` and its ad-hoc s
 
 Make commands
 -------
-* ``make configure`` -- configure `dep` GoLang package and install deps.
+* ``make configure`` -- check and configure the env and install deps.
 * ``make build`` -- compile Go src to the "$PWD/bot" binary.
 * ``make run`` -- compile and run a standalone Go binary.
 * ``make docker-compose-local`` -- For local development. Runs docker-compose that brings up 1 redis & 1 bot containers & 1 telegram-mock image.
