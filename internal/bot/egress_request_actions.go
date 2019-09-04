@@ -22,8 +22,6 @@ func sendHTTP(req *http.Request, app *App) (*bytes.Buffer, error) {
 		TLSHandshakeTimeout: 5 * time.Second,
 	}
 
-	app.Logger.Info("POST HTTP egress to Telegram")
-
 	client := &http.Client{
 		Timeout:   time.Second * 10,
 		Transport: netTransport,
@@ -31,7 +29,7 @@ func sendHTTP(req *http.Request, app *App) (*bytes.Buffer, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		app.Logger.WithFields(logrus.Fields{"err": err}).
-			Fatal("Can not send message to Telegram")
+			Warn("Can not send message to Telegram")
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -41,7 +39,7 @@ func sendHTTP(req *http.Request, app *App) (*bytes.Buffer, error) {
 	if err2 != nil {
 		app.Logger.WithFields(logrus.Fields{
 			"parsedBytes": parsedBytes,
-		}).Fatal("Failed in Telegram resp")
+		}).Warn("Failed in Telegram resp")
 		return nil, err2
 	}
 
@@ -134,7 +132,7 @@ func (body *BotGetAdmins) GetAdmins(app *App) ([]*BotInReqMsg, error) {
 	var reply BotInRespMult
 	var replyStr string
 
-	// dirty hack because Telegram resp keys are different, geez
+	// dirty hack because Telegram resp keys are different
 	replyStr = strings.Replace(buf.String(),
 		"{\"user", "{\"from", -1)
 
