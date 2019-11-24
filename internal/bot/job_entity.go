@@ -58,7 +58,17 @@ func (j *Job) SendMessageWReply(replyText string, replyMsgId int, reply interfac
 	return req.SendMsg(j.app)
 }
 
-func (j *Job) SendMessageWCleanup(text string, reply interface{}) (interface{}, error) {
+func (j *Job) onDeleteMessage(resp *BotInReqMsg, delay uint8) (interface{}, error) {
+	// dirty hack to do the same function on either channel (fan-in pattern)
+	select {
+	case <-forceDeletion:
+		return j.DeleteMessage(resp)
+	case <-time.After(time.Duration(delay) * time.Second):
+		return j.DeleteMessage(resp)
+	}
+}
+
+func (j *Job) SendMessageWCleanup(text string, delay uint8, reply interface{}) (interface{}, error) {
 	// Send message to user and delete own (bot's) message as cleanup
 	msg := j.req.Message
 	botEgressReq := &BotSendMsg{
@@ -75,12 +85,7 @@ func (j *Job) SendMessageWCleanup(text string, reply interface{}) (interface{}, 
 
 	if replyMsgBody != nil {
 		// cleanup reply messages
-		go func() {
-			select {
-			case <-time.After(time.Duration(TIME_TO_DELETE_REPLY_MSG) * time.Second):
-				j.DeleteMessage(replyMsgBody)
-			}
-		}()
+		go j.onDeleteMessage(replyMsgBody, delay)
 	}
 
 	return false, err

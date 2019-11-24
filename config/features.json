@@ -35,16 +35,16 @@
         "authOKMessage": "Thanks. You are whitelisted.",
         "authNotPending": "This is not for you",
         "authMessage": "I am not a bot",
-        "authPasswd": "Password",
+        "authPasswd": "Auth",
         "authMessageCached": "Yes, you are not bot. But you use desktop client and seems, you have cached message.",
         "authMessageURLPost": "New users are not allowed to post URLs until first %d mins. You are kicked for the time being."
       },
       "rus": {
         "welcomeMessage": "Пинг? Ответьте кнопкой в течении %d секунд, в противном случае вы будете исключены из группы на %d секунд по разным причинам. Все сообщения будут удалены пока не авторизуетесь.",
-        "authOKMessage": "Спасибо, вы авторизованы.",
+        "authOKMessage": "Спасибо, вы авторизованы. В чате не приветствуется агрессия, политота. Соблюдайте чистоту, сортируйте пластиковые изделья, любите мир вокруг, занимайтесь спортом, читайте мануалы.",
         "authNotPending": "Эта кнопка для новых юзеров",
         "authMessage": "Я - не бот",
-        "authPasswd": "Пароль",
+        "authPasswd": "Auth",
         "authMessageCached": "Да, вы - не бот. Но вы используете десктоп клиент, и видимо, это кэш.",
         "authMessageURLPost": "Новые юзеры не могут постить ссылки в течении первых %d мин. Вы исключены из группы на время."
       }
