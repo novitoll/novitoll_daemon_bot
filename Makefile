@@ -1,5 +1,4 @@
 configure:
-	./configure.sh
 	go get -u mvdan.cc/xurls github.com/go-redis/redis
 	go get -u github.com/stretchr/testify/assert
 	go get -u github.com/justincampbell/timeago
