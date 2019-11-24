@@ -8,6 +8,10 @@ Requirements
 	$ go version
     go1.12 linux/amd64
 
+Disclaimer
+-------
+
+Some features are still work in-progress. But my procrastination is a bitch.
 
 Features
 -------

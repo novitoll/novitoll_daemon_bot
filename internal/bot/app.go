@@ -53,9 +53,6 @@ func (app *App) ProcessHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// This should be useful to analyze STDOUT logs
-	// instead of storing them in RDBMS etc.
-	app.Logger.Info(buf.String())
 
 	var br BotInReq
 	err = json.Unmarshal([]byte(buf.String()), &br)
