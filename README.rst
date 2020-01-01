@@ -58,10 +58,15 @@ Deployment remarks
 On the server where you want to host this bot:
 
 	$ # you need the DNS A record for your bot, because Telegram communicates only with TLS channel
+	
 	$ apt-get install -y git nginx
+	
 	$ # lets encrypt installation (https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-10)
+	
 	$ apt install python3-acme python3-certbot python3-mock python3-openssl python3-pkg-resources python3-pyparsing python3-zope.interface
+	
 	$ # follow instructions of obtaining LetsEncrypt cert to your nginx
+	
 	$ # add these location proxy_pass rules to your nginx config (/etc/nginx/sites-available/default)
 
 		# novitoll_daemon_bot
@@ -73,27 +78,41 @@ On the server where you want to host this bot:
 		}
 
 	$ # git source
+	
 	$ mkdir -p /opt/src/github.com/novitoll
+	
 	$ cd !$
+	
 	$ git clone https://github.com/Novitoll/novitoll_daemon_bot.git
+	
 	$ cd novitoll_daemon_bot
 
 	$ ./configure.sh 
+	
 	[+] OK. docker-compose
+	
 	[+] OK. docker
+	
 	[-] Please install go. (only for local development)
+	
 	$ # apt-get install golang ..
 
 	$ # setup deployments/.env
+	
 	$ cat <<EOF > deployments/.env
+	
 	> TELEGRAM_TOKEN=<put the token here from Telegram BotFather for your bot
+	
 	> EOF
 
 	$ # set webhook for Telegram bot using your TELEGRRAM_TOKEN
+	
 	$ curl -F "url=https://<your DNS A Record for nginx>/novitoll_daemon_bot/process" https://api.telegram.org/bot$TELEGRAM_TOKEN/setWebHook
+	
 	{"ok":true,"result":true,"description":"Webhook was set"}
 
 	# for novitoll_daemon_bot
+	
 	$ make docker-compose
 
 Please notice that you may want to clear the Telegram bot updates queue in order not to process pending messages. To do so, you have to change the Telegram bot's webhook to some end-point, returning HTTP 200/202 responses for all pending messages. In our case, there is the HTTP GET ``/flushQueue`` end-point that returns 202.
